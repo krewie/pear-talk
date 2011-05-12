@@ -1,0 +1,12 @@
+# För att få ner repositoryn till din dator skriv följande kommando:
+
+svn checkout http://pear-talk.googlecode.com/svn [FOLDERNAME]
+
+-FOLDERNAME är namnet på mappen som kommer skapas på din dator där allt kommer sparas
+
+
+# För att uppdatera en redan existerande fil som du har ändrat på i din lokala repository:
+
+svn commit [PATH] -m [MEDDELANDE]
+
+-PATH
