@@ -11,12 +11,19 @@ svn checkout http://pear-talk.googlecode.com/svn [FOLDERNAME] --username [USERNA
  kan hittas på hemsidan under Profile->settings
 
 
+
 # För att uppdatera en redan existerande fil som du har ändrat på i din lokala repository:
 
 svn commit [PATH] -m [MEDDELANDE]
 
 -PATH är sökvägen till din lokala repository
 -MEDDELANDE ska ersättas med en text sträng inom "" som beskriver din ändring
+
+(Om du inte tidigare blivit tvungen att skriva in ditt lšsenord, kommer commit med stor sannolikhet att faila. Fšr att fŒ det att funka kan ni anropa med --password flagg. dvs:
+
+svn commit [PATH] -m [MEDDELANDE] --username [USERNAME] --password [PASSWORD]
+
+-PASSWORD se ovan.
 
 # För att lägga till en fil som inte fanns i repository sen tidigare:
 
