@@ -4,9 +4,24 @@ svn checkout http://pear-talk.googlecode.com/svn [FOLDERNAME]
 
 -FOLDERNAME är namnet på mappen som kommer skapas på din dator där allt kommer sparas
 
+svn checkout http://pear-talk.googlecode.com/svn [FOLDERNAME] --username [USERNAME]
+
+-USERNAME den mail som är registrerad på googlecode
+ Du kommer att få skriva in lösenord, det lösenordet är givet till dig av googlecode och
+ kan hittas på hemsidan under Profile->settings
+
 
 # För att uppdatera en redan existerande fil som du har ändrat på i din lokala repository:
 
 svn commit [PATH] -m [MEDDELANDE]
 
--PATH
+-PATH är sökvägen till din lokala repository
+-MEDDELANDE ska ersättas med en text sträng inom "" som beskriver din ändring
+
+# För att lägga till en fil som inte fanns i repository sen tidigare:
+
+svn add [PATH]
+
+-PATH ska vara sökvägen till filen du vill lägga till, filen ska ligga på önskad plats
+ i din lokala repository.
+-Kör sedan en commit efter detta för att lägga till filen på den globala repositoryn
