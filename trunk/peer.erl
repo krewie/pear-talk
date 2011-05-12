@@ -7,18 +7,15 @@ status(Status) ->
             status(Status);
         {change, NewStatus} ->
             status(NewStatus);
-	{send, PID, IpAddress, RemotePort, Sender, Receiver, Data} ->
-	    PID!(spawn(peer,send,[IpAddress, RemotePort, Sender, Receiver, Data])),
-	    status(Status);
         stop ->
             true;
         _Any->
             status(Status)
     end.
 
-start(NetworkInterface, ListenPort) ->
+start(Me, NetworkInterface, ListenPort) ->
 	try 
-		register(chat, spawn(peer, status, [{NetworkInterface,ListenPort,[],[]}]))
+		register(chat, spawn(peer, status, [{NetworkInterface,ListenPort,Me,[]}]))
 	catch
 		_:_ ->  io:format("The chat is allready running!~n")
 	end,
@@ -70,42 +67,78 @@ get_request(Socket, BinaryList) ->
 	case gen_tcp:recv(Socket,0) of
 		{ok, Binary} ->
 			get_request(Socket, [Binary|BinaryList]);
-      	{error, closed} ->
+      		{error, closed} ->
 			{{Y,M,D},{H,MM,S}} = erlang:localtime(),
 			Timestamp = lists:flatten(io_lib:format("~p/~p/~p - ~p:~p:~p", [Y,M,D,H,MM,S])),
 			try
-				{_, Sender, Receiver, Data} = binary_to_term(binary:list_to_bin(lists:reverse(BinaryList))),
-			      	io:format("~p~n", [Sender ++ " to " ++ Receiver ++ ": " ++ Data]),
-				ok = file:write_file("log_file.txt", Timestamp ++ " " ,[append]),
-     		  		ok = file:write_file("log_file.txt", Sender ++ 
-					" to " ++ Receiver ++ ": " ++ Data ++ "\n",[append])
+				{Ni, Lp, Sd, R, Data, Mode, Bin} = 
+					binary_to_term(list_to_binary(lists:reverse(BinaryList))),
+				case Mode of 
+					file ->
+						{FileName, File} = Bin,
+						file:write_file(FileName, File),
+						io:format("File ~p written on disk~n", [FileName]),
+						file:write_file("log_file.txt", Timestamp ++ " " ,[append]),
+						file:write_file("log_file.txt", "File " ++ FileName 
+							++ " written on disk",[append]);
+					ping ->
+						ul:set_online(Sd, Ni, Lp,[],[]),
+						send(Sd, "pong", pong,[]),
+						io:format("ping~n");
+				   	pong ->
+						io:format("pong~n");
+					_Any ->
+			      			io:format("~p~n", [Sd ++ " to " ++ R ++ ": " ++ Data]),
+						file:write_file("log_file.txt", Timestamp ++ " " ,[append]),
+     		  				file:write_file("log_file.txt", Sd ++ " to " 
+							++ R ++ ": " ++ Data ++ "\n",[append])
+				end
 			catch
-				_:_ -> io:format("Sending error =( ~n")
+				_:_ -> io:format("Sending error ojoj =( ~n")
 			end
      		end.
    
 %%--------------------------------------------------------------------------------------------------
-send(IpAddress, RemotePort, Sender, Receiver, Data) ->
-	case gen_tcp:connect(IpAddress, RemotePort, [binary,{packet,0},{port, 0}])   of
-		{ok, Sock} ->
-			try
-				{{Y,M,D},{H,MM,S}} = erlang:localtime(),
-				Timestamp = lists:flatten(io_lib:format("~p/~p/~p - ~p:~p:~p", [Y,M,D,H,MM,S])),
-				ok = file:write_file("log_file.txt", Timestamp ++ " " ,[append]),
-  				ok = file:write_file("log_file.txt", Sender ++ " to " ++ Receiver ++ ": " 
-				++ Data ++ "\n",[append]),
-				sendB(Sock, term_to_binary({Sock, Sender, Receiver, Data})),
-				gen_tcp:close(Sock)
-			catch
-				_:_ -> io:format("Sending error =( ~n")
-			end;
-		{error, _} ->
-			"connection error!"
+send(Receiver, Data, Mode, Obj) ->
+	chat!{status, self()},
+	receive
+		{Ni,Lp,Sender,_}  ->
+		try
+			[_,_,IpAddress, RemotePort,_,_] = ul:take(Receiver),
+			case gen_tcp:connect(IpAddress, RemotePort, [binary,{packet,0},{port, 0}]) of
+				{ok, Sock} ->
+					try
+						{{Y,M,D},{H,MM,S}} = erlang:localtime(),
+						Timestamp = lists:flatten(io_lib:format(
+							"~p/~p/~p - ~p:~p:~p",[Y,M,D,H,MM,S])),
+						file:write_file("log_file.txt", Timestamp ++ " " ,[append]),
+	  					file:write_file("log_file.txt", Sender ++ " to " ++ Receiver ++ ": " 
+							++ Data ++ "\n",[append]),
+						sendB(Sock, term_to_binary({Ni, Lp, Sender, Receiver, Data, Mode, Obj}))
+					catch
+						_:_ -> io:format("Sending error =( ~n")
+					end,
+					gen_tcp:close(Sock);
+				{error, _} ->
+					"connection error!"
+			end
+		catch 
+			_:_ -> 
+			{error,user_offline}
+		end
 	end.
-   
+
+send_file(Receiver, Filename, Name) ->
+	{ok,Bin} = file:read_file(Filename),
+	send(Receiver, [], file, {Name, Bin}).
 
 sendB(Socket, <<Chunk:100/binary, Rest/binary>>) ->
     gen_udp:send(Socket, Chunk),
     sendB(Socket, Rest);
 sendB(Socket,Rest) ->
     gen_udp:send(Socket, Rest).
+
+ping_friends() ->
+	ul:open(),
+	dets:traverse(ul, (fun({R, _}) -> send(R,"ping", ping, []), continue  end)),
+	ul:close().
