@@ -38,4 +38,10 @@ svn add [PATH]
 
 svn update [PATH]
 
+
+MENINGSLÖS RAD
+
+
+MENINGSLÖS RAD
+
 -PATH är sökvägen till din lokala repository
