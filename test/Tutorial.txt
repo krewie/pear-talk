@@ -25,3 +25,10 @@ svn add [PATH]
 -PATH ska vara sökvägen till filen du vill lägga till, filen ska ligga på önskad plats
  i din lokala repository.
 -Kör sedan en commit efter detta för att lägga till filen på den globala repositoryn
+
+
+# För att uppdatera din lokala repository om andra gjort ändringar:
+
+svn update [PATH]
+
+-PATH är sökvägen till din lokala repository
