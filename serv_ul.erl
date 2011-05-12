@@ -41,7 +41,8 @@ add_friend(Table,MyID, FriendID) ->
 
 remove_friend(Table, MyID, FriendID) -> 
     [{Mail, [NetInfo, Friendlist, Online]}] = detsapp:retrieve(Table,MyID),
-    detsapp:add(Table, Mail, [NetInfo, removeFromList(Friendlist,FriendID) , Online]).
+    detsapp:add(Table, Mail, [NetInfo, removeFromList(Friendlist,FriendID) , Online]),
+    detsapp:sync(Table).
 	    
 		
 onlineStatus(Table, MyID, NewInfo) ->
