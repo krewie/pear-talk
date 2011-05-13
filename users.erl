@@ -35,6 +35,6 @@ select_user(ID) ->
 	close().
 		
 login(ID) ->
-	
+	%kommentar
 close() ->
 	dets:close(ul).
