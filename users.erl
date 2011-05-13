@@ -35,8 +35,6 @@ select_user(ID) ->
 	close().
 		
 login(ID) ->
-	% blabla ska ändra onlinetupeln till true.
-	%leker lite med svn...
 	
 close() ->
 	dets:close(ul).
