@@ -1,7 +1,33 @@
 -module(serv_ul).
 -export([add_user/8, duplicateCheck/2, add_friend/3, onlineStatus/3, retrieveFriend/2, retrieveFriends/2, remove_friend/3, removeFromList/2]).
+-define(DB, "users").
 
-%% start/1, close/1, loop/1,
+%% start/1, close/1, loop/1, change_name/3
+%motherpid behövs nog inte :) LOL
+
+start(MotherPid) ->
+	{ok, Table} = detsapp:open(?DB),
+	loop(MotherPid, Table).
+	
+loop(MotherPid, Table) -> 
+	receive
+	%INCOMPLETE
+		{client, login, ID, Netinfo, Pid} ->
+			Friendlist = retrieveFriends(Table, ID),
+			onlineStatus(Table, ID, Netinfo),
+			Pid ! {db, friendlist, Friendlist};
+		{client, addfriend, {MyID, FriendID}, Pid} ->
+			add_friend(Table, MyID, FriendID),
+			Pid ! {db, addfriend, ok};
+		{client, removefriend, {MyID, FriendID}, Pid} ->
+			remove_friend(Table, MyID, FriendID),
+			Pid ! {db, addfriend, ok};
+		{client, changename, ID, Name, Pid} ->
+			change_name(Table, ID, Name),
+			Pid ! {db, changename, ok};
+		
+	end
+	loop(Pid, Table).
 
 add_user(Table, Mail, ShowedName, FriendList, PeerIp, PeerPort, ServerIp, ServerPort) ->
     detsapp:add(Table,Mail,[[ShowedName,PeerIp,PeerPort,ServerIp,ServerPort], FriendList, {online, false}]),
@@ -37,6 +63,10 @@ add_friend(Table,MyID, FriendID) ->
     end,
     detsapp:sync(Table).
 
+change_name(Table, ID, Name) ->
+	{ID, [[ShowedName,PeerIp,PeerPort,ServerIp,ServerPort], FriendList, Online]} = detsapp:retrieve(Table, ID),
+	add_user(Table, ID, Name, FriendList, PeerIp, PeerPort, ServerIp, ServerPort).
+	%TBI
 
 
 remove_friend(Table, MyID, FriendID) -> 
