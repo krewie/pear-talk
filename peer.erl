@@ -184,7 +184,7 @@ get_request(SendingAddress, SendingPort, Socket, BinaryList) ->
 			{{Y,M,D},{H,MM,S}} = erlang:localtime(),
 			Timestamp = lists:flatten(io_lib:format("~p/~p/~p - ~p:~p:~p", [Y,M,D,H,MM,S])),
 			try
-				{PublicIp, Lp, Sd, R, Data, Mode, ServerIp, ServerPort, Bin} = 
+				{PublicIp, Lp, Sd, {R,RVn}, Data, Mode, ServerIp, ServerPort, Bin} = 
 					binary_to_term(list_to_binary(lists:reverse(BinaryList))),
 				case Mode of 
 					friendlist ->
@@ -230,7 +230,12 @@ get_request(SendingAddress, SendingPort, Socket, BinaryList) ->
 								[]
 						end;
 					_Any ->
-			      		io:format("~p~n", [Sd ++ " to " ++ R ++ ": " ++ Data]),
+						chat!{status, self()},
+						receive
+							{_, _, _, _, _, _, FriendList, _}->
+								[SdVn, _, _, _, _, _] = rul:take(FriendList, Sd)
+						end,						
+			      		io:format("~p~n", [SdVn ++ " to " ++ RVn ++ ": " ++ Data]),
 						file:write_file("log_file.txt", Timestamp ++ " " ,[append]),
      		  				file:write_file("log_file.txt", Sd ++ " to " 
 							++ R ++ ": " ++ Data ++ "\n",[append])
@@ -253,7 +258,7 @@ send(Receiver, Data, Mode, Obj) ->
 	receive
 		{PublicIp, _, Lp, Sender, ServerIp, ServerPort, FriendList, _}  ->
 		try
-			[_,_,IpAddress, RemotePort,_,_] = rul:take(FriendList, Receiver),
+			[RVn,_,IpAddress, RemotePort,_,_] = rul:take(FriendList, Receiver),
 			case gen_tcp:connect(IpAddress, RemotePort, [binary,{packet,0},{port, 0}]) of
 				{ok, Sock} ->
 					try
@@ -268,7 +273,7 @@ send(Receiver, Data, Mode, Obj) ->
 						true ->
 							ok			
 						end,
-						sendB(Sock, term_to_binary({PublicIp, Lp, Sender, Receiver, Data, Mode, 
+						sendB(Sock, term_to_binary({PublicIp, Lp, Sender, {Receiver, RVn}, Data, Mode, 
 							ServerIp, ServerPort,Obj}))
 					catch
 						Ek:En -> E = E ++ [{Ek, En}]
