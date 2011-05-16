@@ -165,25 +165,26 @@ server(NetworkInterface, ListenPort)->
 wait_connect(ListenSocket) ->
 	case gen_tcp:accept(ListenSocket) of
 		{ok, Socket} ->
-    			get_request(Socket,[]),
+			 {ok,{SendingAddress, SendingPort}} = inet:peername(Socket),
+    			get_request(SendingAddress, SendingPort, Socket,[]),
 			wait_connect(ListenSocket);
 		{error, _} ->
 			"connection refused!"
 	end.
 
 
--spec get_request(term(), bitstring()) -> 
+-spec get_request(term(), integer(), term(), bitstring()) -> 
 	term().
-%% @doc get_request(Socket, BinaryList) process the request BinaryList incoming on Socket.
-get_request(Socket, BinaryList) ->
+%% @doc get_request(SendingAddress, SendingPort, Socket, BinaryList) process the request BinaryList incoming on Socket.
+get_request(SendingAddress, SendingPort, Socket, BinaryList) ->
 	case gen_tcp:recv(Socket,0) of
 		{ok, Binary} ->
-			get_request(Socket, [Binary|BinaryList]);
-      		{error, closed} ->
+			get_request(SendingAddress, SendingPort, Socket, [Binary|BinaryList]);
+      	{error, closed} ->
 			{{Y,M,D},{H,MM,S}} = erlang:localtime(),
 			Timestamp = lists:flatten(io_lib:format("~p/~p/~p - ~p:~p:~p", [Y,M,D,H,MM,S])),
 			try
-				{PublicIp, Lp, _Skt, Sd, R, Data, Mode, ServerIp, ServerPort, Bin} = 
+				{PublicIp, Lp, Sd, R, Data, Mode, ServerIp, ServerPort, Bin} = 
 					binary_to_term(list_to_binary(lists:reverse(BinaryList))),
 				case Mode of 
 					friendlist ->
@@ -219,9 +220,9 @@ get_request(Socket, BinaryList) ->
 				   	pong -> 
 						chat!{status, self()},
 						receive
-							{_, _, _, _, _, _, FriendList,PingMode}  -> 
-								rul:set_online(FriendList, Sd, PublicIp, Lp,[],[])
+							{_, _, _, _, _, _, _,PingMode}  -> ok
 						end,
+		
 						if 
 							PingMode == pingon ->
 								io:format("pong from ~p ~n", [Sd]);
@@ -267,7 +268,7 @@ send(Receiver, Data, Mode, Obj) ->
 						true ->
 							ok			
 						end,
-						sendB(Sock, term_to_binary({PublicIp, Lp, Sock, Sender, Receiver, Data, Mode, 
+						sendB(Sock, term_to_binary({PublicIp, Lp, Sender, Receiver, Data, Mode, 
 							ServerIp, ServerPort,Obj}))
 					catch
 						Ek:En -> E = E ++ [{Ek, En}]
