@@ -9,8 +9,7 @@
 -spec start() -> list().
 %% @doc <h4>start()</h4> Starts the client and creates an empty ets called friends that is the default friend list 
 start() ->
-	try
-		rul:friends(),
+	try		
 		
 		{ok, File} = file:open("chat.ini", read),
 
@@ -26,16 +25,24 @@ start() ->
 		{ok,{_, _, _, _, _, [NetworkInterface|_]}}= host_info(),
 		
 		file:close(File),
-				
-		register(chat, spawn(peer, status, [{PublicIp, NetworkInterface,
-			ListenPort, Me, ServerAddress, ServerPort, friends, pingoff}])),
 
 		register(chat_server, spawn(peer, server, [NetworkInterface, ListenPort])),
+		
+		rul:friends(),
+				
+		register(chat, spawn(peer, status, [{PublicIp, NetworkInterface,
+			ListenPort, Me, ServerAddress, ServerPort, friends, pingoff}])),	
 
-		register(ping_pong, spawn(peer, ping_loop, []))
+		peer:addme(),
+
+		register(ping_pong, spawn(peer, ping_loop, [])),
+		
+		
+		{ok, Sock} = gen_tcp:connect(ServerAddress, ServerPort, [binary,{active, true}]),
+		spawn(gen_tcp,send,[Sock, term_to_binary({client, login, Me, ListenPort})])
 
 	catch Ek:En ->
-			[{Ek, En}] ++ [shut_down()]
+			{Ek, En}
 			
 	end.
 
@@ -196,9 +203,11 @@ get_request(SendingAddress, SendingPort, Socket, BinaryList) ->
 						chat!{status, self()},
 						receive
 							{PIp, NetworkInterface,ListenPort, Me, 
-								ServerIp, ServerPort, _, PingMode} ->
-								chat!{change,{PIp, NetworkInterface,
-									ListenPort,Me, ServerIp, ServerPort, Bin, PingMode}}
+								ServerIp, ServerPort, FriendList, PingMode} ->
+									rul:fillTable(FriendList, Bin),
+									chat!{change,{PIp, NetworkInterface,ListenPort,
+										Me, ServerIp, ServerPort, FriendList,
+											PingMode}}
 					end;	
 					file ->
 						{FileName, File} = Bin,
@@ -211,7 +220,7 @@ get_request(SendingAddress, SendingPort, Socket, BinaryList) ->
 						chat!{status, self()},
 						receive
 							{_, _, _, _, _, _, FriendList,PingMode}  -> 
-								rul:set_online(FriendList, Sd, PublicIp, Lp,[],[])
+								rul:set_online(FriendList, Sd, PublicIp, Lp)
 						end,
 						
 						chat!{send, Sd, [], pong, []},
@@ -238,7 +247,7 @@ get_request(SendingAddress, SendingPort, Socket, BinaryList) ->
 						chat!{status, self()},
 						receive
 							{_, _, _, _, _, _, FriendList, _}->
-								[SdVn, _, _, _, _, _] = rul:take(FriendList, Sd)
+								[SdVn, _, _] = rul:take(FriendList, Sd)
 						end,						
 			      		io:format("~p~n", [SdVn ++ " to " ++ RVn ++ ": " ++ Data]),
 						file:write_file("log_file.txt", Timestamp ++ " " ,[append]),
@@ -257,14 +266,14 @@ get_request(SendingAddress, SendingPort, Socket, BinaryList) ->
 %%Mode specifies for Receiver what kind of data that is beeing sent.<br>When Mode is set to file, friendlist, 
 %%ping or pong, Receiver will neglect Data and process Obj that will be supposed to contain respectively
 %%a file a friend list or an empty list in the case of a ping or a pong.</br>
-%%<br>ATTENTION! - a send call with Mode = friendlist will cause Receiver to change its friend list to Obj.</br>
+
 send(Receiver, Data, Mode, Obj) ->
 	E = [],
 	chat!{status, self()},
 	receive
 		{PublicIp, _, Lp, Sender, ServerIp, ServerPort, FriendList, _}  ->
 		try
-			[RVn,_,IpAddress, RemotePort,_,_] = rul:take(FriendList, Receiver),
+			[RVn,IpAddress, RemotePort] = rul:take(FriendList, Receiver),
 			case gen_tcp:connect(IpAddress, RemotePort, [binary,{packet,0},{port, 0}]) of
 				{ok, Sock} ->
 					try
@@ -299,10 +308,10 @@ send(Receiver, Data, Mode, Obj) ->
 	nil().
 %% @doc <h4>sendB(Socket,Bin)</h4> sends Bin to sockets divided in 100bit-chunks. 
 sendB(Socket, <<Chunk:100/binary, Rest/binary>>) ->
-    gen_udp:send(Socket, Chunk),
+    gen_tcp:send(Socket, Chunk),
     sendB(Socket, Rest);
 sendB(Socket,Rest) ->
-    gen_udp:send(Socket, Rest).
+    gen_tcp:send(Socket, Rest).
 
 
 -spec ping_friends(atom())-> 
@@ -350,10 +359,11 @@ addme() ->
 		chat!{status, self()},
 		receive
 			{PIp, _,ListenPort, Me, 
-						ServerIp, ServerPort, _,_} ->
+						_, _, _,_} ->
 			rul:add(friends, Me, "Me"), 
-			rul:set_online(friends, Me, PIp, ListenPort, ServerIp, ServerPort)			
+			rul:set_online(friends, Me, PIp, ListenPort)			
 		end
-	catch _:_ ->
-		{error, start_peer_first}
+	catch Ek:En ->
+		{Ek, En}
 	end.
+
