@@ -87,12 +87,12 @@ get_status()->
 
 -spec mess(string(),string()) -> 
 	term().
-%% @doc <h4>mess(Receiver , String)</h4>  sends String to Receiver if Receiver is in friends  
+%% @doc <h4>mess(Receiver , String)</h4>  sends String to Receiver if Receiver is in the friend list  
 
 mess(Receiver, Data) ->	chat!{send, Receiver, Data, [], []}, sent.
 
 
-%% @doc <h4>ping(Receiver)</h4>  pings Receiver if Receiver is in friends  
+%% @doc <h4>ping(Receiver)</h4>  pings Receiver if Receiver is in the friend list  
 -spec ping(string()) -> 
 	term().
 ping(Receiver) -> chat!{send, Receiver, [], ping, []}, sent.
@@ -100,7 +100,7 @@ ping(Receiver) -> chat!{send, Receiver, [], ping, []}, sent.
 
 -spec send_file(string(),string(),string()) -> 
 	term().
-%% @doc <h4>send_file(Receiver, Path, Name)</h4> sends the file Path ++ Name to Receiver if Receiver is in friends
+%% @doc <h4>send_file(Receiver, Path, Name)</h4> sends the file Path ++ Name to Receiver if Receiver is in the friend list
 send_file(Receiver, Path, Name) ->
 	try
 		{ok,Bin} = file:read_file([Path ++ Name]),
@@ -262,7 +262,7 @@ get_request(SendingAddress, SendingPort, Socket, BinaryList) ->
 %%--------------------------------------------------------------------------------------------------
 -spec send(string(), string(), atom(), any()) -> 
 	term().
-%% @doc <h4>send(Receiver, Data, Mode, Obj)</h4> sends Data, Mode and Obj to Receiver if Receiver is in friends,
+%% @doc <h4>send(Receiver, Data, Mode, Obj)</h4> sends Data, Mode and Obj to Receiver if Receiver is in the friend list,
 %%Mode specifies for Receiver what kind of data that is beeing sent.<br>When Mode is set to file, friendlist, 
 %%ping or pong, Receiver will neglect Data and process Obj that will be supposed to contain respectively
 %%a file a friend list or an empty list in the case of a ping or a pong.</br>
