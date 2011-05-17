@@ -4,7 +4,7 @@
 
 -module(peer).
 -compile(export_all). 
--export([start/0,shut_down/0,host_info/0,get_status/0,mess/2,ping/1,send_file/3,pingon/0,pingoff/0, send/4]).
+-export([start/0,shut_down/0,host_info/0,get_status/0,mess/2,ping/1,send_file/3,pingon/0,pingoff/0, send/4,friends/0]).
 
 -spec start() -> list().
 %% @doc <h4>start()</h4> Starts the client and creates an empty ets called friends that is the default friend list 
@@ -366,4 +366,15 @@ addme() ->
 	catch Ek:En ->
 		{Ek, En}
 	end.
+
+-spec friends()-> 
+	any().
+%% @doc <h4>friends()</h4> shows the friend list.
+friends() ->
+	chat!{status, self()},
+	receive
+		{_, _ ,_ ,_ , _, _, FriendList, _}  ->
+			rul:show(FriendList)
+	end.
+	
 
