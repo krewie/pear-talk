@@ -13,10 +13,10 @@ fillTable(_, []) -> ok;
 
 fillTable(Table, [Friend|List]) ->
 	case Friend of
-	[M,[Sn, Pip, Lp]] = Friend ->
-		ets:insert(Table, {M, [Sn, Pip, Lp]});
-	[M, [Sn]] = Friend ->
-		ets:insert(Table, {M, [Sn]})
+		[M,[Sn, Pip, Lp]] = Friend ->
+			ets:insert(Table, {M, [Sn, Pip, Lp]});
+		[M, [Sn]] = Friend ->
+			ets:insert(Table, {M, [Sn]})
 	end,
 	fillTable(Table, List). 
 
