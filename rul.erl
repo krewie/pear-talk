@@ -10,12 +10,13 @@ friends()->
 	end.
 
 fillTable(_, []) -> ok;
+
 fillTable(Table, [Friend|List]) ->
 	case Friend of
 	[M,[Sn, Pip, Lp]] = Friend ->
 		ets:insert(Table, {M, [Sn, Pip, Lp]});
-	[M, []] = Friend ->
-		add(Table, M, [])
+	[M, [Sn]] = Friend ->
+		ets:insert(Table, {M, [Sn]})
 	end,
 	fillTable(Table, List). 
 
@@ -27,7 +28,7 @@ show(Table) ->
 add(Table, Mail, ShowedName) ->
 	case take(Table, Mail) of
 	{error, nomatch} ->
-		ets:insert(Table,{Mail,[ShowedName,[]]});
+		ets:insert(Table,{Mail,[ShowedName]});
 	_ ->
 		{error, allready_existing_friend}
 	end.
