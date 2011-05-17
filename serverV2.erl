@@ -31,8 +31,9 @@ listen_state(Socket, DBPid) ->
 		{tcp, Socket, Packet} ->
 			case binary_to_term(Packet) of
 		%Client-calls
-				{client, login, {ID, Netinfo}} ->
-					DBPid ! {client, login, ID, Netinfo, self()};
+				{client, login, ID} ->
+					{ok, Address, Port} = inet:peername(Socket),
+					DBPid ! {client, login, ID, [Address, Port], self()};
 				{client, addfriend, {MyID, FriendID}} ->
 					DBPid ! {client, addfriend, {MyID, FriendID}, self()};
 				{client, removefriend, {MyID, FriendID}} ->
@@ -40,21 +41,21 @@ listen_state(Socket, DBPid) ->
 				{client, changename, ID, Name} ->
 					DBPid ! {client, changename, ID, Name, self()};
 		%Server-calls
-				{server, serverlogin, {Netinfo}} ->
+				%{server, serverlogin, {Netinfo}} ->
 					%se till så att servern blir up-to-date
-				{server, userinfo, {Server, Client, Netinfo}} ->
+				%{server, userinfo, {Server, Client, Netinfo}} ->
 					%skicka tillbaka clientinfo till server som ännu inte har infon
 					%funkar för clientlogin likaså när man skapar vänlistan
-				{server, 
+				%{server, 
 				
 			end
 		{db, friendlist, Friendlist} ->
 				gen_tcp:send(Socket, {server, friendlist, Friendlist});
-		{db, addfriend, ok} ->
+		%{db, addfriend, ok} ->
 			%friend succesfully added
-		{db, removefriend, ok} ->
+		%{db, removefriend, ok} ->
 			%friend succesfully removed
-		{db, changename, ok} ->
+		%{db, changename, ok} ->
 			%user succesfully changed name
 			
 	after ?TIMEOUT ->
