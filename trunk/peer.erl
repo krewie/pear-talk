@@ -1,8 +1,13 @@
+%% @author Staffan Rodgren.
+%% @doc First draft of the chat window.
+%% @copyright 2011 Peer-talk.
+
 -module(peer).
 -compile(export_all). 
+-export([start/0,shut_down/0,host_info/0,get_status/0,mess/2,ping/1,send_file/3,pingon/0,pingoff/0, send/4]).
 
 -spec start() -> list().
-%% @doc Starts the client
+%% @doc <h4>start()</h4> Starts the client and creates an empty ets called friends that is the default friend list 
 start() ->
 	try
 		rul:friends(),
@@ -37,7 +42,7 @@ start() ->
 
 -spec shut_down() -> 
 	term().
-%% @doc stops the client
+%% @doc <h4>shut_down()</h4> stops the client
 shut_down() ->
 	try
 		exit(whereis(chat_server),kill)
@@ -58,12 +63,12 @@ shut_down() ->
 
 -spec host_info() -> 
 	term().
-%% @doc gives information about your computer
+%% @doc <h4>host_info()</h4> gives information about your computer
 host_info() -> inet:gethostbyname(net_adm:localhost()). 
 
 -spec get_status() -> 
 	term().
-%% @doc gives information about your status
+%% @doc <h4>get_status()</h4> gives information about your status
 
 get_status()->
 	chat!{status, self()},
@@ -75,12 +80,12 @@ get_status()->
 
 -spec mess(string(),string()) -> 
 	term().
-%% @doc mess(Receiver , String)  sends String to Receiver if Receiver is in friends  
+%% @doc <h4>mess(Receiver , String)</h4>  sends String to Receiver if Receiver is in friends  
 
 mess(Receiver, Data) ->	chat!{send, Receiver, Data, [], []}, sent.
 
 
-%% @doc ping(Receiver)  pings Receiver if Receiver is in friends  
+%% @doc <h4>ping(Receiver)</h4>  pings Receiver if Receiver is in friends  
 -spec ping(string()) -> 
 	term().
 ping(Receiver) -> chat!{send, Receiver, [], ping, []}, sent.
@@ -88,7 +93,7 @@ ping(Receiver) -> chat!{send, Receiver, [], ping, []}, sent.
 
 -spec send_file(string(),string(),string()) -> 
 	term().
-%% @doc send_file(Receiver, Path, Name) sends the file Path ++ Name to Receiver if Receiver is in friends
+%% @doc <h4>send_file(Receiver, Path, Name)</h4> sends the file Path ++ Name to Receiver if Receiver is in friends
 send_file(Receiver, Path, Name) ->
 	try
 		{ok,Bin} = file:read_file([Path ++ Name]),
@@ -101,7 +106,7 @@ send_file(Receiver, Path, Name) ->
 
 -spec pingon() -> 
 	term().
-%% @doc pingon() allows you to see who pings you.
+%% @doc <h4>pingon()</h4> allows you to see who pings you.
 pingon() ->
 	chat!{status,self()},
 	receive
@@ -116,7 +121,7 @@ pingon() ->
 
 -spec pingoff() -> 
 	term().
-%% @doc pingon() disallows you to see who pings you.
+%% @doc <h4>pingoff()</h4> disallows you to see who pings you.
 pingoff() ->
 	chat!{status,self()},
 	receive
@@ -130,7 +135,7 @@ pingoff() ->
 %%-----------------------------------------------------------------------------------------------
 -spec status(term()) -> 
 	nil().
-%% @doc status(Status) starts a process that will hold Status.
+%% @doc <h4>status(Status)</h4> starts a process that will hold Status.
 status(Status) ->
     receive
         {status, Pid} ->
@@ -149,7 +154,7 @@ status(Status) ->
 
 -spec server(term(), integer()) -> 
 	term().
-%% @doc server(NetworkInterface, ListenPort) starts alistening proces on NetworkInterface:ListenPort.
+%% @doc <h4>server(NetworkInterface, ListenPort)</h4> starts alistening proces on NetworkInterface:ListenPort.
 server(NetworkInterface, ListenPort)->
 	case gen_tcp:listen(ListenPort, [binary, {active, false},{ip, NetworkInterface}]) of
 		{ok, ListenSocket} ->
@@ -161,7 +166,7 @@ server(NetworkInterface, ListenPort)->
 
 -spec wait_connect(term()) -> 
 	term().
-%% @doc wait_connect(ListenSocket) starts a proces waiting for a connection on ListenSocket.
+%% @doc <h4>wait_connect(ListenSocket)</h4> starts a proces waiting for a connection on ListenSocket.
 wait_connect(ListenSocket) ->
 	case gen_tcp:accept(ListenSocket) of
 		{ok, Socket} ->
@@ -173,9 +178,9 @@ wait_connect(ListenSocket) ->
 	end.
 
 
--spec get_request(term(), integer(), term(), bitstring()) -> 
+-spec get_request(term(), integer(), term(), binary()) -> 
 	term().
-%% @doc get_request(SendingAddress, SendingPort, Socket, BinaryList) process the request BinaryList incoming on Socket.
+%% @doc <h4>get_request(SendingAddress, SendingPort, Socket, BinaryList)</h4> process the request BinaryList incoming on Socket.
 get_request(SendingAddress, SendingPort, Socket, BinaryList) ->
 	case gen_tcp:recv(Socket,0) of
 		{ok, Binary} ->
@@ -248,10 +253,11 @@ get_request(SendingAddress, SendingPort, Socket, BinaryList) ->
 %%--------------------------------------------------------------------------------------------------
 -spec send(string(), string(), atom(), any()) -> 
 	term().
-%% @doc send(Receiver, Data, Mode, Obj) sends Data, Mode and Obj to Receiver if Receiver is in friends
-%%Mode specifies for receiver what kind of data that is beeing sent, file, friendlist, ping and pong
-%%will make the receiver sid to neglect Data and process Obj that will be supposed to contain respectively
-%%a file a friend list or an empty list in the case of a ping or a pong.
+%% @doc <h4>send(Receiver, Data, Mode, Obj)</h4> sends Data, Mode and Obj to Receiver if Receiver is in friends,
+%%Mode specifies for Receiver what kind of data that is beeing sent.<br>When Mode is set to file, friendlist, 
+%%ping or pong, Receiver will neglect Data and process Obj that will be supposed to contain respectively
+%%a file a friend list or an empty list in the case of a ping or a pong.</br>
+%%<br>ATTENTION! - a send call with Mode = friendlist will cause Receiver to change its friend list to Obj.</br>
 send(Receiver, Data, Mode, Obj) ->
 	E = [],
 	chat!{status, self()},
@@ -289,9 +295,9 @@ send(Receiver, Data, Mode, Obj) ->
 	end,
 	E.
 
--spec sendB(term(), bitstring()) -> 
+-spec sendB(term(), binary()) -> 
 	nil().
-%% @doc sendB(Socket,Bin) sends Bin to sockets divided in 100bit-chunks. 
+%% @doc <h4>sendB(Socket,Bin)</h4> sends Bin to sockets divided in 100bit-chunks. 
 sendB(Socket, <<Chunk:100/binary, Rest/binary>>) ->
     gen_udp:send(Socket, Chunk),
     sendB(Socket, Rest);
@@ -301,7 +307,7 @@ sendB(Socket,Rest) ->
 
 -spec ping_friends(atom())-> 
 	any().
-%% @doc ping_friends(Table) pings all the friends in Table. 
+%% @doc <h4>ping_friends(Table)</h4> pings all the friends in Table. 
 ping_friends(Table) ->
 	try 
 		rul:traverse(Table, (fun([{R, _}|_L]) -> ping(R) end))
@@ -312,7 +318,7 @@ ping_friends(Table) ->
 
 -spec ping_loop()-> 
 	any().
-%% @doc ping_loop() start a process that pings all the friends in Table every 10000ms. 
+%% @doc <h4>ping_loop()</h4> start a process that pings all the friends in Table every 10000ms. 
 ping_loop() ->
 	chat!{status, self()},
 	receive
@@ -325,7 +331,7 @@ ping_loop() ->
 
 -spec read_address(string())-> 
 	any().
-%% @doc read_address(Address) reads Address and if address is a domain it returns Address 
+%% @doc <h4>read_address(Address)</h4> reads Address and if address is a domain it returns Address 
 %%if Address is an ip-address of the type xx.yy.zz.ww  it returns a tuple of the 
 %%type {xx,yy,zz,ww}
 read_address(Address) ->
@@ -338,7 +344,7 @@ read_address(Address) ->
 		
 -spec addme()-> 
 	any().
-%% @doc addme() adds the owner of the client process to the friend list.
+%% @doc <h4>addme()</h4> adds the owner of the client process to the friend list.
 addme() ->
 	try
 		chat!{status, self()},
