@@ -16,7 +16,8 @@ start() ->
 		Me = (lists:nthtail(9, io:get_line(File, "")) -- " ") -- "\n",
 		PublicIp = read_address((lists:nthtail(9, io:get_line(File, "")) -- " ") -- "\n"),
 		ListenPortS = io:get_line(File, ""),
-		ServerAddress = read_address((lists:nthtail(14, io:get_line(File, "")) -- " ") -- "\n"),
+		ServerAddressS = (lists:nthtail(14, io:get_line(File, "")) -- " ") -- "\n",
+		ServerAddress = read_address(ServerAddressS),
 		ServerPortS = io:get_line(File, ""),
 
 		{_,[{_,_,_},{_,_},{_,_,ListenPort}],_} = erl_scan:string(ListenPortS--"\n"),
@@ -38,8 +39,12 @@ start() ->
 		register(ping_pong, spawn(peer, ping_loop, [])),
 		
 		
-		{ok, Sock} = gen_tcp:connect(ServerAddress, ServerPort, [binary,{active, true}]),
-		spawn(gen_tcp,send,[Sock, term_to_binary({client, login, Me, ListenPort})])
+		try
+			{ok, Sock} = gen_tcp:connect(ServerAddress, ServerPort, [binary,{active, true}]),
+			gen_tcp:send(Sock, term_to_binary({client, login, Me, ListenPort}))
+		catch _:_ ->
+			io:format("Connection to server ~p on port ~p failed!! ~n",[ServerAddressS,ServerPort])
+		end
 
 	catch Ek:En ->
 			{Ek, En}
