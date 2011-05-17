@@ -53,7 +53,7 @@ take(Table, Mail) ->
 	end.
 set_online(Table, Sender, SenderIP, SenderPort) ->
 	try
-		[Name, _] = take(Table, Sender),
+		[Name] = take(Table, Sender),
 		ets:insert(Table,{Sender,[Name, SenderIP, SenderPort]}),
 		ok
 	catch		
