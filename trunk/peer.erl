@@ -29,10 +29,11 @@ start() ->
 
 		register(chat_server, spawn(peer, server, [NetworkInterface, ListenPort])),
 		
-		rul:friends(),
 				
 		register(chat, spawn(peer, status, [{PublicIp, NetworkInterface,
-			ListenPort, Me, ServerAddress, ServerPort, friends, pingoff}])),	
+			ListenPort, Me, ServerAddress, ServerPort, [], pingoff}])),
+		
+		chat!newfriends,	
 
 		peer:addme(),
 
@@ -143,13 +144,18 @@ pingoff() ->
 					ListenPort, Me, ServerAddress, ServerPort, friends, pingoff}},
 		pingoff
 	end.
-
 %%-----------------------------------------------------------------------------------------------
 -spec status(term()) -> 
 	nil().
 %% @doc <h4>status(Status)</h4> starts a process that will hold Status.
 status(Status) ->
     receive
+	newfriends ->
+		rul:friends(),
+		{PublicIp, NetworkInterface,
+				ListenPort, Me, ServerAddress, ServerPort, _, PingMode} = Status,
+		status({PublicIp, NetworkInterface,
+				ListenPort, Me, ServerAddress, ServerPort, friends, PingMode});
         {status, Pid} ->
             Pid!Status,
             status(Status);
@@ -201,19 +207,16 @@ get_request(SendingAddress, SendingPort, Socket, BinaryList) ->
 			{{Y,M,D},{H,MM,S}} = erlang:localtime(),
 			Timestamp = lists:flatten(io_lib:format("~p/~p/~p - ~p:~p:~p", [Y,M,D,H,MM,S])),
 			try
-				{PublicIp, Lp, Sd, {R,RVn}, Data, Mode, ServerIp, ServerPort, Bin} = 
+				{PublicIp, Lp, Sd, {R,RVn}, Data, Mode, _ServerIp, _ServerPort, Bin} = 
 					binary_to_term(list_to_binary(lists:reverse(BinaryList))),
 				case Mode of 
 					friendlist ->
 						chat!{status, self()},
 						receive
-							{PIp, NetworkInterface,ListenPort, Me, 
-								ServerIp, ServerPort, FriendList, PingMode} ->
+							{_, _, _, _, _, _, FriendList, _} ->
 									rul:fillTable(FriendList, Bin),
-									chat!{change,{PIp, NetworkInterface,ListenPort,
-										Me, ServerIp, ServerPort, FriendList,
-											PingMode}}
-					end;	
+									io:format("The friend list has been updated!~n") 
+						end;	
 					file ->
 						{FileName, File} = Bin,
 						file:write_file(FileName, File),
@@ -364,8 +367,8 @@ addme() ->
 		chat!{status, self()},
 		receive
 			{PIp, _,ListenPort, Me, 
-						_, _, _,_} ->
-			rul:add(friends, Me, "Me"), 
+						_, _, FriendList,_} ->
+			rul:add(FriendList, Me, "Me"), 
 			rul:set_online(friends, Me, PIp, ListenPort)			
 		end
 	catch Ek:En ->
