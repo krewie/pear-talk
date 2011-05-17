@@ -41,7 +41,7 @@ start() ->
 		
 		try
 			{ok, Sock} = gen_tcp:connect(ServerAddress, ServerPort, [binary,{active, true}]),
-			gen_tcp:send(Sock, term_to_binary({client, login, Me, ListenPort}))
+			gen_tcp:send(Sock, term_to_binary({client, login, PublicIp, ListenPort}))
 		catch _:_ ->
 			io:format("Connection to server ~p on port ~p failed!! ~n",[ServerAddressS,ServerPort])
 		end
