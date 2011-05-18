@@ -4,7 +4,7 @@
 
 -module(peer).
 -compile(export_all). 
--export([start/0,shut_down/0,host_info/0,get_status/0,mess/2,ping/1,send_file/3,pingon/0,pingoff/0, send/4,friends/0,sendFr/3]).
+-export([start/0,shut_down/0,host_info/0,get_status/0,mess/2,ping/1,send_file/3,pingon/0,pingoff/0, send/3,friends/0,sendFr/3,my/1]).
 
 -spec start() -> list().
 %% @doc <h4>start()</h4> Starts the client and creates an empty ets called friends that is the default friend list 
@@ -13,17 +13,16 @@ start() ->
 		
 		{ok, File} = file:open("chat.ini", read),
 
-		Me = (lists:nthtail(9, io:get_line(File, "")) -- " ") -- "\n",
-		Vsn = (lists:nthtail(9, io:get_line(File, "")) -- " ") -- "\n",
-		PublicIp = read_address((lists:nthtail(9, io:get_line(File, "")) -- " ") -- "\n"),
-		ListenPortS = io:get_line(File, ""),
-		ServerAddressS = (lists:nthtail(14, io:get_line(File, "")) -- " ") -- "\n",
+		Me = io:get_line("Insert your username: ") -- "\n",
+		Vsn = Me,
+		ListenPortS = io:get_line("Insert your local port: "),
+		ServerAddressS = io:get_line("Insert the address of server to connect: ") -- "\n",
 		ServerAddress = read_address(ServerAddressS),
-		ServerPortS = io:get_line(File, ""),
+		
+		{ok,[{integer,1,ListenPort}],1} = erl_scan:string(ListenPortS--"\n"),
+		
+		ServerPort = 9997,
 
-		{_,[{_,_,_},{_,_},{_,_,ListenPort}],_} = erl_scan:string(ListenPortS--"\n"),
-		{_,[{_,_,_},{_,_},{_,_,ServerPort}],_} = erl_scan:string(ServerPortS--"\n"),
-	
 		{ok,{_, _, _, _, _, [NetworkInterface|_]}}= host_info(),
 		
 		file:close(File),
@@ -31,8 +30,9 @@ start() ->
 		register(chat_server, spawn(peer, server, [NetworkInterface, ListenPort])),
 		
 				
-		register(chat, spawn(peer, status, [{PublicIp, NetworkInterface,
-			ListenPort, {Me, Vsn}, ServerAddress, ServerPort, [], pingoff}])),
+		register(chat, spawn(peer, status, [[{network_interface, NetworkInterface},
+			{listen_port, ListenPort}, {id,{Me, Vsn}}, {server_address, ServerAddress}, 
+				{server_port, ServerPort}, {ping_mode, pingoff}]])),
 		
 		chat!newfriends,	
 
@@ -43,9 +43,10 @@ start() ->
 		
 		try
 			{ok, Sock} = gen_tcp:connect(ServerAddress, ServerPort, [binary,{active, true}]),
-			gen_tcp:send(Sock, term_to_binary({client, login, PublicIp, ListenPort}))
-		catch _:_ ->
-			io:format("Connection to server ~p on port ~p failed!! ~n",[ServerAddressS,ServerPort])
+			gen_tcp:send(Sock, term_to_binary({clientlogin, ListenPort}))
+		catch 
+			_:_ ->
+				io:format("Connection to server ~p on port ~p failed!! ~n",[ServerAddressS,ServerPort])
 		end
 
 	catch Ek:En ->
@@ -89,20 +90,49 @@ get_status()->
 	receive 
 		Status ->
 			Status
-	end.  
+	end.
+	
+	
+-spec my(atom()) -> 
+	term().
+%% @doc <h4>my(Status_element)</h4> returns the value of Status_element
+my(Status_element) -> 
+	case	lists:keysearch(Status_element, 1, get_status()) of
+		false ->
+			{error, nomatch};
+		{value, {_, V}} ->
+			V
+	end.
 
 
 -spec mess(string(),string()) -> 
 	term().
 %% @doc <h4>mess(Receiver , String)</h4>  sends String to Receiver if Receiver is in the friend list  
 
-mess(Receiver, Data) ->	chat!{send, Receiver, Data, [], []}, sent.
+mess(Receiver_username, String) ->	
+	try
+		{My_username, _} = my(id),
+		[Receiver_showed_name, _, _] = rul:take(friends, Receiver_username),
+		chat!{send, Receiver_username, string,{My_username, String}}, 
+		{{Y,M,D},{H,MM,S}} = erlang:localtime(),
+		Timestamp = lists:flatten(io_lib:format("~p/~p/~p - ~p:~p:~p",[Y,M,D,H,MM,S])),
+		file:write_file("log_file.txt", Timestamp ++ " " ,[append]),
+	  	file:write_file("log_file.txt", "me to " ++ Receiver_showed_name ++ ": " 
+			++ String ++ "\n",[append]),
+		sent
+	catch 
+		Ek:En ->
+			{Ek,En}
+	end.
 
 
 %% @doc <h4>ping(Receiver)</h4>  pings Receiver if Receiver is in the friend list  
 -spec ping(string()) -> 
 	term().
-ping(Receiver) -> chat!{send, Receiver, [], ping, []}, sent.
+ping(Receiver) -> 
+	{My_username, _} = my(id),
+	chat!{send, Receiver, ping, {my(listen_port), My_username}}, 
+	sent.
 
 
 -spec send_file(string(),string(),string()) -> 
@@ -110,8 +140,8 @@ ping(Receiver) -> chat!{send, Receiver, [], ping, []}, sent.
 %% @doc <h4>send_file(Receiver, Path, Name)</h4> sends the file Path ++ Name to Receiver if Receiver is in the friend list
 send_file(Receiver, Path, Name) ->
 	try
-		{ok,Bin} = file:read_file([Path ++ Name]),
-		chat!{send, Receiver, [], file, {Name, Bin}},
+		{ok, File} = file:read_file([Path ++ Name]),
+		chat!{send, Receiver, file, {Name, File}},
 		sent
 	catch _:_ ->
 		{error, file_not_found}
@@ -122,14 +152,7 @@ send_file(Receiver, Path, Name) ->
 	term().
 %% @doc <h4>pingon()</h4> allows you to see who pings you.
 pingon() ->
-	chat!{status,self()},
-	receive
-		{PublicIp, NetworkInterface,
-				ListenPort, Me, ServerAddress, ServerPort, friends, _} ->
-		chat!{change,{PublicIp, NetworkInterface,
-					ListenPort, Me, ServerAddress, ServerPort, friends, pingon}},
-		pingon
-	end.
+	chat!{change, ping_mode, pingon}.
 
 
 
@@ -137,14 +160,8 @@ pingon() ->
 	term().
 %% @doc <h4>pingoff()</h4> disallows you to see who pings you.
 pingoff() ->
-	chat!{status,self()},
-	receive
-		{PublicIp, NetworkInterface,
-				ListenPort, Me, ServerAddress, ServerPort, friends, _} ->
-		chat!{change,{PublicIp, NetworkInterface,
-					ListenPort, Me, ServerAddress, ServerPort, friends, pingoff}},
-		pingoff
-	end.
+	chat!{change, ping_mode, pingoff}.
+
 %%-----------------------------------------------------------------------------------------------
 -spec status(term()) -> 
 	nil().
@@ -153,17 +170,14 @@ status(Status) ->
     receive
 	newfriends ->
 		rul:friends(),
-		{PublicIp, NetworkInterface,
-				ListenPort, Me, ServerAddress, ServerPort, _, PingMode} = Status,
-		status({PublicIp, NetworkInterface,
-				ListenPort, Me, ServerAddress, ServerPort, friends, PingMode});
+		status(lists:keystore(friend_list, 1, Status, {friend_list, friends}));
         {status, Pid} ->
             Pid!Status,
             status(Status);
-        {change, NewStatus} ->
-            status(NewStatus);
-	{send, Receiver, Data, Mode, Obj} ->
-            	spawn(peer,send,[Receiver, Data, Mode, Obj]),
+    {change, Status_element, New_status} ->
+		status(lists:keystore(Status_element, 1, Status, {Status_element, New_status}));
+	{send, Receiver, Mode, Obj} ->
+            	spawn(peer,send,[Receiver, Mode, Obj]),
 		status(Status);
         stop ->
             true;
@@ -189,84 +203,71 @@ server(NetworkInterface, ListenPort)->
 wait_connect(ListenSocket) ->
 	case gen_tcp:accept(ListenSocket) of
 		{ok, Socket} ->
-			 {ok,{SendingAddress, SendingPort}} = inet:peername(Socket),
-    			get_request(SendingAddress, SendingPort, Socket,[]),
+			 {ok,{Sender_address, _}} = inet:peername(Socket),
+    			get_request(Sender_address,Socket,[]),
 			wait_connect(ListenSocket);
 		{error, _} ->
 			"connection refused!"
 	end.
 
 
--spec get_request(term(), integer(), term(), binary()) -> 
+-spec get_request(term(), term(), binary()) -> 
 	term().
-%% @doc <h4>get_request(SendingAddress, SendingPort, Socket, BinaryList)</h4> process the request BinaryList incoming on Socket.
-get_request(SendingAddress, SendingPort, Socket, BinaryList) ->
+%% @doc <h4>get_request(Sender_address, Socket, BinaryList)</h4> process the request BinaryList incoming on Socket.
+get_request(Sender_address, Socket, BinaryList) ->
 	case gen_tcp:recv(Socket,0) of
 		{ok, Binary} ->
-			get_request(SendingAddress, SendingPort, Socket, [Binary|BinaryList]);
+			get_request(Sender_address, Socket, [Binary|BinaryList]);
       	{error, closed} ->
 			{{Y,M,D},{H,MM,S}} = erlang:localtime(),
 			Timestamp = lists:flatten(io_lib:format("~p/~p/~p - ~p:~p:~p", [Y,M,D,H,MM,S])),
 			try
-				{PublicIp, Lp, {Sd, Vn}, {_R,RVn}, Data, Mode, _ServerIp, _ServerPort, Bin} = 
+				{Mode, Obj} = 
 					binary_to_term(list_to_binary(lists:reverse(BinaryList))),
 				case Mode of
 					confirmfriend ->
-						chat!{status, self()},
-						receive 
-							{_, _, _, _, _, _, FriendList, _}->
-								ets:insert(FriendList, {Sd, [Vn, PublicIp, Lp]})
-						end;
+						{Sender_listen_port, Sender_username, Sender_showed_name} = Obj,
+						ets:insert(friends, {Sender_username, [Sender_showed_name, Sender_address, Sender_listen_port]});
 					befriends ->
-						spawn(peer,acceptFr,[Sd,Vn,PublicIp,Lp]);
+						get_status(),
+						{Sender_listen_port, Sender_username, Sender_showed_name} = Obj,
+						spawn(peer,acceptFr,[Sender_username, Sender_showed_name, Sender_address, Sender_listen_port]);
 					friendlist ->
-						chat!{status, self()},
-						receive
-							{_, _, _, _, _, _, FriendList, _} ->
-									rul:fillTable(FriendList, Bin),
-									io:format("The friend list has been updated!~n") 
-						end;	
+						rul:fillTable(friends, Obj),
+						io:format("The friend list has been updated!~n"); 
 					file ->
-						{FileName, File} = Bin,
+						{FileName, File} = Obj,
 						file:write_file(FileName, File),
 						io:format("File ~p written on disk~n", [FileName]),
 						file:write_file("log_file.txt", Timestamp ++ " " ,[append]),
 						file:write_file("log_file.txt", "File " ++ FileName 
 							++ " written on disk",[append]);
 					ping ->
-						chat!{status, self()},
-						receive
-							{_, _, _, _, _, _, FriendList,PingMode}  -> 
-								rul:set_online(FriendList, Sd, PublicIp, Lp)
-						end,
-						
-						chat!{send, Sd, [], pong, []},
-						if 
-							PingMode == pingon ->
-								io:format("ping from ~p ~n", [Sd]);
-							true ->
-
+						{Sender_listen_port, Sender_username} = Obj,
+						rul:set_online(friends, Sender_username, Sender_address, Sender_listen_port),
+						chat!{send, Sender_username, pong, my(id)},
+						case my(ping_mode) of
+							pingon ->
+								io:format("ping from ~p ~n", [Sender_username]);
+							_ ->
 								[]
 						end;
 				   	pong -> 
-						chat!{status, self()},
-						receive
-							{_, _, _, _, _, _, _,PingMode}  -> ok
-						end,
-								
-						if 
-							PingMode == pingon ->
-								io:format("pong from ~p ~n", [Sd]);
-							true ->
+				   		{Sender_username, _} = Obj,
+						case my(ping_mode) of
+							pingon ->
+								io:format("pong from ~p ~n", [Sender_username]);
+							_ ->
 								[]
 						end;
-					_Any ->
-						chat!{status, self()},
-									
-			      		io:format("~p~n", [Vn ++ " to " ++ RVn ++ ": " ++ Data]),
+					string ->
+						{Sender_username, String} = Obj,
+						[Sender_showed_name ,_, _] = rul:take(friends, Sender_username),
+			      		io:format("~p~n", [Sender_showed_name ++ " to " ++ "me: " ++ String]),
 						file:write_file("log_file.txt", Timestamp ++ " " ,[append]),
-     		  				file:write_file("log_file.txt", Vn ++ " to " 
-							++ RVn ++ ": " ++ Data ++ "\n",[append])
+     		  				file:write_file("log_file.txt", Sender_showed_name ++ " to me:" ++ ": " 
+							++ String ++ "\n",[append]);
+					_Any -> []
 				end
 			catch
 				Ek:En -> {Ek,En}
@@ -274,49 +275,23 @@ get_request(SendingAddress, SendingPort, Socket, BinaryList) ->
      		end.
    
 %%--------------------------------------------------------------------------------------------------
--spec send(string(), string(), atom(), any()) -> 
+-spec send(string(), atom(), any()) -> 
 	term().
-%% @doc <h4>send(Receiver, Data, Mode, Obj)</h4> sends Data, Mode and Obj to Receiver if Receiver is in the friend list,
+%% @doc <h4>send(Receiver, Mode, Obj)</h4> sends Mode and Obj to Receiver if Receiver is in the friend list,
 %%Mode specifies for Receiver what kind of data that is beeing sent.<br>When Mode is set to file, friendlist, 
 %%ping or pong, Receiver will neglect Data and process Obj that will be supposed to contain respectively
 %%a file a friend list or an empty list in the case of a ping or a pong.</br>
-
-send(Receiver, Data, Mode, Obj) ->
-	E = [],
-	chat!{status, self()},
-	receive
-		{PublicIp, _, Lp, {Sd,Vn}, ServerIp, ServerPort, FriendList, _}  ->
+send(Receiver_username, Mode, Obj) ->
 		try
-			[RVn,IpAddress, RemotePort] = rul:take(FriendList, Receiver),
-			case gen_tcp:connect(IpAddress, RemotePort, [binary,{packet,0},{port, 0}]) of
-				{ok, Sock} ->
-					try
-						{{Y,M,D},{H,MM,S}} = erlang:localtime(),
-						Timestamp = lists:flatten(io_lib:format(
-							"~p/~p/~p - ~p:~p:~p",[Y,M,D,H,MM,S])),
-						if Data /= "" ->
-							
-							file:write_file("log_file.txt", Timestamp ++ " " ,[append]),
-	  						file:write_file("log_file.txt", Vn ++ " to " ++ RVn ++ ": " 
-								++ Data ++ "\n",[append]);
-						true ->
-							ok			
-						end,
-						sendB(Sock, term_to_binary({PublicIp, Lp, {Sd,Vn}, {Receiver, RVn}, Data, Mode, 
-							ServerIp, ServerPort,Obj}))
-					catch
-						Ek:En -> E = E ++ [{Ek, En}]
-					end,
-					gen_tcp:close(Sock);
-				{Er, Err} ->
-					E ++ [{Er, Err}]
-			end
+			[_ ,Receiver_address, Receiver_listen_port] = rul:take(friends, Receiver_username),
+			{ok, Socket} = gen_tcp:connect(Receiver_address, Receiver_listen_port, 
+						[binary,{packet,0},{port, 0}]),
+			sendB(Socket, term_to_binary({Mode, Obj})),
+			gen_tcp:close(Socket)
 		catch 
-			_:_ -> 
-			E ++ [{error,user_offline}]
-		end
-	end,
-	E.
+			Ek:En -> 
+				{Ek,En}
+		end.
 
 -spec sendB(term(), binary()) -> 
 	nil().
@@ -343,11 +318,7 @@ ping_friends(Table) ->
 	any().
 %% @doc <h4>ping_loop()</h4> start a process that pings all the friends in Table every 10000ms. 
 ping_loop() ->
-	chat!{status, self()},
-	receive
-		{_, _ ,_ ,_ , _, _, FriendList, _}  ->
-			ping_friends(FriendList)
-	end,
+	ping_friends(friends),
 	timer:sleep(10000),
 	ping_loop().
 
@@ -370,13 +341,9 @@ read_address(Address) ->
 %% @doc <h4>addme()</h4> adds the owner of the client process to the friend list.
 addme() ->
 	try
-		chat!{status, self()},
-		receive
-			{PIp, _,ListenPort, {Me, Vn}, 
-						_, _, FriendList,_} ->
-			rul:add(FriendList, Me, Vn), 
-			rul:set_online(friends, Me, PIp, ListenPort)			
-		end
+		{Me, Vn} = my(id),
+		rul:add(friends, Me, Vn), 
+		rul:set_online(friends, Me, my(network_interface), my(listen_port))			
 	catch Ek:En ->
 		{Ek, En}
 	end.
@@ -384,40 +351,31 @@ addme() ->
 -spec friends()-> 
 	any().
 %% @doc <h4>friends()</h4> shows the friend list.
-friends() ->
-	chat!{status, self()},
-	receive
-		{_, _ ,_ ,_ , _, _, FriendList, _}  ->
-			rul:show(FriendList)
-	end.
+friends() -> rul:show(friends).
 
 -spec acceptFr(string(),string(),term(),integer())-> 
 	any().
 %% @doc <h4>acceptFr(Sd,Vn,PublicIp,Lp)</h4> asks if you accept Sd as friend.
-acceptFr(Usr,Vn,PublicIp,Lp) ->
-	Line = io_lib:format("accept friend request from ~p ~p (y/n)? ", [Usr,Vn]),
+acceptFr(Sender_username, Sender_showed_name, Sender_address, Sender_listen_port) ->
+	Line = io_lib:format("accept friend request from ~p ~p (y/n)? ", [Sender_username, Sender_showed_name]),
 	case io:get_line(Line) of
 		"y\n" ->
-			chat!{status, self()},
-			receive {_, _, _, _, _, _, FriendList, _} ->
-				rul:add(FriendList, Usr, Vn),
-				rul:set_online(FriendList,Usr,PublicIp,Lp),
-				send(Usr, [], confirmfriend, [])
-			end;
+			{My_username,My_showed_name} = my(id),
+			rul:add(friends, Sender_username, Sender_showed_name),
+			rul:set_online(friends, Sender_username, Sender_address, Sender_listen_port),
+			chat!{send,Sender_username, confirmfriend, {my(listen_port),My_username,My_showed_name}};
 		"n\n" ->
 			io:format("Friend request denied.~n");
 		_ ->
-			acceptFr(Usr,Vn,PublicIp,Lp)
+			acceptFr(Sender_username, Sender_showed_name, Sender_address, Sender_listen_port)
 	end.
 
--spec sendFr(string(),term(),integer())-> 
+-spec sendFr(string(), term(),integer())-> 
 	any().
-%% @doc <h4>sendFr(Friend_username, Friend_public_ip, Friend_listen_port)</h4> Sends a friend request to your friend.
-sendFr(R, PublicIp, Lp) ->
-	chat!{status, self()},
-	receive {_, _, _, {Usr,Vn}, _, _, FriendList, _} ->
-		rul:add(FriendList, R, "unknown"),
-		rul:set_online(FriendList,R,PublicIp,Lp),
-		send(R, [], befriends, {Usr,Vn}),
-		rul:logout(FriendList,R)
-	end.
+%% @doc <h4>sendFr(Receiver_username, Friend_public_ip, Friend_listen_port)</h4> Sends a friend request to your friend.
+sendFr(Receiver_username, Receiver_address, Receiver_listen_port) ->
+	{My_username, My_showed_name} = my(id),
+	rul:add(friends, Receiver_username, "unknown"),
+	rul:set_online(friends, Receiver_username, Receiver_address, Receiver_listen_port),
+	send(Receiver_username, befriends, {my(listen_port), My_username, My_showed_name}),
+	rul:logout(friends, Receiver_username).
