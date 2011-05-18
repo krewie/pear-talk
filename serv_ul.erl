@@ -1,117 +1,189 @@
 -module(serv_ul).
--export([add_user/8, duplicateCheck/2, add_friend/3, onlineStatus/3, retrieveFriend/2, retrieveFriends/2, remove_friend/3, removeFromList/2]).
+-export([addUser/6, duplicateCheck/2, addFriend/3, removeFriend/3, changeName/3, changePassword/4, onlineStatus/3, login/3, retrieveFriend/2, retrieveFriends/2, start/0, loop/1]).
 -define(DB, "users").
 
-%% start/1, close/1, loop/1, change_name/3
-%motherpid behövs nog inte :) LOL
 
-start(MotherPid) ->
-	{ok, Table} = detsapp:open(?DB),
-	loop(MotherPid, Table).
-	
-loop(MotherPid, Table) -> 
-	receive
-	%INCOMPLETE
-		{client, login, ID, Netinfo, Pid} ->
-			Friendlist = retrieveFriends(Table, ID),
-			onlineStatus(Table, ID, Netinfo),
-			Pid ! {db, friendlist, Friendlist};
-		{client, addfriend, {MyID, FriendID}, Pid} ->
-			add_friend(Table, MyID, FriendID),
-			Pid ! {db, addfriend, ok};
-		{client, removefriend, {MyID, FriendID}, Pid} ->
-			remove_friend(Table, MyID, FriendID),
-			Pid ! {db, addfriend, ok};
-		{client, changename, ID, Name, Pid} ->
-			change_name(Table, ID, Name),
-			Pid ! {db, changename, ok};
-		
-	end
-	loop(Pid, Table).
+addUser(Table, Username, ShowedName, FriendList, NetInfo, Password) ->
+    dapi:add(Table,Username,[NetInfo, FriendList, Password, ShowedName]),
+    dapi:sync(Table).
 
-add_user(Table, Mail, ShowedName, FriendList, PeerIp, PeerPort, ServerIp, ServerPort) ->
-    detsapp:add(Table,Mail,[[ShowedName,PeerIp,PeerPort,ServerIp,ServerPort], FriendList, {online, false}]),
-    detsapp:sync(Table).
 
-duplicateCheck([FriendId|Friendlist], Id) ->
+duplicateCheck([Head|List], Key) ->
     if 
-	Id == FriendId ->
+	Key == Head ->
 	    true;
 	true -> 
-	    duplicateCheck(Friendlist, Id)
+	    duplicateCheck(List, Key)
     end;
 duplicateCheck([], _) ->
     false.
 
-removeFromList([Friend|Friendlist], FriendID) ->
-    case Friend == FriendID of
-	false ->
-	    [Friend|removeFromList(Friendlist,FriendID)];
-	true -> 
-	    Friendlist
-    end;
-removeFromList([], _) -> [].
+
+%%removeFromList([Friend|Friendlist], FriendID) ->
+%%    case Friend == FriendID of
+%%	false ->
+%%	    [Friend|removeFromList(Friendlist,FriendID)];
+%%	true -> 
+%%	    Friendlist
+%%  end;
+%%removeFromList([], _) -> [].
 
 
-add_friend(Table,MyID, FriendID) ->
-    [{MyID,[ NetInfo, FriendList, Online]}] = detsapp:retrieve(Table, MyID),
-    case duplicateCheck(FriendList, FriendID) of
-	false ->
-	    detsapp:add(Table, MyID, [NetInfo, [FriendID|FriendList], Online]);
+addFriend(Table,MyID, FriendID) ->
+    A = dapi:retrieve(Table, MyID),
+    case A /= [] of 
 	true ->
-	    ok
-    end,
-    detsapp:sync(Table).
+	    [{MyID,[ NetInfo, FriendList, Password, ShowedName]}] = A
+		case duplicateCheck(FriendList, FriendID) of
+		    false ->
+			addUser(Table, MyID, ShowedName, [FriendID|Friendlist], NetInfo, Password),
+			dapi:sync(Table);
+		    true ->
+			ok
+		end;
+	_ -> {error, {badmatch, MyID}}
+    end.
 
-change_name(Table, ID, Name) ->
-	{ID, [[ShowedName,PeerIp,PeerPort,ServerIp,ServerPort], FriendList, Online]} = detsapp:retrieve(Table, ID),
-	add_user(Table, ID, Name, FriendList, PeerIp, PeerPort, ServerIp, ServerPort).
-	%TBI
+
+removeFriend(Table, MyID, FriendID) -> 
+    A = dapi:retrieve(Table, MyID),
+    case A /= [] of
+	true ->
+	    [{Mail, [NetInfo, Friendlist, Password, ShowedName]}] = A,
+	    addUser(Table, Mail, ShowedName,  [X || X <- Friendlist, X =/= FriendID], NetInfo, Password),	    
+	    %%dapi:add(Table, Mail, [NetInfo, [X || X <- Friendlist, X =/= FriendID] , Password, ShowedName]),
+	    dapi:sync(Table);
+	_ ->
+	    {error, {badmatch, MyID}}
+    end.
 
 
-remove_friend(Table, MyID, FriendID) -> 
-    [{Mail, [NetInfo, Friendlist, Online]}] = detsapp:retrieve(Table,MyID),
-    detsapp:add(Table, Mail, [NetInfo, removeFromList(Friendlist,FriendID) , Online]),
-    detsapp:sync(Table).
-	    
-		
+changeName(Table, ID, Name) ->
+    A = dapi:retrieve(Table, ID),
+    case A /= [] of 
+	true ->
+	    [{ID, [NetInfo, FriendList, Password, _]}] = A,
+	    addUser(Table, ID, Name, FriendList, NetInfo, Password),
+	    dapi:sync(Table);
+	_ -> {error, {badmatch, ID}}
+    end.
+
+
+changePassword(Table, ID, Password, OldPass) ->
+    A = dapi:retrieve(Table, ID),
+    case A /= [] of 
+	true ->
+	    [{ID, [NetInfo, Friendlist, RetrievedPass, ShowedName]}] = A,
+	    case (OldPass == RetrievedPass) of
+		true -> 
+		    addUser(Table, ID, ShowedName, FriendList, NetInfo, Password),     
+		    dapi:sync(Table);
+		_ -> 
+		    {error, {badmatch, OldPass}}
+	    end;
+	_ -> {error, {badmatch, ID}}
+    end.
+
+
 onlineStatus(Table, MyID, NewInfo) ->
-    [{MyID,[ _, FriendList, {online, Status}]}] = detsapp:retrieve(Table, MyID),
-    case Status of 
-	false ->
-	    detsapp:add(Table, MyID, [NewInfo, FriendList, {online, true}]);
+    A = dapi:retrieve(Table, MyID),
+    case A /= [] of 
 	true ->
-	    detsapp:add(Table, MyID, [[], FriendList, {online, false}])
-    end,
-    detsapp:sync(Table).
+	    [{MyID,[ NetInfo, FriendList, Password, ShowedName]}] = A,
+	    case (NetInfo == []) of 
+		true ->
+		    addUser(Table, MyID, ShowedName, FriendList, NewInfo, Password);
+		false ->
+		    addUser(Table, MyID, ShowedName, FriendList, [], Password)
+	    end,
+	    dapi:sync(Table);
+	_ -> {error, {badmatch, MyID}}
+    end.
+
+
+login(Table, ID, Password) ->
+    A = dapi:retrieve(Table, ID)
+    case A /= [] of
+	true ->
+	    [{ID, [Netinfo, Friendlist, RetrievedPass]}] = A
+		case (Password == RetrievedPass) of
+		    true ->
+			true;
+		    _ ->
+			{error, {badmatch, Password}}  
+		end;
+	_ ->
+	    {error, {badmatch, ID}}
+    end.
+
 
 retrieveFriend(Table, HisID) ->
-     [{HisID, [NetInfo, _, _]}] = detsapp:retrieve(Table, HisID),
-    case NetInfo == []  of
+    A = dapi:retrieve(Table, HisID),
+    case A /= [] of 
 	true ->
-	    [HisID, []];
-	   _ ->
-	    [ShownName, PeerIP, PeerPort, _, _] = NetInfo, 
-	    [HisID, [ShownName, PeerIP,PeerPort]]
+	    [{HisID, [NetInfo, _, _, ShownName]}] = A,
+	    [HisID, ShownName, NetInfo];
+	_ ->
+	    [HisID, HisID, []]
     end.
 
 
 retrieveFriends(Table, MyID) ->
-    [{MyID, [_, Friendslist, _]}] = detsapp:retrieve(Table,MyID),
-    F = fun (FriendID) -> retrieveFriend(Table, FriendID)
-	end,
-    lists:map(F, Friendslist).
+    A = dapi:retrieve(Table, MyID),
+    case A /= [] of 
+	true ->
+	    [{MyID, [_, Friendslist, _]}] = dapi:retrieve(Table,MyID),
+	    F = fun (FriendID) -> retrieveFriend(Table, FriendID)
+		end,
+	    lists:map(F, Friendslist);
+	_ -> 
+	    {error,{badmatch, MyID}}
+    end.
 
 
-%%start(Table) ->
+start() ->
+	{ok, Table} = dapi:open(?DB),
+    loop(Pid, Table).
+
+
+loop(Table) -> 
+    receive
+						%INCOMPLETE
+	{client, login, ID, ShowedName,Netinfo, Password, ClientPid} ->
+	    case login(Table, ID, Password) of 
+		true -> 
+		    Friendlist = retrieveFriends(Table, ID),
+		    onlineStatus(Table, ID, Netinfo),
+		    ClientPid ! {db, friendlist, Friendlist};
+		{badmatch, Password} -> 
+		    ClientPid!{db, badPass}; %% fel lösenord
+		{badmatch, ID} ->
+		    ClientPid!{db, badID} %% användare existerar inte
+	    end;
+
+	{client, addfriend, MyID, FriendID, Pid} ->
+	    case addFriend(Table, MyID, FriendID) of
+		ok ->
+		    Pid ! {db, addfriend, ok};
+		{error, {badmatch, MyID}} ->
+		    Pid!{db, badID} %% användare existerar inte
+	    end;
+
+	{client, removefriend, MyID, FriendID, Pid} ->
+	    case removeFriend(Table, MyID, FriendID) of
+		ok ->
+		    Pid ! {db, removefriend, ok};
+		{error,{badmatch, MyID}} ->
+		    Pid ! {db, badID}
+	    end;
+
+	{client, changename, ID, Name, Pid} ->
+	    case changeName(Table, ID, Name) of
+		ok ->
+		    Pid ! {db, changename, ok};
+		{error, {badmatch, ID}} ->
+		    Pid ! {db, badID}
+	    end
+    end,       
+    loop(Table).
     
-
-%%close(Table) ->
-    
-
-%%loop(Table) ->
-    
-
-
-
-	    
