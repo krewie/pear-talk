@@ -1,5 +1,5 @@
 %% @author Kristian Ionesku & Staffan Rodgren.
-%% @doc First draft of the chat window.
+%% @doc The module for the peer client.
 %% @copyright 2011 Peer-talk.
 
 -module(peer).
