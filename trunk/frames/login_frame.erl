@@ -92,7 +92,6 @@ loop(State) ->
     	#wx{id = 101, event=#wxCommand{type = command_button_clicked}} ->
             TextCtrl_val = wxTextCtrl:getValue(TextCtrl),
             TextCtrl2_val = wxTextCtrl:getValue(TextCtrl2),
-            io:format("User: ~p, Pass: ~p", [TextCtrl_val, TextCtrl2_val]),
             chat ! {login, {TextCtrl_val, TextCtrl2_val}},
 			wxWindow:destroy(Frame), 
 			% släpp minne för wx Server
