@@ -6,44 +6,60 @@
 
 -include_lib("eunit/include/eunit.hrl").
 
-%% @doc openTable funktion som öppnar ett DETS table eller skapar en ny fil om det behövs. Args är en lista med valmöjligheter när man öppnar ett table, Args kan vara [] för default värden. 
-%% @spec atom * {Key, Value} list ->  {ok, TableName} | {error, Reason}
+%% @doc öppnar ett DETS table eller skapar en ny fil om det behövs. Args är en lista med valmöjligheter när man öppnar ett table, Args kan vara [] för default värden. 
+%% @spec openTable(FileName, Args) -> {ok, atom()} | {error, Reason}
+%% Args = [{Key, Val}]
+%% FileName = atom()
 
 openTable(FileName, Args) ->
     dets:open_file(FileName, Args).
 
-%% @doc closeTable funktion som stänger en öppen table och skriver alla ändringar till filen på disk.
-%% @spec TableName -> ok | {error, Reason}
+%% @doc stänger en öppen table och skriver alla ändringar till filen på disk.
+%% @spec closeTable(Table) -> ok | {error, Reason}
+%% Table = atom() | reference()
+
+
 closeTable(Table) ->
     dets:close(Table).
 
-%% @doc add funktion som lägger till en tupel {Key, Value} (objekt hädanefter) i Table.
-%% @spec TableName, String, Value | [Values] -> ok | {error, Reason}
+%% @doc lägger till en tupel {Key, Value} (objekt hädanefter) i Table.
+%% @spec add(Table, Key, Value) -> ok | {error, Reason}
+%% Table = atom() | reference()
+%% Key = any()
+%% Value = any()
 add(Table,Key, Value) ->
     dets:insert(Table, {Key, Value}).
 
-%% @doc isDets funktion som returnerar true om argumentet är ett DETS table.
-%% @spec atom -> true | {errorl, Reason}
+%% @doc returnerar true om argumentet är ett DETS table.
+%% @spec isDets(FileName) -> true | {error, Reason}
+%% FileName = atom()
 isDets(FileName) ->
     dets:is_dets_file(FileName).
 
-%% @doc delete funktion som tar bort ett objekt ur Table med nyckeln Key.
-%% @spec TableName * String -> ok | {error, Reason}
+%% @doc tar bort ett objekt ur Table med nyckeln Key.
+%% @spec delete(Table, Key) -> ok | {error, Reason}
+%% Table = atom() | reference()
+%% Key = any()
 delete(Table, Key) ->
     dets:delete(Table, Key).
 
-%% @doc sync funktion som skriver alla ändringar i Table till filen på disk.
-%% @spec TableName -> ok | {error, Reason}
+%% @doc skriver alla ändringar i Table till filen på disk.
+%% @spec sync(Table) -> ok | {error, Reason}
+%% Table = atom() | reference()
 sync(Table) ->
     dets:sync(Table).
 
-%% @doc retrieve funktion som hämtar en lista av objekt från Table med nyckeln Key. Om inga object hittades returneras tom lista.
-%% @spec TableName * String -> [{String, Value | [Values]}] | {error, Reason}
+%% @doc hämtar en lista av objekt från Table med nyckeln Key. Om inga object hittades returneras tom lista.
+%% @spec retrieve(Table, Key) -> [{Key, Value | [Values]}] | {error, Reason}
+%% Table = atom() | reference()
+%% Key = any()
+%% Value = any() 
 retrieve(Table, Key) ->
     dets:lookup(Table, Key).
 
-%% @doc open funktion som öppnar ett DETS table om filen FileName är ett DETS table (kan ej skapa nya filer vilket openTable kan). 
-%% @spec atom -> {ok, TableName} | {error, Reason}
+%% @doc öppnar ett DETS table om filen FileName är ett DETS table (kan ej skapa nya filer vilket openTable kan). 
+%% @spec open(FileName) -> {ok, TableName} | {error, Reason}
+%% FileName = atom()| reference()
 open(FileName) ->
     case isDets(FileName) of
 	true ->

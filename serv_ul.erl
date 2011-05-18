@@ -1,25 +1,33 @@
 -module(serv_ul).
--export([addUser/6, duplicateCheck/2, addFriend/3, removeFriend/3, changeName/3, changePassword/4, onlineStatus/3, login/3, retrieveFriend/2, retrieveFriends/2, start/0, loop/2]).
+-export([addUser/6, addFriend/3, removeFriend/3, changeName/3, changePassword/4, onlineStatus/3, login/3, retrieveFriend/2, retrieveFriends/2, start/0, loop/2]).
 -define(DB, "users").
 
 
-%% @doc
-%% @spec
+%% @doc Lägger till en användare (Username) i tabellen Table.
+%% @spec addUser(Table, Username, ShowedName, FriendList, NetInfo, Password) -> ok | {error, Reason}
+%% Table = atom() | reference()
+%% Username = any()
+%% ShowedName = any()
+%% Friendlist = [Username|Friendlist]
+%% NetInfo = any()
+%% Password = any()
 addUser(Table, Username, ShowedName, FriendList, NetInfo, Password) ->
     dapi:add(Table,Username,[NetInfo, FriendList, Password, ShowedName]),
     dapi:sync(Table).
 
 
-%% @doc
-%% @spec
-duplicateCheck([Head|List], Key) ->
+%% @doc Traverserar en lista för att undersöka om en instans av ett objekt existerar i listan, om objektet kan jämföras med '=='.
+%% @spec existanceCheck(List, Key) -> true | false
+%% List = [any()]
+%% Key = any()
+existanceCheck([Head|List], Key) ->
     if 
 	Key == Head ->
 	    true;
 	true -> 
-	    duplicateCheck(List, Key)
+	    existanceCheck(List, Key)
     end;
-duplicateCheck([], _) ->
+existanceCheck([], _) ->
     false.
 
 
@@ -33,14 +41,17 @@ duplicateCheck([], _) ->
 %%removeFromList([], _) -> [].
 
 
-%% @doc
-%% @spec
+%% @doc Lägger till en person (FriendID) i en annan persons (MyID) vänlista, om den andra personen existerar i tabellen Table.
+%% @spec addFriend(Table,MyID, FriendID) -> ok | {error, Reason}
+%% Table = atom() | reference()
+%% MyID = any()
+%% FriendID = any()
 addFriend(Table,MyID, FriendID) ->
     A = dapi:retrieve(Table, MyID),
     case (A /= []) of 
 	true ->
 	    [{MyID,[ NetInfo, FriendList, Password, ShowedName]}] = A,
-	    case duplicateCheck(FriendList, FriendID) of
+	    case existanceCheck(FriendList, FriendID) of
 		false ->
 		    addUser(Table, MyID, ShowedName, [FriendID|FriendList], NetInfo, Password),
 		    dapi:sync(Table);
@@ -51,8 +62,8 @@ addFriend(Table,MyID, FriendID) ->
     end.
 
 
-%% @doc
-%% @spec
+%% @doc Tar bort en person (FriendID) från en annan persons (ID) vänlista, om den andra personen existerar i tabellen Table.
+%% @spec removeFriend(Table,MyID, FriendID) -> ok | {error, Reason}
 removeFriend(Table, MyID, FriendID) -> 
     A = dapi:retrieve(Table, MyID),
     case A /= [] of
@@ -66,8 +77,11 @@ removeFriend(Table, MyID, FriendID) ->
     end.
 
 
-%% @doc
-%% @spec
+%% @doc Ändrar en persons (ID) "smeknamn" till Name, givet att personen existerar i tabellen Table.
+%% @spec changeName(Table, ID, Name) -> ok | {error, Reason}
+%% Table = atom()|reference()
+%% ID = any()
+%% Name = any()
 changeName(Table, ID, Name) ->
     A = dapi:retrieve(Table, ID),
     case A /= [] of 
@@ -79,8 +93,12 @@ changeName(Table, ID, Name) ->
     end.
 
 
-%% @doc
-%% @spec
+%% @doc Ändrar en persons (ID) lösenord till Password, givet att personen existerar, samt att det gamla lösenordet OldPass stämmer överens med det som lagrats i tabellen.
+%% @spec changePassword(Table, ID, Password, OldPass) -> ok | {error, Reason}
+%% Table = atom()|reference()
+%% ID = any()
+%% Password = any()
+%% OldPass = any()
 changePassword(Table, ID, Password, OldPass) ->
     A = dapi:retrieve(Table, ID),
     case A /= [] of 
@@ -97,8 +115,11 @@ changePassword(Table, ID, Password, OldPass) ->
     end.
 
 
-%% @doc
-%% @spec
+%% @doc Ändrar en persons NetInfo, givet att personen existerar i tabellen Table.
+%% @spec onlineStatus(Table, MyID, NetInfo) -> ok|{error, Reason}
+%% Table = atom()|reference()
+%% MyID = any()
+%% NetInfo = any()
 onlineStatus(Table, MyID, NetInfo) ->
     A = dapi:retrieve(Table, MyID),
     case A /= [] of 
@@ -110,24 +131,33 @@ onlineStatus(Table, MyID, NetInfo) ->
     end.
 
 
+%% @doc Undersöker hurvida lösenordet Password som givits av personen ID stämmer överens med vad som lagrats i tabellen Table. True om det stämmer, false om det inte stämmer.
+%% @spec login(Table, ID , Password) -> true | false | {error, Reason}
+%% Table = atom() | reference()
+%% ID = any()
+%% Password = any()
 login(Table, ID, Password) ->
     A = dapi:retrieve(Table, ID),
     case A /= [] of
 	true ->
-	    [{ID, [_, _, RetrievedPass]}] = A,
+	    [{ID, [_, _, RetrievedPass, _]}] = A,
 	    case (Password == RetrievedPass) of
 		true ->
 		    true;
 		_ ->
-		    {error, {badmatch, Password}}  
+		    false  
 	    end;
 	_ ->
 	    {error, {badmatch, ID}}
     end.
 
 
-%% @doc
-%% @spec
+%% @doc Givet ett ID, hämtar ut kontaktinformation om en person.
+%% @spec retrieveFriend(Table, HisID) -> [HisID | ShownName | NetInfo]
+%% Table = atom()|reference()
+%% HisID = any()
+%% ShownName = any()
+%% NetInfo = any()
 retrieveFriend(Table, HisID) ->
     A = dapi:retrieve(Table, HisID),
     case A /= [] of 
@@ -139,13 +169,19 @@ retrieveFriend(Table, HisID) ->
     end.
 
 
-%% @doc
-%% @spec
+%% @doc Hämtar ut kontaktinformation för en persons vänner.
+%% @spec retrieveFriends(Table, MyID) -> Friendslist
+%% Table = atom()| reference()
+%% MyID = any()
+%% Friendslist = [ID | ShownName | NetInfo]
+%% ID = any()
+%% ShownName = any()
+%% NetInfo = any()
 retrieveFriends(Table, MyID) ->
     A = dapi:retrieve(Table, MyID),
     case A /= [] of 
 	true ->
-	    [{MyID, [_, Friendslist, _]}] = dapi:retrieve(Table,MyID),
+	    [{MyID, [_, Friendslist, _, _]}] = dapi:retrieve(Table,MyID),
 	    F = fun (FriendID) -> retrieveFriend(Table, FriendID)
 		end,
 	    lists:map(F, Friendslist);
@@ -154,21 +190,24 @@ retrieveFriends(Table, MyID) ->
     end.
 
 
-%% @doc
-%% @spec
+%% @doc Öppnar en fördefinerad tabell för redigering.
+%% @spec start() -> ok
 start() ->
     {ok, Table} = dapi:open(?DB),
     loop(Table, true).
 
 
-%% @doc
-%% @spec
+%% @doc Stänger en tabell Table.
+%% @spec close(Table) -> ok | {error, Reason}
+%% Table = atom()| reference()
 close(Table) ->
     dapi:closeTable(Table).
 
 
-%% @doc
-%% @spec
+%% @doc Manager av mottagna meddelanden från server, så länge State är true.
+%% @spec loop(Table, State) -> ok | {error, Reason}
+%% Table = atom()| reference()
+%% State = true | false
 loop(Table, State) -> 
     receive
 	%% client requests %%
@@ -178,9 +217,9 @@ loop(Table, State) ->
 		    Friendlist = retrieveFriends(Table, ID),
 		    onlineStatus(Table, ID, Netinfo),
 		    ClientPid ! {db, friendlist, Friendlist};
-		{badmatch, Password} -> 
+		false -> 
 		    ClientPid!{db, badPass}; %% fel lösenord
-		{badmatch, ID} ->
+		{error, {badmatch, ID}} ->
 		    ClientPid!{db, badID} %% användare existerar inte
 	    end;
 
