@@ -46,9 +46,7 @@ show(Table) ->
 tolist(Table) -> fold(Table, (fun (X) -> X end)).
 
 
-%% @spec add(tab, string(), string()) -> Message
-%% Message = true
-%% Message = {error, allready_existing_friend}
+%% @spec add(tab, string(), string()) -> true | {error, allready_existing_friend}
 %% @doc <br>Pre:NULL</br><br>SIDE-EFFECT:Inserts a new entry in table with the second argument as the key and the third as the 'showedname'.</br><br>Post:NULL</br>
 
 add(Table, Mail, ShowedName) ->
