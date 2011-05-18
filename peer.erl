@@ -10,10 +10,8 @@
 %% @doc <h4>start()</h4> Starts the client and creates an empty ets called friends that is the default friend list 
 start() ->
 	try		
-		
-		{ok, File} = file:open("chat.ini", read),
 
-		Me = io:get_line("Insert your username: ") -- "\n",
+		Me = "guest",
 		Vsn = Me,
 		ListenPortS = io:get_line("Insert your local port: "),
 		ServerAddressS = io:get_line("Insert the address of server to connect: ") -- "\n",
@@ -24,12 +22,9 @@ start() ->
 		ServerPort = 9997,
 
 		{ok,{_, _, _, _, _, [NetworkInterface|_]}}= host_info(),
-		
-		file:close(File),
 
 		register(chat_server, spawn(peer, server, [NetworkInterface, ListenPort])),
-		
-				
+					
 		register(chat, spawn(peer, status, [[{network_interface, NetworkInterface},
 			{listen_port, ListenPort}, {id,{Me, Vsn}}, {server_address, ServerAddress}, 
 				{server_port, ServerPort}, {ping_mode, pingoff}]])),
@@ -38,17 +33,8 @@ start() ->
 
 		peer:addme(),
 
-		register(ping_pong, spawn(peer, ping_loop, [])),
+		register(ping_pong, spawn(peer, ping_loop, []))
 		
-		
-		try
-			{ok, Sock} = gen_tcp:connect(ServerAddress, ServerPort, [binary,{active, true}]),
-			gen_tcp:send(Sock, term_to_binary({clientlogin, ListenPort}))
-		catch 
-			_:_ ->
-				io:format("Connection to server ~p on port ~p failed!! ~n",[ServerAddressS,ServerPort])
-		end
-
 	catch Ek:En ->
 			{Ek, En}
 			
@@ -168,6 +154,9 @@ pingoff() ->
 %% @doc <h4>status(Status)</h4> starts a process that will hold Status.
 status(Status) ->
     receive
+	{login, Username, Password}  ->	
+		status(lists:keystore(id, 1, Status, {id, {Username,[]}})),
+		spawn(peer,autentication,[Username, Password]);
 	newfriends ->
 		rul:friends(),
 		status(lists:keystore(friend_list, 1, Status, {friend_list, friends}));
@@ -227,14 +216,17 @@ get_request(Sender_address, Socket, BinaryList) ->
 				case Mode of
 					confirmfriend ->
 						{Sender_listen_port, Sender_username, Sender_showed_name} = Obj,
-						ets:insert(friends, {Sender_username, [Sender_showed_name, Sender_address, Sender_listen_port]});
+						ets:insert(friends, {Sender_username, [Sender_showed_name, Sender_address, 								Sender_listen_port]});
 					befriends ->
-						get_status(),
 						{Sender_listen_port, Sender_username, Sender_showed_name} = Obj,
-						spawn(peer,acceptFr,[Sender_username, Sender_showed_name, Sender_address, Sender_listen_port]);
-					friendlist ->
-						rul:fillTable(friends, Obj),
+						spawn(peer,acceptFr,[Sender_username, Sender_showed_name, Sender_address, 								Sender_listen_port]);
+					friendlist ->						
+						{Showed_name, FriendList} = Obj,
+						{Username,_} = my(id),
+						chat!{change,id,{Username,Showed_name}},
+						rul:fillTable(friends, FriendList),
 						io:format("The friend list has been updated!~n"); 
+
 					file ->
 						{FileName, File} = Obj,
 						file:write_file(FileName, File),
@@ -260,10 +252,11 @@ get_request(Sender_address, Socket, BinaryList) ->
 							_ ->
 								[]
 						end;
+
 					string ->
 						{Sender_username, String} = Obj,
 						[Sender_showed_name ,_, _] = rul:take(friends, Sender_username),
-			      		io:format("~p~n", [Sender_showed_name ++ " to " ++ "me: " ++ String]),
+			      			io:format("~p~n", [Sender_showed_name ++ " to " ++ "me: " ++ String]),
 						file:write_file("log_file.txt", Timestamp ++ " " ,[append]),
      		  				file:write_file("log_file.txt", Sender_showed_name ++ " to me:" ++ ": " 
 							++ String ++ "\n",[append]);
@@ -379,3 +372,13 @@ sendFr(Receiver_username, Receiver_address, Receiver_listen_port) ->
 	rul:set_online(friends, Receiver_username, Receiver_address, Receiver_listen_port),
 	send(Receiver_username, befriends, {my(listen_port), My_username, My_showed_name}),
 	rul:logout(friends, Receiver_username).
+
+autentication(Username, Password) ->
+	try
+		{ok, Sock} = gen_tcp:connect(my(server_address), my(server_port), [binary,{active, false}]),
+		gen_tcp:send(Sock, term_to_binary({client,login, Username, Password, my(listen_port)}))
+	catch 
+		Ek:En ->
+			{Ek,En}
+	end.
+
