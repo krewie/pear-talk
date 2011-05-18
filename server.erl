@@ -33,16 +33,21 @@ listen_state(Socket, DBPid) ->
 			io:format("recieved request~n"),
 			case binary_to_term(Packet) of
 		%Client-calls
-				{client, login, ID, Port} ->
+				{client, login, Username, Password, Port} ->
 					{ok, {Address, _}} = inet:peername(Socket),
-					DBPid ! {client, login, ID, Showedname, [Address, Port], Password, self()},
-					listen_state(Socket, DBPid);
-				{client, addfriend, {MyID, FriendID}} ->
-					DBPid ! {client, addfriend, {MyID, FriendID}, self()};
-				{client, removefriend, {MyID, FriendID}} ->
-					DBPid ! {client, removefriend, {MyID, FriendID}, self()};
+					DBPid ! {client, login, Username, [Address, Port], Password, self()};
+					
+				{client, addfriend, MyID, FriendID} ->
+					DBPid ! {client, addfriend, MyID, FriendID, self()};
+					
+				{client, removefriend, MyID, FriendID} ->
+					DBPid ! {client, removefriend, MyID, FriendID, self()};
+					
 				{client, changename, ID, Name} ->
-					DBPid ! {client, changename, ID, Name, self()}
+					DBPid ! {client, changename, ID, Name, self()};
+					
+				{client, changepass, ID, New_password, Old_password} ->
+					DBPid ! {client, changepass, ID, New_password, Old_password, self()}
 		%Server-calls
 				%{server, serverlogin, {Netinfo}} ->
 					%se till så att servern blir up-to-date
@@ -55,28 +60,29 @@ listen_state(Socket, DBPid) ->
 			
 		{db, friendlist, Friendlist} ->
 				io:format("sending friendlist: ~w to ~w~n", [Friendlist, Socket]),
-				Data = term_to_binary({[], [], [], [], [], friendlist, [], [], Friendlist}),
+				Data = term_to_binary({friendlist, Friendlist}),
 				send(Socket, Data)
+				
 		{db, badPass} ->
 		
 		{db, badID} ->
 		
-		
-		%{db, addfriend, ok} ->
+		{db, addfriend, ok} ->
 			%friend succesfully added
-		%{db, removefriend, ok} ->
+		{db, removefriend, ok} ->
 			%friend succesfully removed
-		%{db, changename, ok} ->
+		{db, changename, ok} ->
 			%user succesfully changed name
+		{db, changepass, ok} ->
 			
 	%after ?TIMEOUT ->
 	%		gen_tcp:close(Socket)	
 	end,
 	listen_state(Socket, DBPid).
 	
-	send(Socket, <<Chunk:100/binary, Rest/binary>>) ->
-		gen_tcp:send(Socket, Chunk),
-		send(Socket, Rest);
-	send(Socket, Rest) ->
-		gen_tcp:send(Socket, Rest).
+send(Socket, <<Chunk:100/binary, Rest/binary>>) ->
+	gen_tcp:send(Socket, Chunk),
+	send(Socket, Rest);
+send(Socket, Rest) ->
+	gen_tcp:send(Socket, Rest).
 	

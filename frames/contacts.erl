@@ -124,7 +124,7 @@ loop(State) ->
 				
         	#wx{event=#wxList{type = command_list_item_selected, itemIndex = Item}} ->
         		io:format("lala ~p \n",[Item]),
-        		Reciever = lists:nth(Item, rul:to_list(friends)),
+        		{Reciever, _} = lists:nth(Item, rul:tolist(friends)),
         		chat ! {chat_window, Reciever},
         		loop(State);  
     			
@@ -138,16 +138,16 @@ loop(State) ->
          		wxWindow:destroy(Frame),
          		ok;
          	{friendlist, friends} ->
-         		online_status(0, rul:to_list(friends))
+         		online_status(0, rul:tolist(friends))
          		
             	
     end.
     
 online(Acc, []) -> ok;
-online_status(Acc, [[User, [Showed_Name, _, _]]|Rest]) ->
+online_status(Acc, [{User, [Showed_Name, _, _]}|Rest]) ->
 	offline_add(AllList, 0, ?FIRST_COL, ?SECOND_COL, Showed_Name, User, {online}),
 	online_status(Acc+1, Rest);
-online_status(Acc, [[User, [Showed_Name]]|Rest]) -> 
+online_status(Acc, [{User, [Showed_Name]}|Rest]) -> 
 	offline_add(AllList, 1, ?FIRST_COL, ?SECOND_COL, Showed_Name,  User,{offline}),
 	online_status(Acc+1, Rest).
 	
