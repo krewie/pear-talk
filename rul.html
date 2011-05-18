@@ -16,76 +16,91 @@
 
 <h2><a name="description">Description</a></h2>The ets module for the peer client.
 <h2><a name="index">Function Index</a></h2>
-<table width="100%" border="1" cellspacing="0" cellpadding="2" summary="function index"><tr><td valign="top"><a href="#add-3">add/3</a></td><td><h4>add(Tab(), String(), String())</h4><br>Pre:NULL<br>SIDE-EFFECT:Inserts a new entry in table with the second argument as the key and the third as the 'showedname'.<br>Post:NULL</td></tr>
-<tr><td valign="top"><a href="#delete-2">delete/2</a></td><td><h4>delete(Tab(), String())</h4><br>Pre:NULL<br>SIDE-EFFECT: Deletes the row  in table with key as second argument.<br>Post:NULL</td></tr>
-<tr><td valign="top"><a href="#empty-0">empty/0</a></td><td><h4>empty()</h4><br>Pre:NULL<br>SIDE-EFFECT:Spawns a new process that creates an empty ets
+<table width="100%" border="1" cellspacing="0" cellpadding="2" summary="function index"><tr><td valign="top"><a href="#add-3">add/3</a></td><td><br>Pre:NULL<br>SIDE-EFFECT:Inserts a new entry in table with the second argument as the key and the third as the 'showedname'.<br>Post:NULL</td></tr>
+<tr><td valign="top"><a href="#delete-2">delete/2</a></td><td><br>Pre:NULL<br>SIDE-EFFECT: Deletes the row  in table with key as second argument.<br>Post:NULL</td></tr>
+<tr><td valign="top"><a href="#empty-0">empty/0</a></td><td><br>Pre:NULL<br>SIDE-EFFECT:Spawns a new process that creates an empty ets
  table.<br>Post:Returns an empty ets table.</td></tr>
-<tr><td valign="top"><a href="#fillTable-2">fillTable/2</a></td><td><h4>fillTable()</h4><br>Pre: Table with name identifier 'friends' exists.<br>SIDE-EFFECT:Fills an already
+<tr><td valign="top"><a href="#fillTable-2">fillTable/2</a></td><td><br>Pre: Table with name identifier 'friends' exists.<br>SIDE-EFFECT:Fills an already
  existing table with values from list().<br>Post:NULL</td></tr>
-<tr><td valign="top"><a href="#friends-0">friends/0</a></td><td><h4>friends()</h4><br>Pre:NULL<br>Post:Creates an empty ets table with identifier 'friends'.<br>Post:NULL</td></tr>
-<tr><td valign="top"><a href="#logout-2">logout/2</a></td><td><h4>logout(Tab(), String())</h4><br>Pre:NULL<br>SIDE-EFFECT:Removes tcp/ip information about a user in table when the user logout.<br>Post:NULL</td></tr>
-<tr><td valign="top"><a href="#set_online-4">set_online/4</a></td><td><h4>set_online(Tab(), String(), Tuple(), Int())</h4><br>Pre:NULL<br>SIDE-EFFECT:Saves the tcp/ip information about a user in table when user is online.<br>Post:NULL</td></tr>
-<tr><td valign="top"><a href="#show-1">show/1</a></td><td><h4>show(Tab())</h4><br>Pre: NULL<br>Post:Prints table content to screen.</td></tr>
-<tr><td valign="top"><a href="#take-2">take/2</a></td><td><h4>take(Tab(), String())</h4><br>Pre:NULL<br>Post:Returns the value corresponding to the key, else {error, nomatch}.</td></tr>
-<tr><td valign="top"><a href="#traverse-2">traverse/2</a></td><td><h4>delete(Tab(), String())</h4><br>Pre:NULL<br>SIDE-EFFECT:Applies the function Fun() to every row in table.<br>Post:NULL</td></tr>
+<tr><td valign="top"><a href="#fold-2">fold/2</a></td><td><br>Pre:NULL<br>Post:Works just like foldr/foldl.</td></tr>
+<tr><td valign="top"><a href="#friends-0">friends/0</a></td><td><br>Pre:NULL<br>Post:Creates an empty ets table with identifier 'friends'.<br>Post:NULL</td></tr>
+<tr><td valign="top"><a href="#logout-2">logout/2</a></td><td><br>Pre:NULL<br>SIDE-EFFECT:Removes tcp/ip information about a user in table when the user logout.<br>Post:NULL</td></tr>
+<tr><td valign="top"><a href="#set_online-4">set_online/4</a></td><td><br>Pre:NULL<br>SIDE-EFFECT:Saves the tcp/ip information about a user in table when user is online.<br>Post:NULL</td></tr>
+<tr><td valign="top"><a href="#show-1">show/1</a></td><td><br>Pre: NULL<br>Post:Prints table content to screen.</td></tr>
+<tr><td valign="top"><a href="#take-2">take/2</a></td><td><br>Pre:NULL<br>Post:Returns the value corresponding to the key.</td></tr>
+<tr><td valign="top"><a href="#tolist-1">tolist/1</a></td><td><br>Pre:NULL<br>Post:Table content to list.</td></tr>
+<tr><td valign="top"><a href="#traverse-2">traverse/2</a></td><td><br>Pre:NULL<br>SIDE-EFFECT:Applies the function Fun() to every row in table.<br>Post:NULL</td></tr>
 </table>
 
 <h2><a name="functions">Function Details</a></h2>
 
 <h3 class="function"><a name="add-3">add/3</a></h3>
 <div class="spec">
-<p><tt>add(Table, Mail, ShowedName) -&gt; any()</tt></p>
-</div><p><h4>add(Tab(), String(), String())</h4><br>Pre:NULL<br>SIDE-EFFECT:Inserts a new entry in table with the second argument as the key and the third as the 'showedname'.<br>Post:NULL</p>
+<p><tt>add(Table::tab, Mail::string(), ShowedName::string()) -&gt; Message</tt>
+<ul class="definitions"><li><tt>Message = true</tt></li>
+<li><tt>Message = {error, allready_existing_friend}</tt></li>
+</ul></p>
+</div><p><br>Pre:NULL<br>SIDE-EFFECT:Inserts a new entry in table with the second argument as the key and the third as the 'showedname'.<br>Post:NULL</p>
 
 <h3 class="function"><a name="delete-2">delete/2</a></h3>
 <div class="spec">
-<p><tt>delete(Table, Mail) -&gt; any()</tt></p>
-</div><p><h4>delete(Tab(), String())</h4><br>Pre:NULL<br>SIDE-EFFECT: Deletes the row  in table with key as second argument.<br>Post:NULL</p>
+<p><tt>delete(Table, Mail::string()) -&gt; true</tt></p>
+</div><p><br>Pre:NULL<br>SIDE-EFFECT: Deletes the row  in table with key as second argument.<br>Post:NULL</p>
 
 <h3 class="function"><a name="empty-0">empty/0</a></h3>
 <div class="spec">
 <p><tt>empty() -&gt; any()</tt></p>
-</div><p><h4>empty()</h4><br>Pre:NULL<br>SIDE-EFFECT:Spawns a new process that creates an empty ets
+</div><p><br>Pre:NULL<br>SIDE-EFFECT:Spawns a new process that creates an empty ets
  table.<br>Post:Returns an empty ets table.</p>
 
 <h3 class="function"><a name="fillTable-2">fillTable/2</a></h3>
 <div class="spec">
-<p><tt>fillTable(Table, List) -&gt; any()</tt></p>
-</div><p><h4>fillTable()</h4><br>Pre: Table with name identifier 'friends' exists.<br>SIDE-EFFECT:Fills an already
+<p><tt>fillTable(Table, List::list()) -&gt; ok</tt></p>
+</div><p><br>Pre: Table with name identifier 'friends' exists.<br>SIDE-EFFECT:Fills an already
  existing table with values from list().<br>Post:NULL</p>
+
+<h3 class="function"><a name="fold-2">fold/2</a></h3>
+<div class="spec">
+<p><tt>fold(Table, Fun) -&gt; any()</tt></p>
+</div><p><br>Pre:NULL<br>Post:Works just like foldr/foldl.</p>
 
 <h3 class="function"><a name="friends-0">friends/0</a></h3>
 <div class="spec">
 <p><tt>friends() -&gt; any()</tt></p>
-</div><p><h4>friends()</h4><br>Pre:NULL<br>Post:Creates an empty ets table with identifier 'friends'.<br>Post:NULL</p>
+</div><p><br>Pre:NULL<br>Post:Creates an empty ets table with identifier 'friends'.<br>Post:NULL</p>
 
 <h3 class="function"><a name="logout-2">logout/2</a></h3>
 <div class="spec">
-<p><tt>logout(Table, Mail) -&gt; any()</tt></p>
-</div><p><h4>logout(Tab(), String())</h4><br>Pre:NULL<br>SIDE-EFFECT:Removes tcp/ip information about a user in table when the user logout.<br>Post:NULL</p>
+<p><tt>logout(Table, Mail::string()) -&gt; true | {error, user_allready_offline}</tt></p>
+</div><p><br>Pre:NULL<br>SIDE-EFFECT:Removes tcp/ip information about a user in table when the user logout.<br>Post:NULL</p>
 
 <h3 class="function"><a name="set_online-4">set_online/4</a></h3>
 <div class="spec">
-<p><tt>set_online(Table, Sender, SenderIP, SenderPort) -&gt; any()</tt></p>
-</div><p><h4>set_online(Tab(), String(), Tuple(), Int())</h4><br>Pre:NULL<br>SIDE-EFFECT:Saves the tcp/ip information about a user in table when user is online.<br>Post:NULL</p>
+<p><tt>set_online(Table, Sender::string(), SenderIP::tuple(), SenderPort::integer()) -&gt; true | {error, reason}</tt></p>
+</div><p><br>Pre:NULL<br>SIDE-EFFECT:Saves the tcp/ip information about a user in table when user is online.<br>Post:NULL</p>
 
 <h3 class="function"><a name="show-1">show/1</a></h3>
 <div class="spec">
-<p><tt>show(Table) -&gt; any()</tt></p>
-</div><p><h4>show(Tab())</h4><br>Pre: NULL<br>Post:Prints table content to screen.</p>
+<p><tt>show(Table) -&gt; io_device</tt></p>
+</div><p><br>Pre: NULL<br>Post:Prints table content to screen.</p>
 
 <h3 class="function"><a name="take-2">take/2</a></h3>
 <div class="spec">
-<p><tt>take(Table, Mail) -&gt; any()</tt></p>
-</div><p><h4>take(Tab(), String())</h4><br>Pre:NULL<br>Post:Returns the value corresponding to the key, else {error, nomatch}.</p>
+<p><tt>take(Table, Mail::string()) -&gt; {List | {error, nomatch}}</tt></p>
+</div><p><br>Pre:NULL<br>Post:Returns the value corresponding to the key.</p>
+
+<h3 class="function"><a name="tolist-1">tolist/1</a></h3>
+<div class="spec">
+<p><tt>tolist(Table) -&gt; list()</tt></p>
+</div><p><br>Pre:NULL<br>Post:Table content to list.</p>
 
 <h3 class="function"><a name="traverse-2">traverse/2</a></h3>
 <div class="spec">
 <p><tt>traverse(Table, Fun) -&gt; any()</tt></p>
-</div><p><h4>delete(Tab(), String())</h4><br>Pre:NULL<br>SIDE-EFFECT:Applies the function Fun() to every row in table.<br>Post:NULL</p>
+</div><p><br>Pre:NULL<br>SIDE-EFFECT:Applies the function Fun() to every row in table.<br>Post:NULL</p>
 <hr>
 
 <div class="navbar"><a name="#navbar_bottom"></a><table width="100%" border="0" cellspacing="0" cellpadding="2" summary="navigation bar"><tr><td><a href="overview-summary.html" target="overviewFrame">Overview</a></td><td><a href="http://www.erlang.org/"><img src="erlang.png" align="right" border="0" alt="erlang logo"></a></td></tr></table></div>
-<p><i>Generated by EDoc, May 18 2011, 13:42:06.</i></p>
+<p><i>Generated by EDoc, May 18 2011, 16:00:15.</i></p>
 </body>
 </html>
