@@ -11,7 +11,7 @@
 start() ->
 	try		
 
-		Me = io:get_line("Insert your username: "),
+		Me = "guest",
 		Vsn = Me,
 		ListenPortS = io:get_line("Insert your local port: "),
 		ServerAddressS = io:get_line("Insert the address of server to connect: ") -- "\n",
@@ -31,7 +31,6 @@ start() ->
 		
 		chat!newfriends,	
 
-		peer:addme(),
 
 		register(ping_pong, spawn(peer, ping_loop, [])),
 		
@@ -167,8 +166,11 @@ status(Status) ->
     	NewStatus=lists:keystore(Receiver, 1, Status, {Receiver, Pid}),
     	status(NewStatus);
 	{login, {Username, Password}}  ->
-		spawn(peer,autentication,[Username, Password]),
-		spawn(contacts, start, []),
+		rul:add(friends, Username, Username),
+		{value, {_ , NetworkInterface}} = lists:keysearch(network_interface, 1, Status),
+		{value, {_ , ListenPort}} = lists:keysearch(listen_port, 1, Status),
+		rul:set_online(friends, Username, NetworkInterface, ListenPort),
+		spawn(peer,autentication,[Username, Password]),		
 		status(lists:keystore(id, 1, Status, {id, {Username,Username}}));
 	newfriends ->
 		rul:friends(),
