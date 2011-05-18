@@ -3,11 +3,15 @@
 -define(DB, "users").
 
 
+%% @doc
+%% @spec
 addUser(Table, Username, ShowedName, FriendList, NetInfo, Password) ->
     dapi:add(Table,Username,[NetInfo, FriendList, Password, ShowedName]),
     dapi:sync(Table).
 
 
+%% @doc
+%% @spec
 duplicateCheck([Head|List], Key) ->
     if 
 	Key == Head ->
@@ -29,6 +33,8 @@ duplicateCheck([], _) ->
 %%removeFromList([], _) -> [].
 
 
+%% @doc
+%% @spec
 addFriend(Table,MyID, FriendID) ->
     A = dapi:retrieve(Table, MyID),
     case (A /= []) of 
@@ -45,6 +51,8 @@ addFriend(Table,MyID, FriendID) ->
     end.
 
 
+%% @doc
+%% @spec
 removeFriend(Table, MyID, FriendID) -> 
     A = dapi:retrieve(Table, MyID),
     case A /= [] of
@@ -58,6 +66,8 @@ removeFriend(Table, MyID, FriendID) ->
     end.
 
 
+%% @doc
+%% @spec
 changeName(Table, ID, Name) ->
     A = dapi:retrieve(Table, ID),
     case A /= [] of 
@@ -69,6 +79,8 @@ changeName(Table, ID, Name) ->
     end.
 
 
+%% @doc
+%% @spec
 changePassword(Table, ID, Password, OldPass) ->
     A = dapi:retrieve(Table, ID),
     case A /= [] of 
@@ -85,6 +97,8 @@ changePassword(Table, ID, Password, OldPass) ->
     end.
 
 
+%% @doc
+%% @spec
 onlineStatus(Table, MyID, NetInfo) ->
     A = dapi:retrieve(Table, MyID),
     case A /= [] of 
@@ -112,6 +126,8 @@ login(Table, ID, Password) ->
     end.
 
 
+%% @doc
+%% @spec
 retrieveFriend(Table, HisID) ->
     A = dapi:retrieve(Table, HisID),
     case A /= [] of 
@@ -123,6 +139,8 @@ retrieveFriend(Table, HisID) ->
     end.
 
 
+%% @doc
+%% @spec
 retrieveFriends(Table, MyID) ->
     A = dapi:retrieve(Table, MyID),
     case A /= [] of 
@@ -136,13 +154,21 @@ retrieveFriends(Table, MyID) ->
     end.
 
 
+%% @doc
+%% @spec
 start() ->
     {ok, Table} = dapi:open(?DB),
     loop(Table, true).
 
+
+%% @doc
+%% @spec
 close(Table) ->
     dapi:closeTable(Table).
 
+
+%% @doc
+%% @spec
 loop(Table, State) -> 
     receive
 	%% client requests %%
