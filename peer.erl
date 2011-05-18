@@ -33,7 +33,10 @@ start() ->
 
 		peer:addme(),
 
-		register(ping_pong, spawn(peer, ping_loop, []))
+		register(ping_pong, spawn(peer, ping_loop, [])),
+		
+		login_frame:start("username:")
+		
 		
 	catch Ek:En ->
 			{Ek, En}
@@ -154,9 +157,18 @@ pingoff() ->
 %% @doc <h4>status(Status)</h4> starts a process that will hold Status.
 status(Status) ->
     receive
-	{login, Username, Password}  ->	
-		status(lists:keystore(id, 1, Status, {id, {Username,[]}})),
-		spawn(peer,autentication,[Username, Password]);
+    {chat_send, Pid, Message} ->
+    	{value, {Receiver, _}} = lists:keysearch(Pid, 2, Status),
+    	spawn(peer, send, [Receiver, string, {"ME", Message}]),
+    	status(Status);
+    {chat_window, Receiver} ->
+    	Pid = spawn(chat_frame, start, []),
+    	NewStatus=lists:keystore(Receiver, 1, Status, {Receiver, Pid}),
+    	status(NewStatus);
+	{login, {Username, Password}}  ->
+		spawn(peer,autentication,[Username, Password]),
+		spawn(contacts, start, []),
+		status(lists:keystore(id, 1, Status, {id, {Username,Username}}));
 	newfriends ->
 		rul:friends(),
 		status(lists:keystore(friend_list, 1, Status, {friend_list, friends}));
@@ -259,7 +271,9 @@ get_request(Sender_address, Socket, BinaryList) ->
 			      			io:format("~p~n", [Sender_showed_name ++ " to " ++ "me: " ++ String]),
 						file:write_file("log_file.txt", Timestamp ++ " " ,[append]),
      		  				file:write_file("log_file.txt", Sender_showed_name ++ " to me:" ++ ": " 
-							++ String ++ "\n",[append]);
+							++ String ++ "\n",[append]),
+							{value, {_, Pid}} = lists:keysearch(Sender_username, 1, get_status()),
+							 Pid ! {message_received, Sender_showed_name, String};
 					_Any -> []
 				end
 			catch

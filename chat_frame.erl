@@ -9,35 +9,52 @@
 
 %% @doc Init function for chat window. 
 %% @spec chat_frame:start() -> no_return().
-start(Pid) -> State = make_window(),
-loop(State, Pid).
+start() ->
+    State = make_window(),
+    loop(State),
+    ok.
 
 %% @doc Sets up the chat window. Returns {Frame, T1001,  T1002} where T1001 is the text field that displays the conversation, T1002 the input field and Frame the "super object" in the window. 
 %% @spec 
 make_window() ->
 	%% Create new wx-object, new window with panel and menubar...
     Server = wx:new(),
-    Frame = wxFrame:new(Server, -1, "Pear Talk", [{size,{430, 360}}]),
+    Frame = wxFrame:new(Server, -1, "Pear Talk", [{size,{430, 345}}]),
     Panel  = wxPanel:new(Frame),
-	MenuBar = wxMenuBar:new(),
-	Edit = wxMenu:new(),
+    MainSizer = wxBoxSizer:new(?wxVERTICAL),    
+    Sizer1 = wxStaticBoxSizer:new(?wxVERTICAL, Panel,[]),
+    Sizer2 = wxStaticBoxSizer:new(?wxVERTICAL, Panel,[]),
+    ButtonSizer = wxBoxSizer:new(?wxHORIZONTAL),
+	%% Create two text fields, the first is not editable.
+    T1001 = wxTextCtrl:new(Panel, 1001,[{size,{100, 140}},{style, ?wxTE_MULTILINE}]),
+    wxTextCtrl:setEditable(T1001, false),
+    T1002 = wxTextCtrl:new(Panel, 1002,[{size,{100, 60}},{style, ?wxTE_MULTILINE}]),
+    B101 = wxButton:new(Panel, 101, [{label, "&Send"}]),
+    wxSizer:add(Sizer1, T1001, [{flag, ?wxEXPAND}]),
+    wxSizer:add(Sizer2, T1002, [{flag, ?wxEXPAND}]),
+    wxSizer:add(MainSizer, Sizer1,  [{flag, ?wxEXPAND}]),
+    wxSizer:addSpacer(MainSizer, 10),
+    wxSizer:add(MainSizer, Sizer2, [{flag, ?wxEXPAND}]),
+    wxSizer:addSpacer(MainSizer, 20),
+    wxSizer:addSpacer(ButtonSizer, 325),
+    wxSizer:add(ButtonSizer, B101,  []),
+    wxSizer:add(MainSizer, ButtonSizer, []),
+    wxPanel:setSizer(Panel, MainSizer),
+    wxSizer:addSpacer(MainSizer, 10), 
+    wxPanel:setSizer(Panel, MainSizer),   
+    %Menu bar stuff
+    MenuBar = wxMenuBar:new(),
+	File = wxMenu:new(),
 	Help = wxMenu:new(),
 	%% ... populate it with stuff:
 	wxMenu:append(Help, ?ABOUT, "About Pear Talk"),
-	wxMenu:append(Edit, ?SEND, "Send\tCtrl-S"),
-	wxMenuBar:append(MenuBar, Edit, "&Edit"),	
+	wxMenu:append(File, 3, "Preferences\tCtrl-P"),
+	wxMenu:append(File, ?SEND, "Send\tCtrl-S"),
+	wxMenuBar:append(MenuBar, File, "&File"),	
 	wxMenuBar:append(MenuBar, Help, "&Help"),
     wxFrame:setMenuBar(Frame, MenuBar),
     wxFrame:createStatusBar(Frame),
 	wxFrame:setStatusText(Frame, "Welcome to Pear Talk!"),
-	%% Create two text fields, the first is not editable.
-	%% Better to do the positioning with Sizers? 
-    T1001 = wxTextCtrl:new(Panel, 1001,[{pos, {2, 2}},{size, {426, 200}},
-    									{style, ?wxTE_MULTILINE}]),
-    wxTextCtrl:setEditable(T1001, false),
-    T1002 = wxTextCtrl:new(Panel, 1002,[{pos, {2, 205}},{size, {426, 70}},
-    									{style, ?wxTE_MULTILINE}]),
-    wxButton:new(Panel, 101, [{label, "&Send"},{pos, {335, 285}}]),
     %% Events:
     wxPanel:connect(Panel, command_button_clicked),
     wxFrame:connect(Frame, command_menu_selected),
@@ -52,45 +69,44 @@ write(T1001, T1002) ->
 	case wxTextCtrl:getValue(T1002) of
     				"" -> nothing_to_write; %% bad implementation
     				_  -> T1002_val = wxTextCtrl:getValue(T1002),
-            			  wxTextCtrl:appendText(T1001,T1002_val++"\n"),
+            			  wxTextCtrl:appendText(T1001,"ME: "++T1002_val++"\n"),
             			  wxTextCtrl:clear(T1002)
     end.
 
 %% @doc Main loop, handles some events...
 %% @spec 
-loop(State, Cpid) ->
+loop(State) ->
     {Frame, T1001, T1002}  = State,  
     io:format("--waiting in the loop--~n", []), 
     receive
     		#wx{id=?ABOUT, event=#wxCommand{}} ->
-				Str = "Pear Talk is an awesome Peer-to-Peer Chat.",
+				Str = "Pear Talk is an awesmoe Peer-to-Peer Chat.",
 				MD = wxMessageDialog:new(Frame,Str,
 								[{style, ?wxOK bor ?wxICON_INFORMATION},
 								 {caption, "About Pear Talk"}]),
 				wxDialog:showModal(MD),
 				wxDialog:destroy(MD),
-				loop(State, Cpid);
+				loop(State);
 			
     		#wx{id = ?SEND, event=#wxCommand{type = command_menu_selected}} ->
-    			T1002_val = wxTextCtrl:getValue(T1002),
+    			Message = wxTextCtrl:getValue(T1002),
+    			chat ! {chat_send, self(), Message},
     			write(T1001, T1002),
-    			Cpid ! {send_chat, T1002_val},
-    			loop(State, Cpid);
+    			loop(State);
     			
     		#wx{id = 101, event=#wxCommand{type = command_button_clicked}} ->
-    			T1002_val = wxTextCtrl:getValue(T1002),
+    			Message = wxTextCtrl:getValue(T1002),
+    			chat ! {chat_send, self(), Message},
     			write(T1001, T1002),
-    			Cpid ! {send_chat, T1002_val},
-    			loop(State, Cpid);
+    			loop(State);
             
             #wx{event=#wxClose{}} ->
             	io:format("~p Closing window ~n",[self()]), 
          		wxWindow:destroy(Frame),
          		ok;
-         	     
-         	{chat_line, Data} -> 
-            	io:format("--datatata--~n", []),
-            	wxTextCtrl:appendText(T1001, Data++"\n"),
-            	loop(State, Cpid)
-            	
+            
+            {message_received, Sender, Message} ->
+            	wxTextCtrl:appendText(T1001,Sender++": "++Message++"\n"),
+            	loop(State)
+            
     end.
