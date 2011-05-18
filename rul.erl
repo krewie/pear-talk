@@ -36,10 +36,13 @@ fillTable(Table, [Friend|List]) ->
 
 empty() -> spawn(fun() -> ets:new(tom, [set, public]), receive _X -> ok end end).
 
--spec show(tab) -> io_device().
+-spec show(tab) -> any().
 %% @doc <h4>show(Tab())</h4><br>Pre: NULL</br><br>Post:Prints table content to screen.</br>
 show(Table) ->
 	rul:traverse(Table,fun(X) -> io:format("~p~n", [X]) end).
+
+tolist(Table) -> fold(Table, (fun (X) -> X end)).
+
 
 -spec add(tab, string(), string()) -> bool().
 %% @doc <h4>add(Tab(), String(), String())</h4><br>Pre:NULL</br><br>SIDE-EFFECT:Inserts a new entry in table with the second argument as the key and the third as the 'showedname'.</br><br>Post:NULL</br>
@@ -101,4 +104,12 @@ taux(Table,Fun,  Key) ->
         Next = ets:next(Table, Key ),
         Fun(ets:lookup(Table, Key)),
         taux(Table, Fun, Next).
+
+
+fold(Table, Fun) ->
+	foldAux (Table, Fun, ets:first(Table), []).
+
+foldAux(_Table,_Fun, '$end_of_table', Ack ) -> Ack;
+foldAux(Table, Fun,  Key, Ack) ->
+        foldAux(Table, Fun, ets:next(Table, Key), Fun(ets:lookup(Table, Key)) ++ Ack).
 
