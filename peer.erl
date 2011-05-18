@@ -4,7 +4,7 @@
 
 -module(peer).
 -compile(export_all). 
--export([start/0,shut_down/0,host_info/0,get_status/0,mess/2,ping/1,send_file/3,pingon/0,pingoff/0, send/3,friends/0,sendFr/3,my/1]).
+-export([start/0,shut_down/0,host_info/0,get_status/0,mess/2,ping/1,send_file/3,pingon/0,pingoff/0, send/3,friends/0,sendFr/3,my/1,read_address/1]).
 
 -spec start() -> list().
 %% @doc <h4>start()</h4> Starts the client and creates an empty ets called friends that is the default friend list 
@@ -325,7 +325,7 @@ ping_loop() ->
 
 -spec read_address(string())-> 
 	any().
-%% @doc <h4>read_address(Address)</h4> reads Address and if address is a domain it returns Address 
+%% @doc <h4>read_address(Address)</h4> reads Address and if Address is a domain it returns Address 
 %%if Address is an ip-address of the type xx.yy.zz.ww  it returns a tuple of the 
 %%type {xx,yy,zz,ww}
 read_address(Address) ->
