@@ -35,7 +35,7 @@ listen_state(Socket, DBPid) ->
 		%Client-calls
 				{client, login, ID, Port} ->
 					{ok, {Address, _}} = inet:peername(Socket),
-					DBPid ! {client, login, ID, Address, Port, self()},
+					DBPid ! {client, login, ID, Showedname, [Address, Port], Password, self()},
 					listen_state(Socket, DBPid);
 				{client, addfriend, {MyID, FriendID}} ->
 					DBPid ! {client, addfriend, {MyID, FriendID}, self()};
@@ -57,6 +57,11 @@ listen_state(Socket, DBPid) ->
 				io:format("sending friendlist: ~w to ~w~n", [Friendlist, Socket]),
 				Data = term_to_binary({[], [], [], [], [], friendlist, [], [], Friendlist}),
 				send(Socket, Data)
+		{db, badPass} ->
+		
+		{db, badID} ->
+		
+		
 		%{db, addfriend, ok} ->
 			%friend succesfully added
 		%{db, removefriend, ok} ->
