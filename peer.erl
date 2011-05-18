@@ -11,7 +11,7 @@
 start() ->
 	try		
 
-		Me = "guest",
+		Me = io:get_line("Insert your username: "),
 		Vsn = Me,
 		ListenPortS = io:get_line("Insert your local port: "),
 		ServerAddressS = io:get_line("Insert the address of server to connect: ") -- "\n",
@@ -159,7 +159,8 @@ status(Status) ->
     receive
     {chat_send, Pid, Message} ->
     	{value, {Receiver, _}} = lists:keysearch(Pid, 2, Status),
-    	spawn(peer, send, [Receiver, string, {my(user_name), Message}]),
+    	{value, {id, {ID, _}}} = lists:keysearch(id, 1, Status),
+    	spawn(peer, send, [Receiver, string, {ID, Message}]),
     	status(Status);
     {chat_window, Receiver} ->
     	Pid = spawn(chat_frame, start, []),
@@ -273,7 +274,7 @@ get_request(Sender_address, Socket, BinaryList) ->
      		  				file:write_file("log_file.txt", Sender_showed_name ++ " to me:" ++ ": " 
 							++ String ++ "\n",[append]),
 						{value, {_, Pid}} = lists:keysearch(Sender_username, 1, get_status()),
-						Pid!{message_received, Sender_username, String}
+						Pid!{message_received, Sender_username, String};
 							 
 					_Any -> []
 				end
