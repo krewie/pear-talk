@@ -159,7 +159,7 @@ status(Status) ->
     receive
     {chat_send, Pid, Message} ->
     	{value, {Receiver, _}} = lists:keysearch(Pid, 2, Status),
-    	spawn(peer, send, [Receiver, string, {"ME", Message}]),
+    	spawn(peer, send, [Receiver, string, {my(user_name), Message}]),
     	status(Status);
     {chat_window, Receiver} ->
     	Pid = spawn(chat_frame, start, []),
@@ -272,8 +272,9 @@ get_request(Sender_address, Socket, BinaryList) ->
 						file:write_file("log_file.txt", Timestamp ++ " " ,[append]),
      		  				file:write_file("log_file.txt", Sender_showed_name ++ " to me:" ++ ": " 
 							++ String ++ "\n",[append]),
-							{value, {_, Pid}} = lists:keysearch(Sender_username, 1, get_status()),
-							 Pid ! {message_received, Sender_showed_name, String};
+						{value, {_, Pid}} = lists:keysearch(Sender_username, 1, get_status()),
+						Pid!{message_received, Sender_username, String}
+							 
 					_Any -> []
 				end
 			catch
