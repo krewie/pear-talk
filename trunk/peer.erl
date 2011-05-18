@@ -1,4 +1,4 @@
-%% @author Staffan Rodgren.
+%% @author Kristian Ionesku & Staffan Rodgren.
 %% @doc First draft of the chat window.
 %% @copyright 2011 Peer-talk.
 
