@@ -33,8 +33,8 @@ start() ->
 
 
 		register(ping_pong, spawn(peer, ping_loop, [])),
-		
-		spawn(login_frame,start,["username:"])
+		spawn(aging_,start,["username:"]),
+		register(aging, spawn(peer,aging_loop,[]))
 		
 		
 	catch Ek:En ->
@@ -61,7 +61,13 @@ shut_down() ->
 		exit(whereis(ping_pong),kill)
 	catch
 		Ek3:En3  -> {Ek3, En3}
+	end,
+	try
+		exit(whereis(aging),kill)
+	catch
+		Ek4:En4  -> {Ek4, En4}
 	end.
+
 
 
 -spec host_info() -> 
@@ -416,3 +422,17 @@ autentication(Username, Password) ->
 			{Ek,En}
 	end.
 
+aging_loop() ->
+	rul:traverse(friends, 	(fun (X) -> 
+					Count = rul:peek(friends, X, age), 
+					rul:change(friends, X, age, Count + 1),
+					case Count of 
+						60 ->
+							rul:logout(friends, X);
+						_ ->
+							0
+					end 
+				end)),
+	timer:sleep (1000),
+	aging_loop().
+			
