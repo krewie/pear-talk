@@ -77,7 +77,7 @@ write(T1001, T1002) ->
 %% @spec 
 loop(State) ->
     {Frame, T1001, T1002}  = State,  
-    io:format("--waiting in the loop--~n", []), 
+    %io:format("--waiting in the loop--~n", []), 
     receive
     		#wx{id=?ABOUT, event=#wxCommand{}} ->
 				Str = "Pear Talk is an awesmoe Peer-to-Peer Chat.",
