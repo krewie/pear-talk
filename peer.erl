@@ -157,36 +157,41 @@ pingoff() ->
 status(Status) ->
     receive
     {chat_send, Pid, Message} ->
-    	{value, {Receiver, _}} = lists:keysearch(Pid, 2, Status),
-    	{value, {id, {ID, _}}} = lists:keysearch(id, 1, Status),
-    	spawn(peer, send, [Receiver, string, {ID, Message}]),
-    	status(Status);
+    		{value, {Receiver, _}} = lists:keysearch(Pid, 2, Status),
+    		{value, {id, {ID, _}}} = lists:keysearch(id, 1, Status),
+    		spawn(peer, send, [Receiver, string, {ID, Message}]),
+    		status(Status);
     {chat_window, Receiver} ->
-    	Pid = spawn(chat_frame, start, []),
-    	NewStatus=lists:keystore(Receiver, 1, Status, {Receiver, Pid}),
-    	status(NewStatus);
-	{login, {Username, Password}}  ->
+		case NewStatus = lists:keysearch(Receiver, 1, Status) of
+			false ->
+    				Pid = spawn(chat_frame, start, []),
+    				NewStatus=lists:keystore(Receiver, 1, Status, {Receiver, Pid}),
+    				status(NewStatus);
+			_ ->
+				status(Status)
+		end;
+    {login, {Username, Password}}  ->
 		rul:add(friends, Username, Username),
 		{value, {_ , NetworkInterface}} = lists:keysearch(network_interface, 1, Status),
 		{value, {_ , ListenPort}} = lists:keysearch(listen_port, 1, Status),
 		rul:set_online(friends, Username, NetworkInterface, ListenPort),
 		spawn(peer,autentication,[Username, Password]),		
 		status(lists:keystore(id, 1, Status, {id, {Username,Username}}));
-	newfriends ->
+    newfriends ->
 		rul:friends(),
 		status(lists:keystore(friend_list, 1, Status, {friend_list, friends}));
-        {status, Pid} ->
-            Pid!Status,
-            status(Status);
+    {status, Pid} ->
+            	Pid!Status,
+            	status(Status);
     {change, Status_element, New_status} ->
 		status(lists:keystore(Status_element, 1, Status, {Status_element, New_status}));
-	{send, Receiver, Mode, Obj} ->
+    {send, Receiver, Mode, Obj} ->
             	spawn(peer,send,[Receiver, Mode, Obj]),
 		status(Status);
-        stop ->
-            true;
-        _Any->
-            status(Status)
+    stop ->
+            	true;
+    _Any->
+            	status(Status)
     end.
 
 -spec server(term(), integer()) -> 
@@ -271,6 +276,7 @@ get_request(Sender_address, Socket, BinaryList) ->
 					string ->
 						{Sender_username, String} = Obj,
 						[Sender_showed_name ,_, _] = rul:take(friends, Sender_username),
+						chat!{chat_window, Sender_username}
 			      			io:format("~p~n", [Sender_showed_name ++ " to " ++ "me: " ++ String]),
 						file:write_file("log_file.txt", Timestamp ++ " " ,[append]),
      		  				file:write_file("log_file.txt", Sender_showed_name ++ " to me:" ++ ": " 
