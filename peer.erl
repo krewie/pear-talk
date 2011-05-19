@@ -4,10 +4,13 @@
 
 -module(peer).
 -compile(export_all). 
--export([start/1,shut_down/0,host_info/0,get_status/0,mess/2,ping/1,send_file/3,pingon/0,pingoff/0, send/3,friends/0,sendFr/3,my/1,read_address/1]).
+-export([start/1,shut_down/0,host_info/0,get_status/0,mess/2,ping/1,send_file/3,pingon/0,pingoff/0,
+		send/3,friends/0,sendFr/3,my/1,read_address/1]).
 
 -spec start(integer()) -> list().
-%% @doc <h4>start(G)</h4> Starts the client and creates an empty ets called friends that is the default friend list, if G is set to 1 then the gui is activated. 
+%% @doc <h4>start(G)</h4> Starts the client and creates an empty ets called friends that is the default friend list, 
+%%if G is set to 1 then the gui is activated. 
+%% @end
 start(G) ->
 	try		
 		Me = "guest",
@@ -52,6 +55,7 @@ start(G) ->
 -spec shut_down() -> 
 	term().
 %% @doc <h4>shut_down()</h4> stops the client
+%% @end
 shut_down() ->
 	kill_conversations(),
 	try
@@ -79,12 +83,12 @@ shut_down() ->
 -spec host_info() -> 
 	term().
 %% @doc <h4>host_info()</h4> gives information about your computer
+%% @end
 host_info() -> inet:gethostbyname(net_adm:localhost()). 
 
 -spec get_status() -> 
 	term().
 %% @doc <h4>get_status()</h4> gives information about your status
-
 get_status()->
 	chat!{status, self()},
 	receive 
@@ -96,6 +100,7 @@ get_status()->
 -spec my(atom()) -> 
 	term().
 %% @doc <h4>my(Status_element)</h4> returns the value of Status_element
+%% @end
 my(Status_element) -> 
 	case	lists:keysearch(Status_element, 1, get_status()) of
 		false ->
@@ -108,7 +113,7 @@ my(Status_element) ->
 -spec mess(string(),string()) -> 
 	term().
 %% @doc <h4>mess(Receiver , String)</h4>  sends String to Receiver if Receiver is in the friend list  
-
+%% @end
 mess(Receiver_username, String) ->	
 	try
 		{My_username, _} = my(id),
@@ -126,9 +131,11 @@ mess(Receiver_username, String) ->
 	end.
 
 
-%% @doc <h4>ping(Receiver)</h4>  pings Receiver if Receiver is in the friend list  
+
 -spec ping(string()) -> 
 	term().
+%% @doc <h4>ping(Receiver)</h4>  pings Receiver if Receiver is in the friend list  
+%% @end
 ping(Receiver) -> 
 	{My_username, _} = my(id),
 	chat!{send, Receiver, ping, {my(listen_port), My_username}}, 
@@ -138,6 +145,7 @@ ping(Receiver) ->
 -spec send_file(string(),string(),string()) -> 
 	term().
 %% @doc <h4>send_file(Receiver, Path, Name)</h4> sends the file Path ++ Name to Receiver if Receiver is in the friend list
+%% @end
 send_file(Receiver, Path, Name) ->
 	try
 		{ok, File} = file:read_file([Path ++ Name]),
@@ -145,12 +153,11 @@ send_file(Receiver, Path, Name) ->
 		sent
 	catch _:_ ->
 		{error, file_not_found}
-	end.
-
-
+	end.
 -spec pingon() -> 
 	term().
 %% @doc <h4>pingon()</h4> allows you to see who pings you.
+%% @end
 pingon() ->
 	chat!{change, ping_mode, pingon}.
 
@@ -159,6 +166,7 @@ pingon() ->
 -spec pingoff() -> 
 	term().
 %% @doc <h4>pingoff()</h4> disallows you to see who pings you.
+%% @end
 pingoff() ->
 	chat!{change, ping_mode, pingoff}.
 
@@ -166,6 +174,7 @@ pingoff() ->
 -spec status(term()) -> 
 	nil().
 %% @doc <h4>status(Status)</h4> starts a process that will hold Status.
+%% @end
 status(Status) ->
     receive
     {close_window, Pid} ->
@@ -224,6 +233,7 @@ status(Status) ->
 -spec server(term(), integer()) -> 
 	term().
 %% @doc <h4>server(NetworkInterface, ListenPort)</h4> starts alistening proces on NetworkInterface:ListenPort.
+%% @end
 server(NetworkInterface, ListenPort)->
 	case gen_tcp:listen(ListenPort, [binary, {active, false},{ip, NetworkInterface}]) of
 		{ok, ListenSocket} ->
@@ -236,6 +246,7 @@ server(NetworkInterface, ListenPort)->
 -spec wait_connect(term()) -> 
 	term().
 %% @doc <h4>wait_connect(ListenSocket)</h4> starts a proces waiting for a connection on ListenSocket.
+%% @end
 wait_connect(ListenSocket) ->
 	case gen_tcp:accept(ListenSocket) of
 		{ok, Socket} ->
@@ -247,9 +258,11 @@ wait_connect(ListenSocket) ->
 	end.
 
 
+
 -spec get_request(term(), term(), binary()) -> 
 	term().
 %% @doc <h4>get_request(Sender_address, Socket, BinaryList)</h4> process the request BinaryList incoming on Socket.
+%% @end
 get_request(Sender_address, Socket, BinaryList) ->
 	case gen_tcp:recv(Socket,0) of
 		{ok, Binary} ->
@@ -331,13 +344,16 @@ get_request(Sender_address, Socket, BinaryList) ->
 			end
      		end.
    
-%%--------------------------------------------------------------------------------------------------
+%----------------------------------------------------------------------------------------------------------------------
+
+
 -spec send(string(), atom(), any()) -> 
 	term().
 %% @doc <h4>send(Receiver, Mode, Obj)</h4> sends Mode and Obj to Receiver if Receiver is in the friend list,
 %%Mode specifies for Receiver what kind of data that is beeing sent.<br>When Mode is set to file, friendlist, 
 %%ping or pong, Receiver will neglect Data and process Obj that will be supposed to contain respectively
 %%a file a friend list or an empty list in the case of a ping or a pong.</br>
+%% @end
 send(Receiver_username, Mode, Obj) ->
 		try
 			[_ ,Receiver_address, Receiver_listen_port] = rul:take(friends, Receiver_username),
@@ -353,6 +369,7 @@ send(Receiver_username, Mode, Obj) ->
 -spec sendB(term(), binary()) -> 
 	nil().
 %% @doc <h4>sendB(Socket,Bin)</h4> sends Bin to sockets divided in 100bit-chunks. 
+%% @end
 sendB(Socket, <<Chunk:100/binary, Rest/binary>>) ->
     gen_tcp:send(Socket, Chunk),
     sendB(Socket, Rest);
@@ -363,6 +380,7 @@ sendB(Socket,Rest) ->
 -spec ping_friends(atom())-> 
 	any().
 %% @doc <h4>ping_friends(Table)</h4> pings all the friends in Table. 
+%% @end
 ping_friends(Table) ->
 	try 
 		rul:traverse(Table, (fun([{R, _}|_L]) -> ping(R) end))
@@ -373,18 +391,20 @@ ping_friends(Table) ->
 
 -spec ping_loop()-> 
 	any().
-%% @doc <h4>ping_loop()</h4> start a process that pings all the friends in Table every 10000ms. 
+%% @doc <h4>ping_loop()</h4> start a process that pings all the friends in Table every 10000ms.
+%% @end
 ping_loop() ->
 	ping_friends(friends),
 	timer:sleep(10000),
 	ping_loop().
 
 
+
+
 -spec read_address(string())-> 
 	any().
-%% @doc <h4>read_address(Address)</h4> reads Address and if Address is a domain it returns Address 
-%%if Address is an ip-address of the type xx.yy.zz.ww  it returns a tuple of the 
-%%type {xx,yy,zz,ww}
+%% @doc <h4>read_address(Address)</h4> reads Address and if Address is a domain it returns Address if Address is an ip-address of the type "xx.yy.zz.ww"  it returns a tuple of the type {xx,yy,zz,ww}
+%% @end
 read_address(Address) ->
 	case inet_parse:address(Address) of
 		{ok,Ip} ->
@@ -396,6 +416,7 @@ read_address(Address) ->
 -spec addme()-> 
 	any().
 %% @doc <h4>addme()</h4> adds the owner of the client process to the friend list.
+%% @end
 addme() ->
 	try
 		{Me, Vn} = my(id),
@@ -408,11 +429,13 @@ addme() ->
 -spec friends()-> 
 	any().
 %% @doc <h4>friends()</h4> shows the friend list.
+%% @end
 friends() -> rul:show(friends).
 
 -spec acceptFr(string(),string(),term(),integer())-> 
 	any().
 %% @doc <h4>acceptFr(Sd,Vn,PublicIp,Lp)</h4> asks if you accept Sd as friend.
+%% @end
 acceptFr(Sender_username, Sender_showed_name, Sender_address, Sender_listen_port) ->
 	Line = io_lib:format("accept friend request from ~p ~p (y/n)? ", [Sender_username, Sender_showed_name]),
 	case io:get_line(Line) of
@@ -430,6 +453,7 @@ acceptFr(Sender_username, Sender_showed_name, Sender_address, Sender_listen_port
 -spec sendFr(string(), term(),integer())-> 
 	any().
 %% @doc <h4>sendFr(Receiver_username, Friend_public_ip, Friend_listen_port)</h4> Sends a friend request to your friend.
+%% @end
 sendFr(Receiver_username, Receiver_address, Receiver_listen_port) ->
 	{My_username, My_showed_name} = my(id),
 	rul:add(friends, Receiver_username, "unknown"),
@@ -437,6 +461,11 @@ sendFr(Receiver_username, Receiver_address, Receiver_listen_port) ->
 	send(Receiver_username, befriends, {my(listen_port), My_username, My_showed_name}),
 	rul:logout(friends, Receiver_username).
 
+
+-spec friend(string())-> 
+	any().
+%% @doc <h4>friend(Username)</h4> Sends a friend request to Username.
+%% @end
 friend(Username) ->
 	try
 		{MyUser, _} = my(id),
