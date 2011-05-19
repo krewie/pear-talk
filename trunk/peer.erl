@@ -47,6 +47,7 @@ start() ->
 	term().
 %% @doc <h4>shut_down()</h4> stops the client
 shut_down() ->
+	kill_conversations(),
 	try
 		exit(whereis(aging),kill)
 	catch
@@ -441,4 +442,18 @@ old ([{X,_}|L]) ->
 			[]
 	end,
 	old(L);
-old([]) -> [].			
+old([]) -> [].	
+
+kill_conversations() -> shut(rul:tolist(friends)).
+
+shut ([{X,_}|L]) ->
+	Pid = my(X), 
+	case Pid of
+		{error,nomatch} ->
+			[];
+		_ ->
+			exit(Pid, kill),
+			[]
+	end,
+	shut(L);
+shut([]) -> [].			
