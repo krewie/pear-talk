@@ -37,7 +37,9 @@ start(G) ->
 			G == 1 ->
 				spawn(login_frame,start,["username:"]);
 			true ->
-				ok
+				Username = (io:get_line("Insert your username: ") --"\n"),
+				Password = (io:get_line("Insert your password: ") --"\n"),
+				chat!{login, {Username, Password}}
 		end
 		
 		
@@ -194,11 +196,12 @@ status(Status) ->
 		{value, {_ , ListenPort}} = lists:keysearch(listen_port, 1, Status),
 		rul:set_online(friends, Username, NetworkInterface, ListenPort),
 		spawn(peer,autentication,[Username, Password]),
-		try
-			spawn(contacts, start, [])
-		catch
-			_:_ ->
-				nogui
+		{value, {_ , G}} = lists:keysearch(graphic, 1, Status),
+		if
+			G == 1 ->
+    				spawn(contacts, start, []);	
+			true ->
+				ok
 		end,
 		status(lists:keystore(id, 1, Status, {id, {Username,Username}}));
     newfriends ->
@@ -265,10 +268,8 @@ get_request(Sender_address, Socket, BinaryList) ->
 						{Sender_listen_port, Sender_username, Sender_showed_name} = Obj,
 						spawn(peer,acceptFr,[Sender_username, Sender_showed_name, Sender_address, 								Sender_listen_port]);
 					friendlist ->						
-						{Showed_name, FriendList} = Obj,
-						{Username,_} = my(id),
-						chat!{change,id,{Username,Showed_name}},
-						rul:fillTable(friends, FriendList),
+					
+						rul:fillTable(friends, Obj),
 						io:format("The friend list has been updated!~n"); 
 
 					file ->
@@ -309,13 +310,20 @@ get_request(Sender_address, Socket, BinaryList) ->
 						{value, {_, Pid}} = lists:keysearch(Sender_username, 1, get_status()),
 						Pid!{message_received, Sender_username, String};
 					{server_badlogin, Reason} ->
-						case Reason of
-							badPass ->
-								spawn(login_frame,start,["wrong password!"]);
-							_ ->
-								spawn(login_frame,start,["wrong username!"])
-						end;
-											 
+						G = my(graphic),
+						if
+							G == 1 ->
+								case Reason of
+									badPass ->
+										spawn(login_frame,start,["wrong password!"]);
+									_ ->
+										spawn(login_frame,start,["wrong username!"])
+								end;
+							true ->
+								Username = (io:get_line("Insert your username: ") --"\n"),
+								Password = (io:get_line("Insert your password: ") --"\n"),
+								chat!{login, {Username, Password}}
+						end;											 
 					_Any -> []
 				end
 			catch
@@ -429,10 +437,25 @@ sendFr(Receiver_username, Receiver_address, Receiver_listen_port) ->
 	send(Receiver_username, befriends, {my(listen_port), My_username, My_showed_name}),
 	rul:logout(friends, Receiver_username).
 
+friend(Username) ->
+	try
+		{MyUser, _} = my(id),
+		{ok, Sock} = gen_tcp:connect(my(server_address), my(server_port), [binary,{active, false}]),
+		gen_tcp:send(Sock, term_to_binary({client,addfriend, MyUser, Username})),
+		gen_tcp:close(Sock)
+	catch 
+		Ek:En ->
+			{Ek,En}
+	end.
+
+
+	
+
 autentication(Username, Password) ->
 	try
 		{ok, Sock} = gen_tcp:connect(my(server_address), my(server_port), [binary,{active, false}]),
-		gen_tcp:send(Sock, term_to_binary({client,login, Username, Password, my(listen_port)}))
+		gen_tcp:send(Sock, term_to_binary({client,login, Username, Password, my(listen_port)})),
+		gen_tcp:close(Sock)
 	catch 
 		Ek:En ->
 			{Ek,En}
