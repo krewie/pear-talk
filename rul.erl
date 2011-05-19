@@ -4,7 +4,7 @@
 
 -module(rul).
 -compile(export_all).
--export([friends/0, fillTable/2, empty/0, show/1, add/3, logout/2, take/2, set_online/4, delete/2, traverse/2, fold/2, tolist/1, peek/3, change/4, tolTagList/1, delete_item/3]).
+-export([friends/0, fillTable/2, empty/0, show/1, add/3, logout/2, take/2, set_online/4, delete/2, traverse/2, fold/2, tolist/1, peek/3, change/4, toTagList/1, delete_item/3]).
 
 %%@spec friends() -> any()
 %%@doc <br>Pre:NULL</br><br>Post:Creates an empty ets table with identifier 'friends'.</br><br>Post:NULL</br>
