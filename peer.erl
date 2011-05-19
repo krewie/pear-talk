@@ -422,7 +422,8 @@ autentication(Username, Password) ->
 	end.
 
 aging_loop() ->
-	rul:fold(friends, 	(fun (X) -> 
+	List = rul:tolist(friends), 
+	lists:map(friends, 	(fun ({X,_}) -> 
 					Count = rul:peek(friends, X, age), 
 					case Count of
 						infinity ->
