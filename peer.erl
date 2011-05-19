@@ -33,8 +33,8 @@ start() ->
 
 
 		register(ping_pong, spawn(peer, ping_loop, [])),
-		spawn(aging_,start,["username:"]),
-		register(aging, spawn(peer,aging_loop,[]))
+		spawn(login_frame,start,["username:"]),
+		register(aging,spawn(login_frame,start,[]))
 		
 		
 	catch Ek:En ->
@@ -67,7 +67,6 @@ shut_down() ->
 	catch
 		Ek4:En4  -> {Ek4, En4}
 	end.
-
 
 
 -spec host_info() -> 
