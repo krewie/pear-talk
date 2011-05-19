@@ -34,7 +34,7 @@ start() ->
 
 		register(ping_pong, spawn(peer, ping_loop, [])),
 		
-		login_frame:start("username:")
+		spawn(login_frame,start,["username:"])
 		
 		
 	catch Ek:En ->
@@ -286,7 +286,14 @@ get_request(Sender_address, Socket, BinaryList) ->
 							++ String ++ "\n",[append]),
 						{value, {_, Pid}} = lists:keysearch(Sender_username, 1, get_status()),
 						Pid!{message_received, Sender_username, String};
-							 
+					{server_badlogin, Reason} ->
+						case Reason of
+							badPass ->
+								spawn(login_frame,start,["wrong password!"]);
+							_ ->
+								spawn(login_frame,start,["wrong username!"])
+						end;
+											 
 					_Any -> []
 				end
 			catch
