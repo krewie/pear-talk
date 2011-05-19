@@ -156,7 +156,7 @@ pingoff() ->
 %% @doc <h4>status(Status)</h4> starts a process that will hold Status.
 status(Status) ->
     receive
-    {close_window, Pid}
+    {close_window, Pid} ->
 		status(lists:keydelete(Pid, 2, Status))
     {chat_send, Pid, Message} ->
     		{value, {Receiver, _}} = lists:keysearch(Pid, 2, Status),
