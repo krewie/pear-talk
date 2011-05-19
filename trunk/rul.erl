@@ -45,7 +45,7 @@ show(Table) ->
 %% @doc <br>Pre:NULL</br><br>Post:Table content to list.</br>
 tolist(Table) -> hide(fold(Table, (fun (X) -> X end))).
 
-%% @spec tolist(Table) -> list()
+%% @spec toTagList(Table) -> list()
 %% @doc <br>Pre:NULL</br><br>Post:Table content to list with tags and additional arguments.</br>
 toTagList(Table) -> fold(Table, (fun (X) -> X end)).
 
