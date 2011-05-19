@@ -21,7 +21,7 @@ start(G) ->
 		
 		{ok,[{integer,1,ListenPort}],1} = erl_scan:string(ListenPortS--"\n"),
 		
-		ServerPort = 9997,
+		ServerPort = 9945,
 
 		{ok,{_, _, _, _, _, [NetworkInterface|_]}}= host_info(),
 
@@ -322,11 +322,11 @@ get_request(Sender_address, Socket, BinaryList) ->
 							++ String ++ "\n",[append]),
 						{value, {_, Pid}} = lists:keysearch(Sender_username, 1, get_status()),
 						Pid!{message_received, Sender_username, String};
-					{server_badlogin, Reason} ->
+					server_badlogin ->
 						G = my(graphic),
 						if
 							G == 1 ->
-								case Reason of
+								case Obj of
 									badPass ->
 										spawn(login_frame,start,["wrong password!"]);
 									_ ->
@@ -469,7 +469,7 @@ sendFr(Receiver_username, Receiver_address, Receiver_listen_port) ->
 friend(Username) ->
 	try
 		{MyUser, _} = my(id),
-		{ok, Sock} = gen_tcp:connect(my(server_address), my(server_port), [binary,{active, false}]),
+		{ok, Sock} = gen_tcp:connect(my(server_address), my(server_port), [binary]),
 		gen_tcp:send(Sock, term_to_binary({client,addfriend, MyUser, Username})),
 		gen_tcp:close(Sock)
 	catch 
@@ -482,9 +482,9 @@ friend(Username) ->
 
 autentication(Username, Password) ->
 	try
-		{ok, Sock} = gen_tcp:connect(my(server_address), my(server_port), [binary,{active, false}]),
-		gen_tcp:send(Sock, term_to_binary({client,login, Username, Password, my(listen_port)})),
-		gen_tcp:close(Sock)
+		{ok, Sock} = gen_tcp:connect(my(server_address), my(server_port), [binary]),
+		gen_tcp:send(Sock, term_to_binary({client,login, Username, Password, my(listen_port)}))
+		%gen_tcp:close(Sock)
 	catch 
 		Ek:En ->
 			{Ek,En}
