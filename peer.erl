@@ -175,7 +175,8 @@ status(Status) ->
 		{value, {_ , NetworkInterface}} = lists:keysearch(network_interface, 1, Status),
 		{value, {_ , ListenPort}} = lists:keysearch(listen_port, 1, Status),
 		rul:set_online(friends, Username, NetworkInterface, ListenPort),
-		spawn(peer,autentication,[Username, Password]),		
+		spawn(peer,autentication,[Username, Password]),
+		spawn(contacts, start, []),
 		status(lists:keystore(id, 1, Status, {id, {Username,Username}}));
     newfriends ->
 		rul:friends(),
