@@ -61,19 +61,21 @@ listen_state(Socket, DBPid) ->
 		{db, friendlist, Friendlist} ->
 				io:format("sending friendlist: ~w to ~w~n", [Friendlist, Socket]),
 				Data = term_to_binary({friendlist, Friendlist}),
-				send(Socket, Data)
+				send(Socket, Data);
 				
-		{db, badPass} ->
+		{db, badPass} -> 
+			send(Socket, {server_badlogin, badPass});
 		
 		{db, badID} ->
+			send(Socket, {server_badlogin, badID});
 		
-		{db, addfriend, ok} ->
+		{db, addfriend, ok} -> 0;
 			%friend succesfully added
-		{db, removefriend, ok} ->
+		{db, removefriend, ok} -> 0;
 			%friend succesfully removed
-		{db, changename, ok} ->
+		{db, changename, ok} -> 0;
 			%user succesfully changed name
-		{db, changepass, ok} ->
+		{db, changepass, ok} -> 0
 			
 	%after ?TIMEOUT ->
 	%		gen_tcp:close(Socket)	
