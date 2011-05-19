@@ -21,14 +21,9 @@ friends()->
 %%existing table with values from list().</br><br>Post:ok | error tuple</br>
  
 fillTable(_, []) -> ok;
-fillTable(Table, [Friend|List]) ->
-	case Friend of
-		[M,[Sn, Pip, Lp]] = Friend ->
-			ets:insert(Table, {M, [{name, Sn}, {ip, Pip}, {port, Lp}, {age, 0}]});
-		[M, [Sn]] = Friend ->
-			ets:insert(Table, {M, [{name, Sn},{age, infinity}]})
-	end,
-	fillTable(Table, List). 
+fillTable(Table, [{F,L}|List]) ->
+		ets:insert(Table, {F, L}),
+		fillTable(Table, List). 
 
 %% @spec empty() -> any()
 %% @doc <br>Pre:NULL</br><br>SIDE-EFFECT:Spawns a new process that creates an empty ets
