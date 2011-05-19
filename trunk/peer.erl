@@ -157,7 +157,7 @@ pingoff() ->
 status(Status) ->
     receive
     {close_window, Pid} ->
-		status(lists:keydelete(Pid, 2, Status))
+		status(lists:keydelete(Pid, 2, Status));
     {chat_send, Pid, Message} ->
     		{value, {Receiver, _}} = lists:keysearch(Pid, 2, Status),
     		{value, {id, {ID, _}}} = lists:keysearch(id, 1, Status),
