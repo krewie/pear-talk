@@ -424,12 +424,13 @@ autentication(Username, Password) ->
 aging_loop() ->
 	rul:traverse(friends, 	(fun (X) -> 
 					Count = rul:peek(friends, X, age), 
-					rul:change(friends, X, age, Count + 1),
-					case Count of 
+					case Count of
+						infinity ->
+							0 
 						30 ->
 							rul:logout(friends, X);
 						_ ->
-							0
+							rul:change(friends, X, age, Count + 1)
 					end 
 				end)),
 	timer:sleep (1000),
