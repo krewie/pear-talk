@@ -90,10 +90,6 @@ make_window() ->
     wxFrame:setMenuBar(Frame, MenuBar),
     wxFrame:createStatusBar(Frame),
 	wxFrame:setStatusText(Frame, "Welcome to Pear Talk!"),
-% Test:
-	offline_add(AllList, 0, ?FIRST_COL, ?SECOND_COL, "Stalle", "Staffan Reinius", {online}),
-	offline_add(AllList, 1, ?FIRST_COL, ?SECOND_COL, "Gabbe",  "Gabriel Tholsgard",{offline}),
-	offline_add(AllList, 2, ?FIRST_COL, ?SECOND_COL, "Kristian",  "Kristian Ionescu",{offline}),
 % Events:
     wxListCtrl:connect(AllList, command_list_item_selected, []),
     wxFrame:connect(Panel, command_menu_selected),
@@ -136,10 +132,10 @@ loop(State) ->
             #wx{event=#wxClose{}} ->
             	io:format("~p Closing window ~n",[self()]), 
          		wxWindow:destroy(Frame),
-         		ok;
-         	{friendlist, friends} ->
-         		online_status(0, rul:tolist(friends), AllList)
-         		
+         		ok
+         	after 1000 ->
+         		online_status(0, rul:tolist(friends), AllList),
+         		loop(State)
             	
     end.
     
