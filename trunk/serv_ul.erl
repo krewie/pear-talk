@@ -222,6 +222,7 @@ loop(Table, State) ->
     receive
 	%% client requests %%
 	{client, login, ID,Netinfo, Password, ClientPid} ->
+	    io:format("Checking login info\n"),
 	    case login(Table, ID, Password) of 
 		true -> 
 		    Friendlist = retrieveFriends(Table, ID),
@@ -229,10 +230,10 @@ loop(Table, State) ->
 		    ClientPid ! {db, friendlist, Netinfo, Friendlist};
 		false ->
 		    io:format("Bad password\n", []),
-		    ClientPid!{db, Netinfo,  badPass}; %% fel lösenord
+		    ClientPid!{db, badPass, Netinfo}; %% fel lösenord
 		{error, {badmatch, ID}} ->
 		    io:format("Bad username\n", []),
-		    ClientPid!{db, Netinfo,  badID} %% användare existerar inte
+		    ClientPid!{db, badID, Netinfo} %% användare existerar inte
 	    end;
 
 	{client, addfriend, MyID, FriendID, Pid} ->

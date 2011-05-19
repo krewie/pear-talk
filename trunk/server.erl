@@ -1,7 +1,7 @@
 -module(server).
 -compile(export_all).
 -define(TCP_OPTIONS, [binary, {active, true}]).
--define(PORT, 9997).
+-define(PORT, 9945).
 -define(TIMEOUT, 12000).
 
 %Server calls
@@ -100,8 +100,8 @@ listen_state(Socket, DBPid) ->
 		%friend succesfully removed
 	{db, changename, NetInfo, ok} -> 0;
 		%user succesfully changed name
-	{db, changepass, NetInfo, ok} -> 0;
-	_Any -> io:format("Something That isn't handled\n", [])
+	{db, changepass, NetInfo, ok} -> 0
+%	_ -> io:format("Something That isn't handled\n", [])
     end,
     gen_tcp:close(Socket).
 	
