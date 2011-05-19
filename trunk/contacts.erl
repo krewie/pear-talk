@@ -134,9 +134,15 @@ loop(State) ->
          		wxWindow:destroy(Frame),
          		ok
          	after 1000 ->
-			wxListCtrl:deleteAllItems(AllList),
-         		online_status(0, rul:tolist(friends), AllList),
-         		loop(State)
+			try
+				wxListCtrl:deleteAllItems(AllList),
+         			online_status(0, rul:tolist(friends), AllList),
+				loop(State)	
+			catch 
+				Ek:En ->
+					{Ek, En}
+			end
+         		
             	
     end.
     

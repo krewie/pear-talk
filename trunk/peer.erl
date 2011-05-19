@@ -48,6 +48,11 @@ start() ->
 %% @doc <h4>shut_down()</h4> stops the client
 shut_down() ->
 	try
+		exit(whereis(aging),kill)
+	catch
+		Ek4:En4  -> {Ek4, En4}
+	end,	
+	try
 		exit(whereis(chat_server),kill)
 	catch
 		Ek1:En1  -> {Ek1, En1}
@@ -61,11 +66,6 @@ shut_down() ->
 		exit(whereis(ping_pong),kill)
 	catch
 		Ek3:En3  -> {Ek3, En3}
-	end,
-	try
-		exit(whereis(aging),kill)
-	catch
-		Ek4:En4  -> {Ek4, En4}
 	end.
 
 
