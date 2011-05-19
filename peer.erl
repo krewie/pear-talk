@@ -276,7 +276,7 @@ get_request(Sender_address, Socket, BinaryList) ->
 					string ->
 						{Sender_username, String} = Obj,
 						[Sender_showed_name ,_, _] = rul:take(friends, Sender_username),
-						chat!{chat_window, Sender_username}
+						chat!{chat_window, Sender_username},
 			      			io:format("~p~n", [Sender_showed_name ++ " to " ++ "me: " ++ String]),
 						file:write_file("log_file.txt", Timestamp ++ " " ,[append]),
      		  				file:write_file("log_file.txt", Sender_showed_name ++ " to me:" ++ ": " 
