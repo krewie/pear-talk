@@ -432,7 +432,7 @@ old ([{X,_}|L]) ->
 	case Count of
 		infinity ->
 			[];
-		30 ->
+		60 ->
 			rul:logout(friends, X),
 			[];
 		_ ->
