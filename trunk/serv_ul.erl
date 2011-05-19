@@ -163,9 +163,10 @@ retrieveFriend(Table, HisID) ->
     case A /= [] of 
 	true ->
 	    [{HisID, [NetInfo, _, _, ShownName]}] = A,
-	    [HisID, ShownName, NetInfo];
+	    [Ip, Port] = NetInfo,
+	    [HisID, [ShownName, Ip, Port]];
 	_ ->
-	    [HisID, HisID, []]
+	    [HisID, [HisID]]
     end.
 
 
@@ -188,6 +189,15 @@ retrieveFriends(Table, MyID) ->
 	_ -> 
 	    {error,{badmatch, MyID}}
     end.
+
+%% @doc Hämtar ut Nät informationen som användaren med id ID har
+%% @spec getNetInfo(Table, ID) -> NetInfo
+%% Table = atom() | reference()
+%% ID = any()
+%% NetInfo = tuple()
+getNetInfo(Table, ID) ->
+    [ID, _, NetInfo] = retrieveFriend(Table, ID),
+    NetInfo.
 
 
 %% @doc Öppnar en fördefinerad tabell för redigering.
@@ -216,45 +226,47 @@ loop(Table, State) ->
 		true -> 
 		    Friendlist = retrieveFriends(Table, ID),
 		    onlineStatus(Table, ID, Netinfo),
-		    ClientPid ! {db, friendlist, Friendlist};
-		false -> 
-		    ClientPid!{db, badPass}; %% fel lösenord
+		    ClientPid ! {db, friendlist, Netinfo, Friendlist};
+		false ->
+		    io:format("Bad password\n", []),
+		    ClientPid!{db, Netinfo,  badPass}; %% fel lösenord
 		{error, {badmatch, ID}} ->
-		    ClientPid!{db, badID} %% användare existerar inte
+		    io:format("Bad username\n", []),
+		    ClientPid!{db, Netinfo,  badID} %% användare existerar inte
 	    end;
 
 	{client, addfriend, MyID, FriendID, Pid} ->
 	    case addFriend(Table, MyID, FriendID) of
 		ok ->
-		    Pid ! {db, addfriend, ok};
+		    Pid ! {db, addfriend, getNetInfo(Table, MyID), ok};
 		{error, {badmatch, MyID}} ->
-		    Pid!{db, badID} %% användare existerar inte
+		    Pid!{db, getNetInfo(Table, MyID), badID} %% användare existerar inte
 	    end;
 
 	{client, removefriend, MyID, FriendID, Pid} ->
 	    case removeFriend(Table, MyID, FriendID) of
 		ok ->
-		    Pid ! {db, removefriend, ok};
+		    Pid ! {db, removefriend, getNetInfo(Table, MyID), ok};
 		{error,{badmatch, MyID}} ->
-		    Pid ! {db, badID} %% användare existerar inte
+		    Pid ! {db, getNetInfo(Table, MyID), badID} %% användare existerar inte
 	    end;
 
 	{client, changename, ID, Name, Pid} ->
 	    case changeName(Table, ID, Name) of
 		ok ->
-		    Pid ! {db, changename, ok};
+		    Pid ! {db, changename, getNetInfo(Table, ID), ok};
 		{error, {badmatch, ID}} ->
-		    Pid ! {db, badID} %% användare existerar inte
+		    Pid ! {db, getNetInfo(Table, ID), badID} %% användare existerar inte
 	    end;
 
         {client, changepass, ID, NewPass, OldPass, Pid} ->
 	    case changePassword(Table, ID, NewPass,OldPass) of
 		ok -> 
-		    Pid!{db, changepass, ok};
+		    Pid!{db, changepass, getNetInfo(Table, ID), ok};
 		{error, {badmatch, password}} ->
-		    Pid!{db, badPass};
+		    Pid!{db, getNetInfo(Table, ID), badPass};
 		{error, {badmatch, ID}} ->
-		    Pid!{db, badID}
+		    Pid!{db, getNetInfo(Table, ID), badID}
 	    end;
 
         %% server requests %%
