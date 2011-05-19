@@ -426,7 +426,7 @@ aging_loop() ->
 					Count = rul:peek(friends, X, age), 
 					case Count of
 						infinity ->
-							0 
+							0;
 						30 ->
 							rul:logout(friends, X);
 						_ ->
