@@ -4,13 +4,12 @@
 
 -module(peer).
 -compile(export_all). 
--export([start/0,shut_down/0,host_info/0,get_status/0,mess/2,ping/1,send_file/3,pingon/0,pingoff/0, send/3,friends/0,sendFr/3,my/1,read_address/1]).
+-export([start/1,shut_down/0,host_info/0,get_status/0,mess/2,ping/1,send_file/3,pingon/0,pingoff/0, send/3,friends/0,sendFr/3,my/1,read_address/1]).
 
--spec start() -> list().
-%% @doc <h4>start()</h4> Starts the client and creates an empty ets called friends that is the default friend list 
-start() ->
+-spec start(integer()) -> list().
+%% @doc <h4>start(G)</h4> Starts the client and creates an empty ets called friends that is the default friend list, if G is set to 1 then the gui is activated. 
+start(G) ->
 	try		
-
 		Me = "guest",
 		Vsn = Me,
 		ListenPortS = io:get_line("Insert your local port: "),
@@ -27,14 +26,19 @@ start() ->
 					
 		register(chat, spawn(peer, status, [[{network_interface, NetworkInterface},
 			{listen_port, ListenPort}, {id,{Me, Vsn}}, {server_address, ServerAddress}, 
-				{server_port, ServerPort}, {ping_mode, pingoff}]])),
+				{server_port, ServerPort}, {ping_mode, pingoff}, {graphic, G}]])),
 		
 		chat!newfriends,	
 
 
 		register(ping_pong, spawn(peer, ping_loop, [])),
-		spawn(login_frame,start,["username:"]),
-		register(aging,spawn(peer,aging_loop,[]))
+		register(aging,spawn(peer,aging_loop,[])),
+		if
+			G == 1 ->
+				spawn(login_frame,start,["username:"]);
+			true ->
+				ok
+		end
 		
 		
 	catch Ek:En ->
@@ -172,9 +176,15 @@ status(Status) ->
     {chat_window, Receiver} ->
 		case lists:keysearch(Receiver, 1, Status) of
 			false ->
-    				Pid = spawn(chat_frame, start, []),
-    				NewStatus = lists:keystore(Receiver, 1, Status, {Receiver, Pid}),
-    				status(NewStatus);
+				{value, {_ , G}} = lists:keysearch(graphic, 1, Status),
+				if
+					G == 1 ->
+    						Pid = spawn(chat_frame, start, []),
+    						NewStatus = lists:keystore(Receiver, 1, Status, {Receiver, Pid}),
+    						status(NewStatus);
+					true ->
+						status(Status)
+				end;
 			_ ->
 				status(Status)
 		end;
@@ -184,7 +194,12 @@ status(Status) ->
 		{value, {_ , ListenPort}} = lists:keysearch(listen_port, 1, Status),
 		rul:set_online(friends, Username, NetworkInterface, ListenPort),
 		spawn(peer,autentication,[Username, Password]),
-		spawn(contacts, start, []),
+		try
+			spawn(contacts, start, [])
+		catch
+			_:_ ->
+				nogui
+		end,
 		status(lists:keystore(id, 1, Status, {id, {Username,Username}}));
     newfriends ->
 		rul:friends(),
