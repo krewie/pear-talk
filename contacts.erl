@@ -134,11 +134,14 @@ loop(State) ->
          		wxWindow:destroy(Frame),
          		ok
          	after 1000 ->
+	         	wxListCtrl:deleteAllItems(AllList),
          		online_status(0, rul:tolist(friends), AllList),
          		loop(State)
             	
     end.
-    
+
+%% @doc 
+%% @spec  
 online_status(_, [], _) -> ok;
 online_status(Acc, [{User, [Showed_Name, _, _]}|Rest], AllList) ->
 	offline_add(AllList, Acc, ?FIRST_COL, ?SECOND_COL, Showed_Name, User, {online}),
