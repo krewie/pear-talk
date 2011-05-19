@@ -178,7 +178,9 @@ hide_tag([{T, X}|L]) -> 	(case ((T == name) or (T == ip) or (T == port)) of
 						[X]; 
 					_-> 
 						[]
-				end) ++ hide_tag (L).
+				end) ++ hide_tag (L);
+hide_tag([_Any|L]) -> []++ hide_tag (L).
+
 hide([]) -> [];
 hide([{K,L}|R]) -> [{K, hide_tag(L)}] ++ hide(R).
 
