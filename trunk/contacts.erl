@@ -22,7 +22,7 @@ start() ->
 %% @spec 	
 offline_add(AllList, INDEX, COL1, COL2, Str1, Str2, {offline}) -> 	
 			wxListCtrl:insertItem(AllList, INDEX, ""),		
-			wxListCtrl:setItemBackgroundColour(AllList, INDEX, {240,240,240,255}),
+			wxListCtrl:setItemBackgroundColour(AllList, INDEX, {111,111,111,255}),
 			wxListCtrl:setItemImage(AllList, INDEX, 0),
 			wxListCtrl:setItem(AllList,INDEX, COL1, Str1),
 			wxListCtrl:setItem(AllList,INDEX, COL2, Str2);
