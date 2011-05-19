@@ -34,7 +34,7 @@ start() ->
 
 		register(ping_pong, spawn(peer, ping_loop, [])),
 		spawn(login_frame,start,["username:"]),
-		register(aging,spawn(login_frame,start,[]))
+		register(aging,spawn(aging_loop,start,[]))
 		
 		
 	catch Ek:En ->
