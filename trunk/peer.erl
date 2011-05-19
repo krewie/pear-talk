@@ -264,6 +264,7 @@ get_request(Sender_address, Socket, BinaryList) ->
 							++ " written on disk",[append]);
 					ping ->
 						{Sender_listen_port, Sender_username} = Obj,
+						rul:change(friends, Sender_username, age, 0),
 						rul:set_online(friends, Sender_username, Sender_address, Sender_listen_port),
 						chat!{send, Sender_username, pong, my(id)},
 						case my(ping_mode) of
@@ -432,7 +433,7 @@ old ([{X,_}|L]) ->
 	case Count of
 		infinity ->
 			[];
-		60 ->
+		30 ->
 			rul:logout(friends, X),
 			[];
 		_ ->
