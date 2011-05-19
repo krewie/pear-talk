@@ -156,16 +156,18 @@ pingoff() ->
 %% @doc <h4>status(Status)</h4> starts a process that will hold Status.
 status(Status) ->
     receive
+    {close_window, Pid}
+		status(lists:keydelete(Pid, 2, Status))
     {chat_send, Pid, Message} ->
     		{value, {Receiver, _}} = lists:keysearch(Pid, 2, Status),
     		{value, {id, {ID, _}}} = lists:keysearch(id, 1, Status),
     		spawn(peer, send, [Receiver, string, {ID, Message}]),
     		status(Status);
     {chat_window, Receiver} ->
-		case NewStatus = lists:keysearch(Receiver, 1, Status) of
+		case lists:keysearch(Receiver, 1, Status) of
 			false ->
     				Pid = spawn(chat_frame, start, []),
-    				NewStatus=lists:keystore(Receiver, 1, Status, {Receiver, Pid}),
+    				NewStatus = lists:keystore(Receiver, 1, Status, {Receiver, Pid}),
     				status(NewStatus);
 			_ ->
 				status(Status)
@@ -236,8 +238,8 @@ get_request(Sender_address, Socket, BinaryList) ->
 					binary_to_term(list_to_binary(lists:reverse(BinaryList))),
 				case Mode of
 					confirmfriend ->
-						{Sender_listen_port, Sender_username, Sender_showed_name} = Obj,
-						ets:insert(friends, {Sender_username, [Sender_showed_name, Sender_address, 								Sender_listen_port]});
+						{_, Sender_username, Sender_showed_name} = Obj,
+						rul:change(friends, Sender_username, name, Sender_showed_name);
 					befriends ->
 						{Sender_listen_port, Sender_username, Sender_showed_name} = Obj,
 						spawn(peer,acceptFr,[Sender_username, Sender_showed_name, Sender_address, 								Sender_listen_port]);
