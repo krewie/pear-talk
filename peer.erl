@@ -469,7 +469,7 @@ sendFr(Receiver_username, Receiver_address, Receiver_listen_port) ->
 friend(Username) ->
 	try
 		{MyUser, _} = my(id),
-		{ok, Sock} = gen_tcp:connect(my(server_address), my(server_port), [binary]),
+		{ok, Sock} = gen_tcp:connect(my(server_address), my(server_port), [binary,{active, false}]),
 		gen_tcp:send(Sock, term_to_binary({client,addfriend, MyUser, Username})),
 		gen_tcp:close(Sock)
 	catch 
@@ -482,9 +482,9 @@ friend(Username) ->
 
 autentication(Username, Password) ->
 	try
-		{ok, Sock} = gen_tcp:connect(my(server_address), my(server_port), [binary]),
-		gen_tcp:send(Sock, term_to_binary({client,login, Username, Password, my(listen_port)}))
-		%gen_tcp:close(Sock)
+		{ok, Sock} = gen_tcp:connect(my(server_address), my(server_port), [binary,{active, false}]),
+		gen_tcp:send(Sock, term_to_binary({client,login, Username, Password, my(listen_port)})),
+		gen_tcp:close(Sock)
 	catch 
 		Ek:En ->
 			{Ek,En}
