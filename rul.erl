@@ -26,7 +26,7 @@ fillTable(Table, [Friend|List]) ->
 		[M,[Sn, Pip, Lp]] = Friend ->
 			ets:insert(Table, {M, [{name, Sn}, {ip, Pip}, {port, Lp}, {age, 0}]});
 		[{M,p},[{M,p}]] = Friend ->
-			ets:insert(Table, {M, [M,{age, infinity}, {pending, 1}]});
+			ets:insert(Table, {M, [{name, M} ,{age, infinity}, {pending, 1}]});
 		[M, [Sn]] = Friend ->
 			ets:insert(Table, {M, [{name, Sn},{age, infinity}]})
 	end,
