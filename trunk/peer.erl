@@ -164,7 +164,7 @@ get_request(Sender_address, Socket, BinaryList) ->
 			io:format("The friend list has been updated!~n"); 
 
 		    file ->
-			handle_file_sending(Obj);
+			spawn(peer, handle_file_sending,[Obj]);
 		    ping ->
 			{Sender_listen_port, Sender_username} = Obj,
 			rul:change(friends, Sender_username, age, 0),
