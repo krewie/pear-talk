@@ -156,7 +156,7 @@ get_request(Sender_address, Socket, BinaryList) ->
 			{Sender_username, Sender_showed_name} = Obj,
 			String = Sender_showed_name ++ " has left.",
 			io:format("~p~n", [String]),
-			rul:logout(friends, Sender_username, Sender_username),
+			rul:logout(friends, Sender_username),
 			my(Sender_username)!{message_received, Sender_username, String};
 		    confirmfriend ->
 			{_, Sender_username, Sender_showed_name} = Obj,
@@ -165,13 +165,11 @@ get_request(Sender_address, Socket, BinaryList) ->
 			{Sender_listen_port, Sender_username, Sender_showed_name} = Obj,
 			spawn(peer,acceptFr,[Sender_username, Sender_showed_name, Sender_address, Sender_listen_port]);
 		    friendlist ->						
-			rul:fillTable(friends, Obj),
-			io:format("The friend list has been updated!~n"); 
+			fillTable(friends, Obj); 
 		    file ->
 			spawn(peer, handle_file_sending,[Obj]);
 		    ping ->
 			{Sender_listen_port, Sender_username} = Obj,
-			rul:change(friends, Sender_username, age, 0),
 			rul:set_online(friends, Sender_username, Sender_address, Sender_listen_port),
 			chat!{send, Sender_username, pong, my(id)},
 			case my(ping_mode) of
@@ -348,12 +346,13 @@ friend(Username) ->
     try
 	{MyUser, _} = my(id),
 	{ok, Sock} = gen_tcp:connect(my(server_address), my(server_port), [binary,{active, false}]),
-	gen_tcp:send(Sock, term_to_binary({client,addfriend, MyUser, {Username,p}})),
+	gen_tcp:send(Sock, term_to_binary({client,addfriend, MyUser, {Username,w}})),
 	gen_tcp:close(Sock)
     catch 
 	Ek:En ->
 	    {Ek,En}
-    end.
+    end,
+    refresh().
 
 
 
@@ -362,7 +361,7 @@ refresh() -> autentication(my(username), my(password)).
 autentication(Username, Password) ->
     try
 	chat!{change, password, Password},
-	chat!{change, username, UserName},	
+	chat!{change, username, Username},	
 	{ok, Sock} = gen_tcp:connect(my(server_address), my(server_port), [binary,{active, false}]),
 	gen_tcp:send(Sock, term_to_binary({client,login, Username, Password, my(listen_port)})),
 	gen_tcp:close(Sock)
@@ -409,8 +408,8 @@ old([]) -> [].
 kill_conversations() -> shut(rul:tolist(friends)).
 
 shut ([{X,_}|L]) ->
+    chat! {send, X, client_logout, my(id)},
     Pid = my(X), 
-    chat! {send, rul:peek(friends, X, name), client_logout, my(id)},
     case Pid of
 	{error,nomatch} ->
 	    [];
@@ -555,4 +554,61 @@ handle_file_sending(Obj) ->
 	    handle_file_sending(Obj)
     end.
 
+
+%% @spec fillTable(Table, list()) -> ok
+%% @doc <br>Pre: Table with name identifier 'friends' exists.</br><br>SIDE-EFFECT:Fills an already 
+%%existing table with values from list().</br><br>Post:ok | error tuple</br>
+fillTable(_, []) -> ok;
+fillTable(Table, [Friend|List]) ->
+	case Friend of
+		[{M,p},[Sn|_]] = Friend ->
+			case accept_friend(M, Sn) of
+				confirm->
+					confirmfriend({M,p}),
+					refresh();
+				refuse ->
+					deletefriend({M, p});
+				_ ->
+					[]
+			end;
+		[M,[Sn, Pip, Lp]] = Friend ->
+			ets:insert(Table, {M, [{name, Sn}, {ip, Pip}, {port, Lp}, {age, 0}]});
+		[M, [Sn]] = Friend ->
+			ets:insert(Table, {M, [{name, Sn},{age, infinity}]})
+	end,
+	fillTable(Table, List).
+
+confirmfriend(Usr) ->	
+   try
+	{ok, Sock} = gen_tcp:connect(my(server_address), my(server_port), [binary,{active, false}]),
+	gen_tcp:send(Sock, term_to_binary({client,acceptfriend, my(username), Usr})),
+	gen_tcp:close(Sock)
+    catch 
+	Ek:En ->
+	    {Ek,En}
+    end.
+
+
+accept_friend(Sender_username, Sender_showed_name) ->
+    Line = io_lib:format("accept friend request from ~p as ~p (y/n)? ", [Sender_username, Sender_showed_name]),
+    case io:get_line(Line) of
+	"y\n" ->
+		confirm;
+	"n\n" ->
+	    	refuse;
+	_ ->
+	    askagain
+    end.
+
+deletefriend(Usr) ->
+   try
+	{ok, Sock} = gen_tcp:connect(my(server_address), my(server_port), [binary,{active, false}]),
+	gen_tcp:send(Sock, term_to_binary({client,removefriend, my(username), Usr})),
+	gen_tcp:close(Sock),
+	rul:delete(friends, Usr)
+    catch 
+	Ek:En ->
+	    {Ek,En}
+    end,
+    refresh().
 
