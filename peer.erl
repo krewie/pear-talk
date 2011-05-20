@@ -152,6 +152,12 @@ get_request(Sender_address, Socket, BinaryList) ->
 		{Mode, Obj} = 
 		binary_to_term(list_to_binary(lists:reverse(BinaryList))),
 		case Mode of
+		    client_logout ->
+			{Sender_username, Sender_showed_name} = Obj,
+			String = Sender_showed_name ++ " has left.",
+			io:format("~p~n", [String]),
+			rul:logout(friends, Sender_username, Sender_username);
+			my(Sender_username)!{message_received, Sender_username, String},
 		    confirmfriend ->
 			{_, Sender_username, Sender_showed_name} = Obj,
 			rul:change(friends, Sender_username, name, Sender_showed_name);
@@ -383,6 +389,10 @@ old ([{X,_}|L]) ->
 	    infinity ->
 		[];
 	    30 ->
+		Sender_showed_name = rul:peek(friends, X, name),
+		String = Sender_showed_name ++ " has left.",
+		my(X)!{message_received, X, String},
+		io:format("~p~n", [String]),
 		rul:logout(friends, X),
 		[];
 	    _ ->
@@ -400,6 +410,7 @@ kill_conversations() -> shut(rul:tolist(friends)).
 
 shut ([{X,_}|L]) ->
     Pid = my(X), 
+    chat! {send, rul:peek(friends, X, name), client_logout, my(id)},
     case Pid of
 	{error,nomatch} ->
 	    [];
