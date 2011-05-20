@@ -25,6 +25,8 @@ fillTable(Table, [Friend|List]) ->
 	case Friend of
 		[M,[Sn, Pip, Lp]] = Friend ->
 			ets:insert(Table, {M, [{name, Sn}, {ip, Pip}, {port, Lp}, {age, 0}]});
+		[{M,p},[{M,p}]] = Friend ->
+			ets:insert(Table, {M, [M,{age, infinity}, {pending, 1}]});
 		[M, [Sn]] = Friend ->
 			ets:insert(Table, {M, [{name, Sn},{age, infinity}]})
 	end,
@@ -175,12 +177,23 @@ foldAux(Table, Fun,  Key, Ack) ->
 hide_tag([]) -> [];
 hide_tag([{T, X}|L]) -> 	(case ((T == name) or (T == ip) or (T == port)) of 
 					true -> 
-						[X]; 
+						case X of
+							{Y,p} ->
+								[Y];
+							_ ->
+								[X]
+						end; 
 					_-> 
 						[]
 				end) ++ hide_tag (L);
 hide_tag([_Any|L]) -> []++ hide_tag (L).
 
 hide([]) -> [];
-hide([{K,L}|R]) -> [{K, hide_tag(L)}] ++ hide(R).
+hide([{K,L}|R]) -> 
+	case K of
+		{Y,p} ->
+			[{Y, hide_tag(L)}] ++ hide(R);
+		_->
+			[{K, hide_tag(L)}] ++ hide(R)
+	end.
 
