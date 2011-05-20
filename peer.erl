@@ -165,10 +165,8 @@ get_request(Sender_address, Socket, BinaryList) ->
 			{Sender_listen_port, Sender_username, Sender_showed_name} = Obj,
 			spawn(peer,acceptFr,[Sender_username, Sender_showed_name, Sender_address, Sender_listen_port]);
 		    friendlist ->						
-
 			rul:fillTable(friends, Obj),
 			io:format("The friend list has been updated!~n"); 
-
 		    file ->
 			spawn(peer, handle_file_sending,[Obj]);
 		    ping ->
@@ -190,7 +188,6 @@ get_request(Sender_address, Socket, BinaryList) ->
 			    _ ->
 				[]
 			end;
-
 		    string ->
 			{Sender_username, String} = Obj,
 			Sender_showed_name = rul:peek(friends, Sender_username, name),
@@ -351,7 +348,7 @@ friend(Username) ->
     try
 	{MyUser, _} = my(id),
 	{ok, Sock} = gen_tcp:connect(my(server_address), my(server_port), [binary,{active, false}]),
-	gen_tcp:send(Sock, term_to_binary({client,addfriend, MyUser, Username})),
+	gen_tcp:send(Sock, term_to_binary({client,addfriend, MyUser, {Username,p}})),
 	gen_tcp:close(Sock)
     catch 
 	Ek:En ->
@@ -360,9 +357,12 @@ friend(Username) ->
 
 
 
+refresh() -> autentication(my(username), my(password)).
 
 autentication(Username, Password) ->
     try
+	chat!{change, password, Password},
+	chat!{change, username, UserName},	
 	{ok, Sock} = gen_tcp:connect(my(server_address), my(server_port), [binary,{active, false}]),
 	gen_tcp:send(Sock, term_to_binary({client,login, Username, Password, my(listen_port)})),
 	gen_tcp:close(Sock)
