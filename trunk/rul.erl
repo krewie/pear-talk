@@ -4,7 +4,7 @@
 
 -module(rul).
 -compile(export_all).
--export([friends/0, fillTable/2, empty/0, show/1, add/3, logout/2, take/2, set_online/4, delete/2, traverse/2, fold/2, tolist/1, peek/3, change/4, toTagList/1, delete_item/3]).
+-export([friends/0, empty/0, show/1, add/3, logout/2, take/2, set_online/4, delete/2, traverse/2, fold/2, tolist/1, peek/3, change/4, toTagList/1, delete_item/3]).
 
 %%@spec friends() -> any()
 %%@doc <br>Pre:NULL</br><br>Post:Creates an empty ets table with identifier 'friends'.</br><br>Post:NULL</br>
@@ -15,22 +15,6 @@ friends()->
 		ets:delete(friends),
 		friends()
 	end.
-
-%% @spec fillTable(Table, list()) -> ok
-%% @doc <br>Pre: Table with name identifier 'friends' exists.</br><br>SIDE-EFFECT:Fills an already 
-%%existing table with values from list().</br><br>Post:ok | error tuple</br>
- 
-fillTable(_, []) -> ok;
-fillTable(Table, [Friend|List]) ->
-	case Friend of
-		[M,[Sn, Pip, Lp]] = Friend ->
-			ets:insert(Table, {M, [{name, Sn}, {ip, Pip}, {port, Lp}, {age, 0}]});
-		[{M,p},[{M,p}]] = Friend ->
-			ets:insert(Table, {M, [{name, M} ,{age, infinity}, {pending, 1}]});
-		[M, [Sn]] = Friend ->
-			ets:insert(Table, {M, [{name, Sn},{age, infinity}]})
-	end,
-	fillTable(Table, List).
 
 %% @spec empty() -> any()
 %% @doc <br>Pre:NULL</br><br>SIDE-EFFECT:Spawns a new process that creates an empty ets
@@ -108,7 +92,6 @@ take(Table, Mail) ->
 %% @doc <br>Pre:NULL</br><br>SIDE-EFFECT:Saves the tcp/ip information about a user in table when user is online.</br><br>Post:ok | error tuple</br>
 set_online(Table, Sender, SenderIP, SenderPort) ->
 	try
-		1 = length(take(Table, Sender)),
 		change(Table, Sender, ip, SenderIP),
 		change(Table, Sender, port, SenderPort),
 		change(Table, Sender, age, 0),
@@ -121,7 +104,7 @@ set_online(Table, Sender, SenderIP, SenderPort) ->
 %% @doc <br>Pre:NULL</br><br>SIDE-EFFECT: Deletes the row  in table with key as second argument.</br><br>Post:ok | error tuple</br>
 delete(Table, Mail) ->
 	try
-		dets:delete(Table, Mail),
+		ets:delete(Table, Mail),
 		ok
 	catch		
 		Ek:En -> 
@@ -177,23 +160,17 @@ foldAux(Table, Fun,  Key, Ack) ->
 hide_tag([]) -> [];
 hide_tag([{T, X}|L]) -> 	(case ((T == name) or (T == ip) or (T == port)) of 
 					true -> 
-						case X of
-							{Y,p} ->
-								[Y];
-							_ ->
-								[X]
-						end; 
+						[X];
 					_-> 
 						[]
 				end) ++ hide_tag (L);
 hide_tag([_Any|L]) -> []++ hide_tag (L).
 
 hide([]) -> [];
-hide([{K,L}|R]) -> 
-	case K of
-		{Y,p} ->
-			[{Y, hide_tag(L)}] ++ hide(R);
-		_->
-			[{K, hide_tag(L)}] ++ hide(R)
-	end.
+hide([{K,L}|R]) -> [{K, hide_tag(L)}] ++ hide(R).
+
+
+
+
+
 
