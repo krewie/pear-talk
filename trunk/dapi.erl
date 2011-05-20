@@ -2,7 +2,7 @@
 %% @doc modul med DETS API för projektet.
  
 -module(dapi).
--export([openTable/2, closeTable/1, add/3,isDets/1, delete/2, retrieve/2, sync/1, open/1]).
+-export([openTable/2, closeTable/1, add/3,isDets/1, delete/2, retrieve/2, sync/1, open/1, showAll/1]).
 
 -include_lib("eunit/include/eunit.hrl").
 
@@ -66,6 +66,12 @@ open(FileName) ->
 	    dets:open_file(FileName);
 	{error, Reason} -> {error, Reason}
     end.
+
+%% @doc Skriver ut alla information som finns inuti Table
+%% @spec showAll(Table) -> ok
+%% Table = atom() | reference()
+showAll(Table) ->
+	dets:traverse(Table,fun(X) -> io:format("~p~n", [X]), continue end).
 	      
 
 %% eunit tests

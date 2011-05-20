@@ -1,5 +1,5 @@
 -module(serv_ul).
--export([addUser/6, addFriend/3, removeFriend/3, changeName/3, changePassword/4, onlineStatus/3, login/3, retrieveFriend/2, retrieveFriends/2, start/0, loop/2]).
+-export([addUser/6, addFriend/3, removeFriend/3, changeName/3, changePassword/4, onlineStatus/3, login/3, retrieveFriend/2, retrieveFriends/2, start/0, loop/2, acceptFriend/3]).
 -define(DB, "users").
 
 
@@ -45,31 +45,56 @@ existanceCheck([], _) ->
 %% @spec addFriend(Table,MyID, FriendID) -> ok | {error, Reason}
 %% Table = atom() | reference()
 %% MyID = any()
-%% FriendID = any()
+%% FriendID = tuple()
 addFriend(Table,MyID, FriendID) ->
     A = dapi:retrieve(Table, MyID),
-    case (A /= []) of 
+    case (A /= []) of
 	true ->
 	    [{MyID,[ NetInfo, FriendList, Password, ShowedName]}] = A,
 	    case existanceCheck(FriendList, FriendID) of
 		false ->
 		    addUser(Table, MyID, ShowedName, [FriendID|FriendList], NetInfo, Password),
-		    dapi:sync(Table);
+		    dapi:sync(Table),
+		    case FriendID of
+		       {ID, w} ->
+    		    		addFriend(Table, ID, {MyID, p});
+    		    	_ -> ok
+    		    end;
 		true ->
 		    ok
 	    end;
 	_ -> {error, {badmatch, MyID}}
     end.
 
+%% @doc Accepterar en vänförfrågan och ändrar så att vännerna känner varandra
+%% @spec acceptFriend(Table, MyID, FriendID) -> ok | false
+%% Table = atom() | reference()
+%% MyID = any()
+%% FriendID = tuple()    
+acceptFriend(Table, MyID, FriendID) ->
+	case FriendID of
+		{ID, p} ->
+			removeFriend(Table, MyID, FriendID),
+			addFriend(Table, MyID, ID),
+			acceptFriend(Table, ID, {MyID, w});
+		{ID, w} ->
+			removeFriend(Table, MyID, FriendID),
+			addFriend(Table, MyID, ID);
+		_ -> {error, badID}
+	end,
+	ok.
+
 
 %% @doc Tar bort en person (FriendID) från en annan persons (ID) vänlista, om den andra personen existerar i tabellen Table.
 %% @spec removeFriend(Table,MyID, FriendID) -> ok | {error, Reason}
-removeFriend(Table, MyID, FriendID) -> 
+removeFriend(Table, MyID, FriendID) ->
+    io:format("Gonna remove friend\n", []),
     A = dapi:retrieve(Table, MyID),
     case A /= [] of
 	true ->
 	    [{Mail, [NetInfo, Friendlist, Password, ShowedName]}] = A,
-	    addUser(Table, Mail, ShowedName,  [X || X <- Friendlist, X =/= FriendID], NetInfo, Password),	    
+	    addUser(Table, Mail, ShowedName,  [X || X <- Friendlist, X =/= FriendID], NetInfo, Password),
+	    io:format("Have removed friend: ~p\n", [FriendID]),
 	    %%dapi:add(Table, Mail, [NetInfo, [X || X <- Friendlist, X =/= FriendID] , Password, ShowedName]),
 	    dapi:sync(Table);
 	_ ->
@@ -163,10 +188,22 @@ retrieveFriend(Table, HisID) ->
     case A /= [] of 
 	true ->
 	    [{HisID, [NetInfo, _, _, ShownName]}] = A,
-	    [Ip, Port] = NetInfo,
-	    [HisID, [ShownName, Ip, Port]];
+	    case NetInfo of
+	    	[Ip, Port] ->
+	    		[HisID, [ShownName, Ip, Port]];
+	    	[] ->
+	    		[HisID, [ShownName]]
+	    end;
 	_ ->
-	    [HisID, [HisID]]
+	    case HisID of
+	    	{ID, w} ->
+	    		[ID, [ID]];
+	    	{ID, p} ->
+	    		Info = retrieveFriend(Table, ID),
+	    		[HisID, Info];
+	    	_ ->
+	    		[HisID, [HisID]]
+	    	end
     end.
 
 
@@ -196,8 +233,11 @@ retrieveFriends(Table, MyID) ->
 %% ID = any()
 %% NetInfo = tuple()
 getNetInfo(Table, ID) ->
-    [ID, _, NetInfo] = retrieveFriend(Table, ID),
-    NetInfo.
+    case retrieveFriend(Table, ID) of
+    	[_, [_, Ip, Port]] ->
+    		[Ip, Port];
+    	[_,[_]] -> []
+    end.
 
 
 %% @doc Öppnar en fördefinerad tabell för redigering.
@@ -239,17 +279,27 @@ loop(Table, State) ->
 	{client, addfriend, MyID, FriendID, Pid} ->
 	    case addFriend(Table, MyID, FriendID) of
 		ok ->
-		    Pid ! {db, addfriend, getNetInfo(Table, MyID), ok};
+		    {ID, w} = FriendID,
+		    Pid ! {db, addfriend, getNetInfo(Table, ID), retrieveFriends(Table, ID), ok};
 		{error, {badmatch, MyID}} ->
-		    Pid!{db, getNetInfo(Table, MyID), badID} %% användare existerar inte
+		    Pid!{db, badID, getNetInfo(Table, MyID)} %% användare existerar inte
 	    end;
+	    
+	{client, acceptfriend, MyID, FriendID, Pid} ->
+		case acceptFriend(Table, MyID, FriendID) of
+			ok ->
+				{ID, p} = FriendID,
+				Pid ! {db, acceptfriend, retrieveFriends(Table, MyID), retrieveFriends(Table, ID), getNetInfo(Table, MyID), getNetInfo(Table, ID)};
+			{error, _} -> ok
+		end;
 
 	{client, removefriend, MyID, FriendID, Pid} ->
+		io:format("Request of friend removel\n", []),
 	    case removeFriend(Table, MyID, FriendID) of
 		ok ->
 		    Pid ! {db, removefriend, getNetInfo(Table, MyID), ok};
 		{error,{badmatch, MyID}} ->
-		    Pid ! {db, getNetInfo(Table, MyID), badID} %% användare existerar inte
+		    Pid ! {db, badID, getNetInfo(Table, MyID)} %% användare existerar inte
 	    end;
 
 	{client, changename, ID, Name, Pid} ->
@@ -257,7 +307,7 @@ loop(Table, State) ->
 		ok ->
 		    Pid ! {db, changename, getNetInfo(Table, ID), ok};
 		{error, {badmatch, ID}} ->
-		    Pid ! {db, getNetInfo(Table, ID), badID} %% användare existerar inte
+		    Pid ! {db, badID, getNetInfo(Table, ID)} %% användare existerar inte
 	    end;
 
         {client, changepass, ID, NewPass, OldPass, Pid} ->
@@ -265,9 +315,9 @@ loop(Table, State) ->
 		ok -> 
 		    Pid!{db, changepass, getNetInfo(Table, ID), ok};
 		{error, {badmatch, password}} ->
-		    Pid!{db, getNetInfo(Table, ID), badPass};
+		    Pid!{db, badPass, getNetInfo(Table, ID)};
 		{error, {badmatch, ID}} ->
-		    Pid!{db, getNetInfo(Table, ID), badID}
+		    Pid!{db, badID, getNetInfo(Table, ID)}
 	    end;
 
         %% server requests %%
