@@ -44,11 +44,11 @@ start(G) ->
 		Password = (io:get_line("Insert your password: ") --"\n"),
 		chat!{login, {Username, Password}}
 	end
-	
-	
+
+
     catch Ek:En ->
 	    {Ek, En}
-    
+
     end.
 
 -spec status(term()) -> 
@@ -159,14 +159,12 @@ get_request(Sender_address, Socket, BinaryList) ->
 			{Sender_listen_port, Sender_username, Sender_showed_name} = Obj,
 			spawn(peer,acceptFr,[Sender_username, Sender_showed_name, Sender_address, Sender_listen_port]);
 		    friendlist ->						
-			
+
 			rul:fillTable(friends, Obj),
 			io:format("The friend list has been updated!~n"); 
-		    
+
 		    file ->
-			{FileName, File} = Obj,
-			file:write_file(FileName, File),
-			write_log("File " ++ FileName ++ " written on disk.");
+			handle_file_sending(Obj);
 		    ping ->
 			{Sender_listen_port, Sender_username} = Obj,
 			rul:change(friends, Sender_username, age, 0),
@@ -186,7 +184,7 @@ get_request(Sender_address, Socket, BinaryList) ->
 			    _ ->
 				[]
 			end;
-		    
+
 		    string ->
 			{Sender_username, String} = Obj,
 			Sender_showed_name = rul:peek(friends, Sender_username, name),
@@ -368,8 +366,13 @@ autentication(Username, Password) ->
     end.
 
 aging_loop() ->
-    List = rul:tolist(friends), 
-    old(List),
+    try
+	List = rul:tolist(friends), 
+	old(List)
+    catch 
+	Ek:En ->
+	    {Ek,En}
+    end,
     timer:sleep (1000),
     aging_loop().
 
@@ -507,7 +510,7 @@ ping(Receiver) ->
 send_file(Receiver, Path, Name) ->
     try
 	{ok, File} = file:read_file([Path ++ Name]),
-	chat!{send, Receiver, file, {Name, File}},
+	chat!{send, Receiver, file, {my(id),Name, File}},
 	sent
     catch _:_ ->
 	    {error, file_not_found}
@@ -527,3 +530,18 @@ pingon() ->
 %% @end
 pingoff() ->
     chat!{change, ping_mode, pingoff}.
+
+handle_file_sending(Obj) ->
+    {{_Sender_username, Sender_showed_name}, FileName, File} = Obj,
+    Line = io_lib:format("accept file ~p from ~p (y/n)? ", [FileName, Sender_showed_name]),
+    case io:get_line(Line) of
+	"y\n" ->
+	    file:write_file(FileName, File),
+	    write_log("File " ++ FileName ++ " written on disk.");
+	"n\n" ->
+	    io:format("File ~p discarded.~n",[FileName]);
+	_ ->
+	    handle_file_sending(Obj)
+    end.
+
+
