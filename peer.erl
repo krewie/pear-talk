@@ -156,8 +156,8 @@ get_request(Sender_address, Socket, BinaryList) ->
 			{Sender_username, Sender_showed_name} = Obj,
 			String = Sender_showed_name ++ " has left.",
 			io:format("~p~n", [String]),
-			rul:logout(friends, Sender_username, Sender_username);
-			my(Sender_username)!{message_received, Sender_username, String},
+			rul:logout(friends, Sender_username, Sender_username),
+			my(Sender_username)!{message_received, Sender_username, String};
 		    confirmfriend ->
 			{_, Sender_username, Sender_showed_name} = Obj,
 			rul:change(friends, Sender_username, name, Sender_showed_name);
@@ -391,9 +391,9 @@ old ([{X,_}|L]) ->
 	    30 ->
 		Sender_showed_name = rul:peek(friends, X, name),
 		String = Sender_showed_name ++ " has left.",
-		my(X)!{message_received, X, String},
 		io:format("~p~n", [String]),
 		rul:logout(friends, X),
+		my(X)!{message_received, X, String},
 		[];
 	    _ ->
 		rul:change(friends, X, age, Count + 1),
