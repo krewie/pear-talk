@@ -65,20 +65,25 @@ status(Status) ->
 	    spawn(peer, send, [Receiver, string, {ID, Message}]),
 	    status(Status);
 	{chat_window, Receiver} ->
-	    case lists:keysearch(Receiver, 1, Status) of
-		false ->
-		    {value, {_ , G}} = lists:keysearch(graphic, 1, Status),
-		    if
-			G == 1 ->
-			    Pid = spawn(chat_frame, start, []),
-			    NewStatus = lists:keystore(Receiver, 1, Status, {Receiver, Pid}),
-			    status(NewStatus);
-			true ->
-			    status(Status)
-		    end;
-		_ ->
-		    status(Status)
-	    end;
+		case rul:peek(friends, Receiver, ip) of
+			{error, _} ->
+				status(Status);
+			_ ->			
+				case lists:keysearch(Receiver, 1, Status) of
+					false ->
+						{value, {_ , G}} = lists:keysearch(graphic, 1, Status),
+						if
+							G == 1 ->
+								Pid = spawn(chat_frame, start, []),
+								NewStatus = lists:keystore(Receiver, 1, Status, {Receiver, Pid}),
+								status(NewStatus);
+							true ->
+								status(Status)
+						end;
+					_ ->
+						status(Status)
+				end
+		end;
 	{login, {Username, Password}}  ->
 	    rul:add(friends, Username, Username),
 	    {value, {_ , NetworkInterface}} = lists:keysearch(network_interface, 1, Status),
@@ -88,7 +93,7 @@ status(Status) ->
 	    {value, {_ , G}} = lists:keysearch(graphic, 1, Status),
 	    if
 		G == 1 ->
-		    spawn(contacts, start, []);	
+		    register(contacts_window, spawn(contacts, start, []));	
 		true ->
 		    ok
 	    end,
@@ -191,11 +196,16 @@ get_request(Sender_address, Socket, BinaryList) ->
 			Sender_showed_name = rul:peek(friends, Sender_username, name),
 			chat!{chat_window, Sender_username},
 			write_log(Sender_showed_name ++ " to me: " ++ String),
-			my(Sender_username)!{message_received, Sender_username, String};
+			my(Sender_username)!{message_received, Sender_showed_name, String};
 		    server_badlogin ->
 			G = my(graphic),
 			if
 			    G == 1 ->
+			      try
+					exit(whereis(contacts_window),kill)
+   				catch
+					Ek4:En4  -> {Ek4, En4}
+    				end,
 				case Obj of
 				    badPass ->
 					spawn(login_frame,start,["wrong password!"]);
@@ -230,8 +240,8 @@ send(Receiver_username, Mode, Obj) ->
 	    infinity ->
 		[];
 	    _ ->
-		Receiver_address = rul:peek(friends, Receiver_username, ip),
-		Receiver_listen_port= rul:peek(friends, Receiver_username, port),
+		Receiver_address = rul:peek(friends, Receiver_username, old_ip),
+		Receiver_listen_port= rul:peek(friends, Receiver_username, old_port),
 		{ok, Socket} = gen_tcp:connect(Receiver_address, Receiver_listen_port, 
 					       [binary,{packet,0},{port, 0}]),
 		sendB(Socket, term_to_binary({Mode, Obj})),
@@ -452,6 +462,11 @@ shut_down() ->
 	exit(whereis(ping_pong),kill)
     catch
 	Ek3:En3  -> {Ek3, En3}
+    end,
+    try
+	exit(whereis(contacts_window),kill)
+    catch
+	Ek5:En5  -> {Ek5, En5}
     end.
 
 
@@ -558,7 +573,9 @@ handle_file_sending(Obj) ->
 %% @spec fillTable(Table, list()) -> ok
 %% @doc <br>Pre: Table with name identifier 'friends' exists.</br><br>SIDE-EFFECT:Fills an already 
 %%existing table with values from list().</br><br>Post:ok | error tuple</br>
-fillTable(_, []) -> ok;
+fillTable(_, []) -> 
+ 	io:format("Friend list updated succesfully~n"),
+	ok;
 fillTable(Table, [Friend|List]) ->
 	case Friend of
 		[{M,p},[Sn|_]] = Friend ->
@@ -572,7 +589,7 @@ fillTable(Table, [Friend|List]) ->
 					[]
 			end;
 		[M,[Sn, Pip, Lp]] = Friend ->
-			ets:insert(Table, {M, [{name, Sn}, {ip, Pip}, {port, Lp}, {age, 0}]});
+			ets:insert(Table, {M, [{name, Sn}, {old_ip, Pip}, {old_port, Lp}, {age, 0}]});
 		[M, [Sn]] = Friend ->
 			ets:insert(Table, {M, [{name, Sn},{age, infinity}]})
 	end,
