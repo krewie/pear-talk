@@ -67,10 +67,11 @@ delete_item(Table, Mail, Key) ->
 %% @doc <br>Pre:NULL</br><br>SIDE-EFFECT:Removes tcp/ip information about a user in table when the user logout.</br><br>Post:ok | error tuple</br>
 logout(Table, Mail) ->
 	try
-		3 = length(take(Table, Mail)),
+		change(Table, Mail, age, infinity),	
+		delete_item(Table, Mail, old_ip),
+		delete_item(Table, Mail, old_port),	
 		delete_item(Table, Mail, ip),
-		delete_item(Table, Mail, port),
-		change(Table, Mail, age, infinity),				
+		delete_item(Table, Mail, port),		
 		ok
 	catch		
 		_:_ -> 
@@ -92,9 +93,11 @@ take(Table, Mail) ->
 %% @doc <br>Pre:NULL</br><br>SIDE-EFFECT:Saves the tcp/ip information about a user in table when user is online.</br><br>Post:ok | error tuple</br>
 set_online(Table, Sender, SenderIP, SenderPort) ->
 	try
+		change(Table, Sender, age, 0),
+		change(Table, Sender, old_ip, SenderIP),
+		change(Table, Sender, old_port, SenderPort),
 		change(Table, Sender, ip, SenderIP),
 		change(Table, Sender, port, SenderPort),
-		change(Table, Sender, age, 0),
 		ok
 	catch		
 		Ek:En -> 
