@@ -17,11 +17,12 @@ start(G) ->
 	Vsn = Me,
 	ListenPortS = io:get_line("Insert your local port: "),
 	ServerAddressS = io:get_line("Insert the address of server to connect: ") -- "\n",
+	ServerPortS = io:get_line("Insert the server port: "),
 	ServerAddress = read_address(ServerAddressS),
 
 	{ok,[{integer,1,ListenPort}],1} = erl_scan:string(ListenPortS--"\n"),
+	{ok,[{integer,1,ServerPort}],1} = erl_scan:string(ServerPortS--"\n"),
 
-	ServerPort = 9945,
 
 	{ok,{_, _, _, _, _, [NetworkInterface|_]}} = host_info(),
 
@@ -66,7 +67,8 @@ status(Status) ->
 	    status(Status);
 	{confirm, Sender_username} ->
 	    spawn(peer, confirmfriend, [{Sender_username, p}]),
-	    spawn(peer, refresh,[]);
+	    spawn(peer, refresh,[]),
+	    status(Status);
 	{refuse, Sender_username} ->
 	    spawn(peer,deletefriend, [{Sender_username, p}]),
 	    status(Status);
