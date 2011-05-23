@@ -7,7 +7,7 @@ SERVER_DEPENDENCIES = dapi.beam detsapp.beam serv_ul.beam server.beam ul.beam
 
 GUI_DEPENDENCIES = chat_frame.beam contacts.beam login_frame.beam
 
-CLIENT_DEPENDENCIES = peer.beam rul.beam serv_ul.beam server.beam
+CLIENT_DEPENDENCIES = peer.beam rul.beam
 
 compile = ${ERLC} ${FLAGS}
 
