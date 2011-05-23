@@ -12,6 +12,8 @@
 % --------
 
 start_server(Port) ->
+     application:set_env(kernel, inet_dist_listen_min, Port),
+     application:set_env(kernel, inet_dist_listen_max, Port),
     {ok, ListenSock} = gen_tcp:listen(Port, ?TCP_OPTIONS),
     DBpid = spawn(serv_ul, start, []),
     spawn(?MODULE, wait_for_connection, [ListenSock, DBpid]).
