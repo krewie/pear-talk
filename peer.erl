@@ -63,13 +63,13 @@ status(Status) ->
 	    status(Status);
 	{file_refuse, {{_, _}, FileName, _}} ->
 	    io:format("File ~p discarded.~n",[FileName]),
-          status(Status);
+	    status(Status);
 	{confirm, Sender_username} ->
-		spawn(peer, confirmfriend, [{Sender_username, p}]),
-		spawn(peer, refresh,[]);
+	    spawn(peer, confirmfriend, [{Sender_username, p}]),
+	    spawn(peer, refresh,[]);
 	{refuse, Sender_username} ->
-		spawn(peer,deletefriend, [{Sender_username, p}]),
-		status(Status);
+	    spawn(peer,deletefriend, [{Sender_username, p}]),
+	    status(Status);
 	{close_window, Pid} ->
 	    status(lists:keydelete(Pid, 2, Status));
 	{chat_send, Pid, Message} ->
@@ -78,25 +78,25 @@ status(Status) ->
 	    spawn(peer, send, [Receiver, string, {ID, Message}]),
 	    status(Status);
 	{chat_window, Receiver} ->
-		case rul:peek(friends, Receiver, ip) of
-			{error, _} ->
-				status(Status);
-			_ ->			
-				case lists:keysearch(Receiver, 1, Status) of
-					false ->
-						{value, {_ , G}} = lists:keysearch(graphic, 1, Status),
-						if
-							G == 1 ->
-								Pid = spawn(chat_frame, start, []),
-								NewStatus = lists:keystore(Receiver, 1, Status, {Receiver, Pid}),
-								status(NewStatus);
-							true ->
-								status(Status)
-						end;
-					_ ->
-						status(Status)
-				end
-		end;
+	    case rul:peek(friends, Receiver, ip) of
+		{error, _} ->
+		    status(Status);
+		_ ->			
+		    case lists:keysearch(Receiver, 1, Status) of
+			false ->
+			    {value, {_ , G}} = lists:keysearch(graphic, 1, Status),
+			    if
+				G == 1 ->
+				    Pid = spawn(chat_frame, start, []),
+				    NewStatus = lists:keystore(Receiver, 1, Status, {Receiver, Pid}),
+				    status(NewStatus);
+				true ->
+				    status(Status)
+			    end;
+			_ ->
+			    status(Status)
+		    end
+	    end;
 	{login, {Username, Password}}  ->
 	    rul:add(friends, Username, Username),
 	    {value, {_ , NetworkInterface}} = lists:keysearch(network_interface, 1, Status),
@@ -133,7 +133,7 @@ status(Status) ->
 %% @doc <h4>server(NetworkInterface, ListenPort)</h4> starts alistening proces on NetworkInterface:ListenPort.
 %% @end
 server(NetworkInterface, ListenPort)->
-    case gen_tcp:listen(ListenPort, [binary, {active, false},{ip, NetworkInterface}]) of
+    case gen_tcp:listen(ListenPort, [binary, {active, false}]) of %,{ip, NetworkInterface}
 	{ok, ListenSocket} ->
 	    wait_connect(ListenSocket),
 	    server(NetworkInterface, ListenPort);
@@ -214,10 +214,10 @@ get_request(Sender_address, Socket, BinaryList) ->
 			G = my(graphic),
 			if
 			    G == 1 ->
-			      try
-					exit(whereis(contacts_window),kill)
+				try
+				    exit(whereis(contacts_window),kill)
    				catch
-					Ek4:En4  -> {Ek4, En4}
+				    Ek4:En4  -> {Ek4, En4}
     				end,
 				case Obj of
 				    badPass ->
@@ -412,7 +412,7 @@ old ([{X,_}|L]) ->
 		[];
 	    30 ->
 		Sender_showed_name = rul:peek(friends, X, name),
-		String = Sender_showed_name ++ " has left.",
+		String = Sender_showed_name ++ " is offline.",
 		io:format("~p~n", [String]),
 		rul:logout(friends, X),
 		my(X)!{message_received, X, String},
@@ -590,22 +590,22 @@ handle_file_sending(Obj) ->
 %% @doc <br>Pre: Table with name identifier 'friends' exists.</br><br>SIDE-EFFECT:Fills an already 
 %%existing table with values from list().</br><br>Post:ok | error tuple</br>
 fillTable(_, []) -> 
- 	io:format("Friend list updated succesfully~n"),
-	ok;
+    io:format("Friend list updated succesfully~n"),
+    ok;
 fillTable(Table, [Friend|List]) ->
-	case Friend of
-		[{M,p},[Sn|_]] = Friend ->
-			spawn(peer,accept_friend,[M, Sn]);
+    case Friend of
+	[{M,p},[Sn|_]] = Friend ->
+	    spawn(peer,accept_friend,[M, Sn]);
 
-		[M,[Sn, Pip, Lp]] = Friend ->
-			ets:insert(Table, {M, [{name, Sn}, {old_ip, Pip}, {old_port, Lp}, {age, 0}]});
-		[M, [Sn]] = Friend ->
-			ets:insert(Table, {M, [{name, Sn},{age, infinity}]})
-	end,
-	fillTable(Table, List).
+	[M,[Sn, Pip, Lp]] = Friend ->
+	    ets:insert(Table, {M, [{name, Sn}, {old_ip, Pip}, {old_port, Lp}, {age, 0}]});
+	[M, [Sn]] = Friend ->
+	    ets:insert(Table, {M, [{name, Sn},{age, infinity}]})
+    end,
+    fillTable(Table, List).
 
 confirmfriend(Usr) ->	
-   try
+    try
 	{ok, Sock} = gen_tcp:connect(my(server_address), my(server_port), [binary,{active, false}]),
 	gen_tcp:send(Sock, term_to_binary({client,acceptfriend, my(username), Usr})),
 	gen_tcp:close(Sock)
@@ -619,15 +619,15 @@ accept_friend(Sender_username, Sender_showed_name) ->
     Line = io_lib:format("accept friend request from ~p as ~p (y/n)? ", [Sender_username, Sender_showed_name]),
     case io:get_line(Line) of
 	"y\n" ->
-		chat!{confirm, Sender_username};
+	    chat!{confirm, Sender_username};
 	"n\n" ->
-	    	chat!{refuse, Sender_username};
+	    chat!{refuse, Sender_username};
 	_ ->
-	   []
+	    []
     end.
 
 deletefriend(Usr) ->
-   try
+    try
 	{ok, Sock} = gen_tcp:connect(my(server_address), my(server_port), [binary,{active, false}]),
 	gen_tcp:send(Sock, term_to_binary({client,removefriend, my(username), Usr})),
 	gen_tcp:close(Sock),
