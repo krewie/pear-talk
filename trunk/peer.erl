@@ -57,6 +57,19 @@ start(G) ->
 %% @end
 status(Status) ->
     receive
+	{file_accept, {{_, _}, FileName, File}} ->
+	    file:write_file(FileName, File),
+	    write_log("File " ++ FileName ++ " written on disk."),
+	    status(Status);
+	{file_refuse, {{_, _}, FileName, _}} ->
+	    io:format("File ~p discarded.~n",[FileName]),
+          status(Status);
+	{confirm, Sender_username} ->
+		spawn(peer, confirmfriend, [{Sender_username, p}]),
+		spawn(peer, refresh,[]);
+	{refuse, Sender_username} ->
+		spawn(peer,deletefriend, [{Sender_username, p}]),
+		status(Status);
 	{close_window, Pid} ->
 	    status(lists:keydelete(Pid, 2, Status));
 	{chat_send, Pid, Message} ->
@@ -442,7 +455,11 @@ write_log(Note) ->
 %% @doc <h4>shut_down()</h4> stops the client
 %% @end
 shut_down() ->
-    kill_conversations(),
+    try
+    	kill_conversations()
+    catch
+	Ek6:En6  -> {Ek6, En6}
+    end,
     try
 	exit(whereis(aging),kill)
     catch
@@ -557,14 +574,13 @@ pingoff() ->
     chat!{change, ping_mode, pingoff}.
 
 handle_file_sending(Obj) ->
-    {{_Sender_username, Sender_showed_name}, FileName, File} = Obj,
+    {{_, Sender_showed_name}, FileName, _} = Obj,
     Line = io_lib:format("accept file ~p from ~p (y/n)? ", [FileName, Sender_showed_name]),
     case io:get_line(Line) of
 	"y\n" ->
-	    file:write_file(FileName, File),
-	    write_log("File " ++ FileName ++ " written on disk.");
+	    chat!{file_accept, Obj};
 	"n\n" ->
-	    io:format("File ~p discarded.~n",[FileName]);
+	    chat!{file_refuse, Obj};
 	_ ->
 	    handle_file_sending(Obj)
     end.
@@ -579,15 +595,8 @@ fillTable(_, []) ->
 fillTable(Table, [Friend|List]) ->
 	case Friend of
 		[{M,p},[Sn|_]] = Friend ->
-			case accept_friend(M, Sn) of
-				confirm->
-					confirmfriend({M,p}),
-					refresh();
-				refuse ->
-					deletefriend({M, p});
-				_ ->
-					[]
-			end;
+			spawn(peer,accept_friend,[M, Sn]);
+
 		[M,[Sn, Pip, Lp]] = Friend ->
 			ets:insert(Table, {M, [{name, Sn}, {old_ip, Pip}, {old_port, Lp}, {age, 0}]});
 		[M, [Sn]] = Friend ->
@@ -610,11 +619,11 @@ accept_friend(Sender_username, Sender_showed_name) ->
     Line = io_lib:format("accept friend request from ~p as ~p (y/n)? ", [Sender_username, Sender_showed_name]),
     case io:get_line(Line) of
 	"y\n" ->
-		confirm;
+		chat!{confirm, Sender_username};
 	"n\n" ->
-	    	refuse;
+	    	chat!{refuse, Sender_username};
 	_ ->
-	    askagain
+	   []
     end.
 
 deletefriend(Usr) ->
