@@ -11,8 +11,8 @@
 
 % --------
 
-start_server() ->
-    {ok, ListenSock} = gen_tcp:listen(?PORT, ?TCP_OPTIONS),
+start_server(Port) ->
+    {ok, ListenSock} = gen_tcp:listen(Port, ?TCP_OPTIONS),
     DBpid = spawn(serv_ul, start, []),
     spawn(?MODULE, wait_for_connection, [ListenSock, DBpid]).
 	 
@@ -59,6 +59,7 @@ listen_state(Socket, DBPid) ->
 	{client, changepass, ID, New_password, Old_password} ->
 		DBPid ! {client, changepass, ID, New_password, Old_password, self()},
 		listen_state(Socket, DBPid);
+
 	%Server-calls
 	%{server, serverlogin, {Netinfo}} ->
 	         %se till så att servern blir up-to-date
