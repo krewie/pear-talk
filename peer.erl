@@ -456,6 +456,11 @@ write_log(Note) ->
 %% @end
 shut_down() ->
     try
+	exit(whereis(contacts_window),kill)
+    catch
+	Ek5:En5  -> {Ek5, En5}
+    end,
+    try
     	kill_conversations()
     catch
 	Ek6:En6  -> {Ek6, En6}
@@ -479,11 +484,6 @@ shut_down() ->
 	exit(whereis(ping_pong),kill)
     catch
 	Ek3:En3  -> {Ek3, En3}
-    end,
-    try
-	exit(whereis(contacts_window),kill)
-    catch
-	Ek5:En5  -> {Ek5, En5}
     end.
 
 
