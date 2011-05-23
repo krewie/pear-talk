@@ -25,6 +25,9 @@ start(G) ->
 
 
 	{ok,{_, _, _, _, _, [NetworkInterface|_]}} = host_info(),
+	
+	application:set_env(kernel, inet_dist_listen_min, ListenPort),
+	application:set_env(kernel, inet_dist_listen_max, ListenPort),
 
 	register(chat_server, spawn(peer, server, [NetworkInterface, ListenPort])),
 
