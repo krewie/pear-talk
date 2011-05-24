@@ -135,12 +135,12 @@ status(Status) ->
 
 -spec server(integer()) -> 
     term().
-%% @doc <h4>server(ListenPort)</h4> starts alistening proces on NetworkInterface:ListenPort.
+%% @doc <h4>server(ListenPort)</h4> starts alistening proces on ListenPort.
 %% @end
 server(ListenPort)->
     case gen_tcp:listen(ListenPort, [binary, {active, false}]) of 
 	{ok, ListenSocket} ->
-	    wait_connect(ListenSocket); %%server(NetworkInterface, ListenPort);
+	    wait_connect(ListenSocket); 
 	{error, _} ->
 	    "error on server start up!"
     end.
