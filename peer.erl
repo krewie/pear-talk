@@ -29,7 +29,7 @@ start(G) ->
 	application:set_env(kernel, inet_dist_listen_min, ListenPort),
 	application:set_env(kernel, inet_dist_listen_max, ListenPort),
 
-	register(chat_server, spawn(peer, server, [NetworkInterface, ListenPort])),
+	register(chat_server, spawn(peer, server, [ListenPort])),
 
 	register(chat, spawn(peer, status, [[{network_interface, NetworkInterface},
 					     {listen_port, ListenPort}, {id,{Me, Vsn}}, {server_address, ServerAddress}, 
@@ -133,15 +133,14 @@ status(Status) ->
 	    status(Status)
     end.
 
--spec server(term(), integer()) -> 
+-spec server(integer()) -> 
     term().
-%% @doc <h4>server(NetworkInterface, ListenPort)</h4> starts alistening proces on NetworkInterface:ListenPort.
+%% @doc <h4>server(ListenPort)</h4> starts alistening proces on NetworkInterface:ListenPort.
 %% @end
-server(NetworkInterface, ListenPort)->
-    case gen_tcp:listen(ListenPort, [binary, {active, false}]) of %,{ip, NetworkInterface}
+server(ListenPort)->
+    case gen_tcp:listen(ListenPort, [binary, {active, false}]) of 
 	{ok, ListenSocket} ->
-	    wait_connect(ListenSocket),
-	    server(NetworkInterface, ListenPort);
+	    wait_connect(ListenSocket); %%server(NetworkInterface, ListenPort);
 	{error, _} ->
 	    "error on server start up!"
     end.
@@ -154,7 +153,7 @@ wait_connect(ListenSocket) ->
     case gen_tcp:accept(ListenSocket) of
 	{ok, Socket} ->
 	    {ok,{Sender_address, _}} = inet:peername(Socket),
-	    get_request(Sender_address,Socket,[]),
+	    spawn(peer,get_request,[Sender_address,Socket,[]]),
 	    wait_connect(ListenSocket);
 	{error, _} ->
 	    "connection refused!"
