@@ -10,7 +10,7 @@
 -define(PREFERENCES, 3).
 -define(FIRST_COL, 0).
 -define(SECOND_COL, 1).
-
+-define(SEARCH, 101).
 %% @doc 
 %% @spec chat_frame:start() -> no_return().
 start() ->
@@ -94,13 +94,14 @@ make_window() ->
     wxListCtrl:connect(AllList, command_list_item_selected, []),
     wxFrame:connect(Panel, command_menu_selected),
     wxFrame:connect(Frame, close_window),
+    wxPanel:connect(Panel, command_button_clicked),
 % Draw the Frame:	
     wxFrame:show(Frame),
 % Return:
-   {Frame, AllList}.
+   {Frame, AllList, SearchCtrl}.
 
 loop(State) ->
-    {Frame, AllList}  = State,  
+    {Frame, AllList, SearchCtrl}  = State,  
     %io:format("--waiting in the loop--~n", []), 
     receive
     		#wx{id=?ABOUT, event=#wxCommand{}} ->
@@ -116,6 +117,13 @@ loop(State) ->
 				spawn(login_frame, start, []),
 				wxWindow:destroy(Frame);
 			
+			#wx{id=?SEARCH, event=#wxCommand{type = command_button_clicked}} -> 
+                               RESULT = wxTextCtrl:getValue(SearchCtrl),
+                               Str = "Some text maybe...",                                                                                     
+               	 				SCD = wxSingleChoiceDialog:new(Frame, Str,"Result", [RESULT]),          
+                				wxSingleChoiceDialog:showModal(SCD),
+                               chat ! {gui, addfriend, RESULT},
+                               loop(State);                                                                                                   
 			%#wx{id=?PREFERENCES, event=#wxCommand{}} -> 
 				
         	#wx{event=#wxList{type = command_list_item_selected, itemIndex = Item}} ->
@@ -133,7 +141,7 @@ loop(State) ->
             	io:format("~p Closing window ~n",[self()]), 
          		wxWindow:destroy(Frame),
          		ok
-         	after 1000 ->
+         	after 3000 ->
 			try
 				wxListCtrl:deleteAllItems(AllList),
          			online_status(0, rul:tolist(friends), AllList),
