@@ -68,6 +68,9 @@ status(Status) ->
 	{file_refuse, {{_, _}, FileName, _}} ->
 	    io:format("File ~p discarded.~n",[FileName]),
 	    status(Status);
+	{gui, addfriend, FriendID} ->
+		spawn(peer, friend, [FriendID]),
+		status(Status);
 	{confirm, Sender_username} ->
 	    spawn(peer, confirmfriend, [{Sender_username, p}]),
 	    spawn(peer, refresh,[]),
@@ -137,10 +140,11 @@ status(Status) ->
     term().
 %% @doc <h4>server(ListenPort)</h4> starts alistening proces on ListenPort.
 %% @end
-server(ListenPort)->
+server(ListenPort) ->
     case gen_tcp:listen(ListenPort, [binary, {active, false}]) of 
 	{ok, ListenSocket} ->
-	    wait_connect(ListenSocket); 
+	    wait_connect(ListenSocket),
+	    server(ListenPort); 
 	{error, _} ->
 	    "error on server start up!"
     end.
@@ -600,7 +604,6 @@ fillTable(Table, [Friend|List]) ->
     case Friend of
 	[{M,p},[Sn|_]] = Friend ->
 	    spawn(peer,accept_friend,[M, Sn]);
-
 	[M,[Sn, Pip, Lp]] = Friend ->
 	    ets:insert(Table, {M, [{name, Sn}, {old_ip, Pip}, {old_port, Lp}, {age, 0}]});
 	[M, [Sn]] = Friend ->
@@ -618,24 +621,28 @@ confirmfriend(Usr) ->
 	    {Ek,En}
     end.
 
-
 accept_friend(Sender_username, Sender_showed_name) ->
-    Line = io_lib:format("accept friend request from ~p as ~p (y/n)? ", [Sender_username, Sender_showed_name]),
-    case io:get_line(Line) of
-	"y\n" ->
-	    chat!{confirm, Sender_username};
-	"n\n" ->
-	    chat!{refuse, Sender_username};
-	_ ->
-	    []
-    end.
+	case my(graphic) of
+		1->
+			contacts_window ! {friendaccept, Sender_username, Sender_showed_name};
+		_->
+			Line = io_lib:format("accept friend request from ~p as ~p (y/n)? ", [Sender_username, Sender_showed_name]),
+			case io:get_line(Line) of
+				"y\n" ->
+					chat!{confirm, Sender_username};
+				"n\n" ->
+					chat!{refuse, Sender_username};
+				_ ->
+					[]
+			end
+	end.
 
 deletefriend(Usr) ->
     try
+	rul:delete(friends, Usr),
 	{ok, Sock} = gen_tcp:connect(my(server_address), my(server_port), [binary,{active, false}]),
 	gen_tcp:send(Sock, term_to_binary({client,removefriend, my(username), Usr})),
-	gen_tcp:close(Sock),
-	rul:delete(friends, Usr)
+	gen_tcp:close(Sock)
     catch 
 	Ek:En ->
 	    {Ek,En}
