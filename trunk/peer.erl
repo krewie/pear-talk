@@ -623,8 +623,8 @@ confirmfriend(Usr) ->
 
 accept_friend(Sender_username, Sender_showed_name) ->
 	case my(graphic) of
-		1->
-			contacts_window ! {friendaccept, Sender_username, Sender_showed_name};
+		%1->
+		%	contacts_window ! {friendaccept, Sender_username, Sender_showed_name};
 		_->
 			Line = io_lib:format("accept friend request from ~p as ~p (y/n)? ", [Sender_username, Sender_showed_name]),
 			case io:get_line(Line) of
