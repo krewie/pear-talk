@@ -2,7 +2,7 @@
 %% @doc modul med DETS API för projektet.
  
 -module(dapi).
--export([openTable/2, closeTable/1, add/3,isDets/1, delete/2, retrieve/2, sync/1, open/1, showAll/1]).
+-export([openTable/2, closeTable/1, add/3,isDets/1, delete/2, retrieve/2, sync/1, open/1, showAll/1, member/2, select/2]).
 
 -include_lib("eunit/include/eunit.hrl").
 
@@ -80,6 +80,14 @@ member(Table, Id) ->
     dets:member(Table, Id).
 
 
+%% @doc returnerar resultatet av applikation av MatchSpec på alla eller några objekt i Table, ordningen på objekt är ej specifierad. Se ERTS User's Guide för en beskrivning av match specifications
+%% @spec select(Table, MatchSpec) -> Selection | {error, Reason}
+%% MatchSpec = match_spec()
+%% Selection = [term()]
+select(Table, MatchSpec) ->
+    dets:select(Table, MatchSpec).
+
+
 %% eunit tests
 
 openTable_test_() ->
@@ -119,7 +127,6 @@ member_test_() ->
      ?_assertEqual(true, member(Cake, "Key")),
      ?_assertEqual( ok, closeTable(Cake))
     ].
-    
 
 sync_test_()->
     {ok, Cake} = openTable(dapitable.test,[]),
@@ -136,4 +143,6 @@ delete_test_() ->
      ?_assertMatch ([], retrieve(Cake, "Key")),
      ?_assertEqual( ok, closeTable(Cake))
     ].
+
+
 
