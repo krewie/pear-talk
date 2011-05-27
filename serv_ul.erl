@@ -1,5 +1,5 @@
 -module(serv_ul).
--export([addUser/6, addFriend/3, removeFriend/3, changeName/3, changePassword/4, onlineStatus/3, login/3, retrieveFriend/2, retrieveFriends/2, start/0, loop/1, acceptFriend/3]).
+-export([addUser/6, addFriend/3, removeFriend/3, changeName/3, changePassword/4, onlineStatus/3, login/3, retrieveFriend/2, retrieveFriends/2, start/0, loop/1, acceptFriend/3, findPeople/2]).
 -define(DB, "users").
 
 
@@ -222,7 +222,7 @@ retrieveFriends(Table, MyID) ->
 	    [{MyID, [_, Friendslist, _, _]}] = dapi:retrieve(Table,MyID),
 	    F = fun (FriendID) -> retrieveFriend(Table, FriendID)
 		end,
-	    lists:map(F, Friendslist);
+	    lists:map(F, lists:sort(Friendslist));
 	_ -> 
 	    {error,{badmatch, MyID}}
     end.
@@ -238,6 +238,16 @@ getNetInfo(Table, ID) ->
 	    [Ip, Port];
     	[_,[_]] -> []
     end.
+
+
+%% @doc Hämtar ut de ID vars ID eller visningsnamn som börjar med strängen Search.
+findPeople(Table, Search) ->
+    [X || [X, Y] <- dapi:select(Table, [{{ '$1', ['_', '_', '_', '$2']}, [], [['$1', '$2']]}]),
+	  case (string:str(Y, Search) == 1) of
+	      false -> string:str(X, Search) == 1;
+	      true -> string:str(Y, Search) == 1
+	  end
+	     ].
 
 
 %% @doc Öppnar en fördefinerad tabell för redigering.
@@ -336,12 +346,11 @@ loop(Table) ->
 	    loop(Table);
 
 	{client, removeuser, ID, Netinfo,Pid} ->
-	    case dapi:member(Table, ID) of
-		true ->
-		    dapi:delete(Table, ID),
+	    case dapi:delete(Table, ID) of
+		ok ->
 		    Pid!{db, removeuser, Netinfo, ok};
-		true ->
-		    PiD!{db, badID, Netinfo}
+		_ ->
+		    Pid!{db, badID, Netinfo}
 	    end,
 	    loop(Table);
 
