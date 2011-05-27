@@ -21,23 +21,23 @@ start() ->
 %% @doc  
 %% @spec 	
 offline_add(AllList, INDEX, COL1, COL2, Str1, Str2, {offline}) -> 	
-			wxListCtrl:insertItem(AllList, INDEX, ""),		
-			wxListCtrl:setItemBackgroundColour(AllList, INDEX, {189,189,189,255}),
-			wxListCtrl:setItemImage(AllList, INDEX, 0),
-			wxListCtrl:setItem(AllList,INDEX, COL1, Str1),
-			wxListCtrl:setItem(AllList,INDEX, COL2, Str2);
+    wxListCtrl:insertItem(AllList, INDEX, ""),		
+    wxListCtrl:setItemBackgroundColour(AllList, INDEX, {189,189,189,255}),
+    wxListCtrl:setItemImage(AllList, INDEX, 0),
+    wxListCtrl:setItem(AllList,INDEX, COL1, Str1),
+    wxListCtrl:setItem(AllList,INDEX, COL2, Str2);
 offline_add(AllList, INDEX, COL1, COL2, Str1, Str2, {online}) ->
-			wxListCtrl:insertItem(AllList, INDEX, ""),
-			wxListCtrl:setItemImage(AllList, INDEX, 1),
-			wxListCtrl:setItem(AllList,INDEX, COL1, Str1),
-			wxListCtrl:setItem(AllList,INDEX, COL2, Str2).
+    wxListCtrl:insertItem(AllList, INDEX, ""),
+    wxListCtrl:setItemImage(AllList, INDEX, 1),
+    wxListCtrl:setItem(AllList,INDEX, COL1, Str1),
+    wxListCtrl:setItem(AllList,INDEX, COL2, Str2).
 
 fill_contact() -> 0.
 %% @doc 
 %% @spec 
 make_window() ->
-	Server = wx:new(),
-	%% Create new wx-object, new window with panel, main sizer and notebook
+    Server = wx:new(),
+    %% Create new wx-object, new window with panel, main sizer and notebook
     %Server = wx:new(),
     Frame = wxFrame:new(Server, -1, "Pear Talk", [{size,{355, 580}}]),
     Panel = wxPanel:new(Frame, []),
@@ -57,11 +57,11 @@ make_window() ->
     BitmapSizer = wxStaticBoxSizer:new(?wxVERTICAL, Panel,[]),
     Image = wxImage:new("icon.jpg", []),
     Bitmap = wxBitmap:new(wxImage:scale(Image, round(wxImage:getWidth(Image)*0.34),
-											   round(wxImage:getHeight(Image)*0.25),
-										[{quality, ?wxIMAGE_QUALITY_HIGH}])),
+					round(wxImage:getHeight(Image)*0.25),
+					[{quality, ?wxIMAGE_QUALITY_HIGH}])),
     StaticBitmap = wxStaticBitmap:new(Panel, 1, Bitmap),
 % SÃ¶kfÃ¤lt:
-	SearchSizer = wxStaticBoxSizer:new(?wxHORIZONTAL, Panel,[{label, "Friend search:"}]),
+    SearchSizer = wxStaticBoxSizer:new(?wxHORIZONTAL, Panel,[{label, "Friend search:"}]),
     SearchCtrl = wxTextCtrl:new(Panel, 1, [{value, "Em@il"},{style, ?wxDEFAULT},{size, {235, 20}}]),
     SearchButt = wxButton:new(Panel, 101, [{label, "&Search"}]),
     wxSizer:add(SearchSizer, SearchCtrl,[]),
@@ -76,20 +76,20 @@ make_window() ->
     wxSizer:add(MainSizer, SearchSizer, [{flag, ?wxEXPAND}]),
     wxPanel:setSizer(Panel, MainSizer),
 % Menubar:
-	MenuBar = wxMenuBar:new(),
-	File = wxMenu:new(),
-	Help = wxMenu:new(),
+    MenuBar = wxMenuBar:new(),
+    File = wxMenu:new(),
+    Help = wxMenu:new(),
 % Some stuff in menu:
-	wxMenu:append(Help, ?ABOUT, "About Pear Talk"),
-	wxMenu:append(File, ?LOGOUT, "Log out\tCtrl-L"),	
-	wxMenu:append(File, ?PREFERENCES, "Preferences\tCtrl-P"),
-	wxMenu:append(File, ?SEND, "Send\tCtrl-S"),	
-	wxMenuBar:append(MenuBar, File, "&File"),	
-	wxMenuBar:append(MenuBar, Help, "&Help"),
-	wxMenuBar:enable(MenuBar,?SEND, false),
+    wxMenu:append(Help, ?ABOUT, "About Pear Talk"),
+    wxMenu:append(File, ?LOGOUT, "Log out\tCtrl-L"),	
+    wxMenu:append(File, ?PREFERENCES, "Preferences\tCtrl-P"),
+    wxMenu:append(File, ?SEND, "Send\tCtrl-S"),	
+    wxMenuBar:append(MenuBar, File, "&File"),	
+    wxMenuBar:append(MenuBar, Help, "&Help"),
+    wxMenuBar:enable(MenuBar,?SEND, false),
     wxFrame:setMenuBar(Frame, MenuBar),
     wxFrame:createStatusBar(Frame),
-	wxFrame:setStatusText(Frame, "Welcome to Pear Talk!"),
+    wxFrame:setStatusText(Frame, "Welcome to Pear Talk!"),
 % Events:
     wxListCtrl:connect(AllList, command_list_item_selected, []),
     wxFrame:connect(Panel, command_menu_selected),
@@ -104,62 +104,62 @@ loop(State) ->
     {Frame, AllList, SearchCtrl}  = State,  
     %io:format("--waiting in the loop--~n", []), 
     receive
-    		#wx{id=?ABOUT, event=#wxCommand{}} ->
-				Str = "Pear Talk is an awesmoe Peer-to-Peer Chat.",
-				MD = wxMessageDialog:new(Frame,Str,
-								[{style, ?wxOK bor ?wxICON_INFORMATION},
-								 {caption, "About Pear Talk"}]),
-				wxDialog:showModal(MD),
-				wxDialog:destroy(MD),
-				loop(State);
-			
-			#wx{id=?LOGOUT, event=#wxCommand{}} -> 
-				spawn(login_frame, start, []),
-				wxWindow:destroy(Frame);
-			
-			#wx{id=?SEARCH, event=#wxCommand{type = command_button_clicked}} -> 
-                               RESULT = wxTextCtrl:getValue(SearchCtrl),
-                               Str = "Some text maybe...",                                                                                     
-               	 				SCD = wxSingleChoiceDialog:new(Frame, Str,"Result", [RESULT]),          
-                				wxSingleChoiceDialog:showModal(SCD),
-                               chat ! {gui, addfriend, RESULT},
-                               loop(State);                                                                                                   
-			%#wx{id=?PREFERENCES, event=#wxCommand{}} -> 
-				
-        	#wx{event=#wxList{type = command_list_item_selected, itemIndex = Item}} ->
-        		io:format("lala ~p \n",[Item]),
-        		{Reciever, _} = lists:nth(Item+1, rul:tolist(friends)),
-        		chat ! {chat_window, Reciever},
-        		loop(State);  
-    			
-    		#wx{event=#wxList{type = command_list_delete_item, itemIndex = Item}} ->
-        		io:format("lala ~p \n",[Item]),
-        		wxListCtrl:deleteItem(AllList, Item),
-    			loop(State);  	
-    			  
-            #wx{event=#wxClose{}} ->
-            	io:format("~p Closing window ~n",[self()]), 
-         		wxWindow:destroy(Frame),
-         		ok
-         	after 3000 ->
-			try
-				wxListCtrl:deleteAllItems(AllList),
-         			online_status(0, rul:tolist(friends), AllList),
-				loop(State)	
-			catch 
-				Ek:En ->
-					{Ek, En}
-			end
-         		
-            	
+	#wx{id=?ABOUT, event=#wxCommand{}} ->
+	    Str = "Pear Talk is an awesmoe Peer-to-Peer Chat.",
+	    MD = wxMessageDialog:new(Frame,Str,
+				     [{style, ?wxOK bor ?wxICON_INFORMATION},
+				      {caption, "About Pear Talk"}]),
+	    wxDialog:showModal(MD),
+	    wxDialog:destroy(MD),
+	    loop(State);
+	
+	#wx{id=?LOGOUT, event=#wxCommand{}} -> 
+	    spawn(login_frame, start, []),
+	    wxWindow:destroy(Frame);
+	
+	#wx{id=?SEARCH, event=#wxCommand{type = command_button_clicked}} -> 
+	    RESULT = wxTextCtrl:getValue(SearchCtrl),
+	    Str = "Some text maybe...",                                                                                     
+	    SCD = wxSingleChoiceDialog:new(Frame, Str,"Result", [RESULT]),          
+	    wxSingleChoiceDialog:showModal(SCD),
+	    chat ! {gui, addfriend, RESULT},
+	    loop(State);                                                                                                   
+	%#wx{id=?PREFERENCES, event=#wxCommand{}} -> 
+	
+	#wx{event=#wxList{type = command_list_item_selected, itemIndex = Item}} ->
+	    io:format("lala ~p \n",[Item]),
+	    {Reciever, _} = lists:nth(Item+1, rul:tolist(friends)),
+	    chat ! {chat_window, Reciever},
+	    loop(State);  
+	
+	#wx{event=#wxList{type = command_list_delete_item, itemIndex = Item}} ->
+	    io:format("lala ~p \n",[Item]),
+	    wxListCtrl:deleteItem(AllList, Item),
+	    loop(State);  	
+	
+	#wx{event=#wxClose{}} ->
+	    io:format("~p Closing window ~n",[self()]), 
+	    wxWindow:destroy(Frame),
+	    ok;
+	% DENNA FUNKTION KAN ANROPAS BÅDE NÄR MAN LOGGAR IN FÖRSTA GÅNGEN OCH NÄR MAN LÄGGER TILL NY VÄN
+	{client, friendlist} ->
+	    wxListCtrl:deleteAllItems(AllList),
+	    online:status(0, lists:sort(rul:toList(friends)), AllList),
+	    loop(State);
+	% UPPDATERAR TILL MIN FÖRHOPPNING RÄTT PERSON PÅ RÄTT PLATS
+	{client, update, IDData} ->
+	    [User, ShowedName, Status] = IDData,
+	    Place = wxListCtrl:findItem(-1, User),
+	    offline_add(AllList, Place, ?FIRST_COL, ?SECOND_COL, ShowedName, User, {Status}),
+	    loop(State)
     end.
-    
+
 online_status(_, [], _) -> ok;
 online_status(Acc, [{User, [Showed_Name, _, _]}|Rest], AllList) ->
-	offline_add(AllList, Acc, ?FIRST_COL, ?SECOND_COL, Showed_Name, User, {online}),
-	online_status(Acc+1, Rest, AllList);
+    offline_add(AllList, Acc, ?FIRST_COL, ?SECOND_COL, Showed_Name, User, {online}),
+    online_status(Acc+1, Rest, AllList);
 online_status(Acc, [{User, [Showed_Name]}|Rest], AllList) -> 
-	offline_add(AllList, Acc, ?FIRST_COL, ?SECOND_COL, Showed_Name,  User,{offline}),
-	online_status(Acc+1, Rest, AllList).
-	
+    offline_add(AllList, Acc, ?FIRST_COL, ?SECOND_COL, Showed_Name,  User,{offline}),
+    online_status(Acc+1, Rest, AllList).
+
 	
