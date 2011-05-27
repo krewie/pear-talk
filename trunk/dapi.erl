@@ -72,7 +72,13 @@ open(FileName) ->
 %% Table = atom() | reference()
 showAll(Table) ->
 	dets:traverse(Table,fun(X) -> io:format("~p~n", [X]), continue end).
-	      
+
+
+%% @doc returnerar true om Id finns i Table, annars false.
+%% @spec member(Table, Id) -> boolean() | {error,Reason}	      
+member(Table, Id) ->
+    dets:member(Table, Id).
+
 
 %% eunit tests
 
@@ -107,6 +113,13 @@ retrieve_test_()->
      ?_assertEqual( ok, closeTable(Cake))
     ].
 
+member_test_() ->
+    {ok, Cake} = openTable(dapitable.test,[]),
+    [
+     ?_assertEqual(true, member(Cake, "Key")),
+     ?_assertEqual( ok, closeTable(Cake))
+    ].
+    
 
 sync_test_()->
     {ok, Cake} = openTable(dapitable.test,[]),

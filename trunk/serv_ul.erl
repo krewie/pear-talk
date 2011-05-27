@@ -56,8 +56,8 @@ addFriend(Table,MyID, FriendID) ->
 		    addUser(Table, MyID, ShowedName, [FriendID|FriendList], NetInfo, Password),
 		    dapi:sync(Table),
 		    case FriendID of
-		       {ID, w} ->
-    		    		addFriend(Table, ID, {MyID, p});
+			{ID, w} ->
+			    addFriend(Table, ID, {MyID, p});
     		    	_ -> ok
     		    end;
 		true ->
@@ -72,17 +72,17 @@ addFriend(Table,MyID, FriendID) ->
 %% MyID = any()
 %% FriendID = tuple()    
 acceptFriend(Table, MyID, FriendID) ->
-	case FriendID of
-		{ID, p} ->
-			removeFriend(Table, MyID, FriendID),
-			addFriend(Table, MyID, ID),
-			acceptFriend(Table, ID, {MyID, w});
-		{ID, w} ->
-			removeFriend(Table, MyID, FriendID),
-			addFriend(Table, MyID, ID);
-		_ -> {error, badID}
-	end,
-	ok.
+    case FriendID of
+	{ID, p} ->
+	    removeFriend(Table, MyID, FriendID),
+	    addFriend(Table, MyID, ID),
+	    acceptFriend(Table, ID, {MyID, w});
+	{ID, w} ->
+	    removeFriend(Table, MyID, FriendID),
+	    addFriend(Table, MyID, ID);
+	_ -> {error, badID}
+    end,
+    ok.
 
 
 %% @doc Tar bort en person (FriendID) från en annan persons (ID) vänlista, om den andra personen existerar i tabellen Table.
@@ -190,20 +190,20 @@ retrieveFriend(Table, HisID) ->
 	    [{HisID, [NetInfo, _, _, ShownName]}] = A,
 	    case NetInfo of
 	    	[Ip, Port] ->
-	    		[HisID, [ShownName, Ip, Port]];
+		    [HisID, [ShownName, Ip, Port]];
 	    	[] ->
-	    		[HisID, [ShownName]]
+		    [HisID, [ShownName]]
 	    end;
 	_ ->
 	    case HisID of
 	    	{ID, w} ->
-	    		[ID, [ID]];
+		    [ID, [ID]];
 	    	{ID, p} ->
-	    		Info = retrieveFriend(Table, ID),
-	    		[HisID, Info];
+		    Info = retrieveFriend(Table, ID),
+		    [HisID, Info];
 	    	_ ->
-	    		[HisID, [HisID]]
-	    	end
+		    [HisID, [HisID]]
+	    end
     end.
 
 
@@ -235,7 +235,7 @@ retrieveFriends(Table, MyID) ->
 getNetInfo(Table, ID) ->
     case retrieveFriend(Table, ID) of
     	[_, [_, Ip, Port]] ->
-    		[Ip, Port];
+	    [Ip, Port];
     	[_,[_]] -> []
     end.
 
@@ -274,7 +274,7 @@ loop(Table) ->
 		    io:format("Bad username\n", []),
 		    ClientPid!{db, badID, Netinfo} %% användare existerar inte
 	    end,
-         loop(Table);
+	    loop(Table);
 
 	{client, addfriend, MyID, FriendID, Pid} ->
 	    case addFriend(Table, MyID, FriendID) of
@@ -284,26 +284,26 @@ loop(Table) ->
 		{error, {badmatch, MyID}} ->
 		    Pid!{db, badID, getNetInfo(Table, MyID)} %% användare existerar inte
 	    end,
-         loop(Table);
-	    
+	    loop(Table);
+
 	{client, acceptfriend, MyID, FriendID, Pid} ->
-		case acceptFriend(Table, MyID, FriendID) of
-			ok ->
-				{ID, p} = FriendID,
-				Pid ! {db, acceptfriend, retrieveFriends(Table, MyID), retrieveFriends(Table, ID), getNetInfo(Table, MyID), getNetInfo(Table, ID)};
-			{error, _} -> ok
-		end,
-         loop(Table);
+	    case acceptFriend(Table, MyID, FriendID) of
+		ok ->
+		    {ID, p} = FriendID,
+		    Pid ! {db, acceptfriend, retrieveFriends(Table, MyID), retrieveFriends(Table, ID), getNetInfo(Table, MyID), getNetInfo(Table, ID)};
+		{error, _} -> ok
+	    end,
+	    loop(Table);
 
 	{client, removefriend, MyID, FriendID, Pid} ->
-		io:format("Request of friend removel\n", []),
+	    io:format("Request of friend removel\n", []),
 	    case removeFriend(Table, MyID, FriendID) of
 		ok ->
 		    Pid ! {db, removefriend, getNetInfo(Table, MyID), ok};
 		{error,{badmatch, MyID}} ->
 		    Pid ! {db, badID, getNetInfo(Table, MyID)} %% användare existerar inte
 	    end,
-         loop(Table);
+	    loop(Table);
 
 	{client, changename, ID, Name, Pid} ->
 	    case changeName(Table, ID, Name) of
@@ -312,7 +312,7 @@ loop(Table) ->
 		{error, {badmatch, ID}} ->
 		    Pid ! {db, badID, getNetInfo(Table, ID)} %% användare existerar inte
 	    end,
-         loop(Table);
+	    loop(Table);
 
         {client, changepass, ID, NewPass, OldPass, Pid} ->
 	    case changePassword(Table, ID, NewPass,OldPass) of
@@ -323,7 +323,27 @@ loop(Table) ->
 		{error, {badmatch, ID}} ->
 		    Pid!{db, badID, getNetInfo(Table, ID)}
 	    end,
-         loop(Table);
+	    loop(Table);
+
+	{client, adduser, ID, Name, Password,Netinfo,Pid} -> 
+	    case dapi:member(Table, ID) of
+		false ->
+		    addUser(Table, ID, Name, [], Netinfo, Password),
+		    Pid ! {db, adduser, getNetInfo(Table, ID), ok};
+		true ->
+		    Pid !{db, badID, Netinfo}
+	    end,
+	    loop(Table);
+
+	{client, removeuser, ID, Netinfo,Pid} ->
+	    case dapi:member(Table, ID) of
+		true ->
+		    dapi:delete(Table, ID),
+		    Pid!{db, removeuser, Netinfo, ok};
+		true ->
+		    PiD!{db, badID, Netinfo}
+	    end,
+	    loop(Table);
 
         %% server requests %%
 
