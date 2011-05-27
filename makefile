@@ -3,7 +3,7 @@ ERLC = erlc
 
 FLAGS = -W
 
-SERVER_DEPENDENCIES = dapi.beam detsapp.beam serv_ul.beam server.beam ul.beam
+SERVER_DEPENDENCIES = dapi.beam serv_ul.beam server.beam
 
 GUI_DEPENDENCIES = chat_frame.beam contacts.beam login_frame.beam
 

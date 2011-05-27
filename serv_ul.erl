@@ -1,5 +1,5 @@
 -module(serv_ul).
--export([addUser/6, addFriend/3, removeFriend/3, changeName/3, changePassword/4, onlineStatus/3, login/3, retrieveFriend/2, retrieveFriends/2, start/0, loop/2, acceptFriend/3]).
+-export([addUser/6, addFriend/3, removeFriend/3, changeName/3, changePassword/4, onlineStatus/3, login/3, retrieveFriend/2, retrieveFriends/2, start/0, loop/1, acceptFriend/3]).
 -define(DB, "users").
 
 
@@ -244,7 +244,7 @@ getNetInfo(Table, ID) ->
 %% @spec start() -> ok
 start() ->
     {ok, Table} = dapi:open(?DB),
-    loop(Table, true).
+    loop(Table).
 
 
 %% @doc Stänger en tabell Table.
@@ -254,11 +254,10 @@ close(Table) ->
     dapi:closeTable(Table).
 
 
-%% @doc Manager av mottagna meddelanden från server, så länge State är true.
-%% @spec loop(Table, State) -> ok | {error, Reason}
+%% @doc Manager av mottagna meddelanden från server.
+%% @spec loop(Table) -> ok | {error, Reason}
 %% Table = atom()| reference()
-%% State = true | false
-loop(Table, State) -> 
+loop(Table) -> 
     receive
 	%% client requests %%
 	{client, login, ID,Netinfo, Password, ClientPid} ->
@@ -274,7 +273,8 @@ loop(Table, State) ->
 		{error, {badmatch, ID}} ->
 		    io:format("Bad username\n", []),
 		    ClientPid!{db, badID, Netinfo} %% användare existerar inte
-	    end;
+	    end,
+         loop(Table);
 
 	{client, addfriend, MyID, FriendID, Pid} ->
 	    case addFriend(Table, MyID, FriendID) of
@@ -283,7 +283,8 @@ loop(Table, State) ->
 		    Pid ! {db, addfriend, getNetInfo(Table, ID), retrieveFriends(Table, ID), ok};
 		{error, {badmatch, MyID}} ->
 		    Pid!{db, badID, getNetInfo(Table, MyID)} %% användare existerar inte
-	    end;
+	    end,
+         loop(Table);
 	    
 	{client, acceptfriend, MyID, FriendID, Pid} ->
 		case acceptFriend(Table, MyID, FriendID) of
@@ -291,7 +292,8 @@ loop(Table, State) ->
 				{ID, p} = FriendID,
 				Pid ! {db, acceptfriend, retrieveFriends(Table, MyID), retrieveFriends(Table, ID), getNetInfo(Table, MyID), getNetInfo(Table, ID)};
 			{error, _} -> ok
-		end;
+		end,
+         loop(Table);
 
 	{client, removefriend, MyID, FriendID, Pid} ->
 		io:format("Request of friend removel\n", []),
@@ -300,7 +302,8 @@ loop(Table, State) ->
 		    Pid ! {db, removefriend, getNetInfo(Table, MyID), ok};
 		{error,{badmatch, MyID}} ->
 		    Pid ! {db, badID, getNetInfo(Table, MyID)} %% användare existerar inte
-	    end;
+	    end,
+         loop(Table);
 
 	{client, changename, ID, Name, Pid} ->
 	    case changeName(Table, ID, Name) of
@@ -308,7 +311,8 @@ loop(Table, State) ->
 		    Pid ! {db, changename, getNetInfo(Table, ID), ok};
 		{error, {badmatch, ID}} ->
 		    Pid ! {db, badID, getNetInfo(Table, ID)} %% användare existerar inte
-	    end;
+	    end,
+         loop(Table);
 
         {client, changepass, ID, NewPass, OldPass, Pid} ->
 	    case changePassword(Table, ID, NewPass,OldPass) of
@@ -318,18 +322,14 @@ loop(Table, State) ->
 		    Pid!{db, badPass, getNetInfo(Table, ID)};
 		{error, {badmatch, ID}} ->
 		    Pid!{db, badID, getNetInfo(Table, ID)}
-	    end;
+	    end,
+         loop(Table);
 
         %% server requests %%
 
 	{server, ping, Pid} ->
-	    Pid!{db, pong, self()};
-	{server, close} -> 
-	    close(Table),
-	    State = false
-    end,
-    if 
-	State == true -> 
-	    loop(Table, State)
+	    Pid!{db, pong, self()},
+	    loop(Table);
+	{server, shutdown} -> 
+	    close(Table)
     end.
-

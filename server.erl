@@ -11,25 +11,48 @@
 
 % --------
 
+shut_down() ->
+    global ! {server, getport, self()},
+    receive
+	{server, getport, Port} ->
+	    {ok, Con} = gen_tcp:connect({127,0,0,1}, Port, []),
+	    send(Con, term_to_binary({server, shutdown})),
+	    gen_tcp:close(Con)
+    end.
+
+globalPort(Port) ->
+    receive
+	{server, getport, Pid} ->
+	   Pid ! {server, getport, Port}
+    end.
+
 start_server(Port) ->
     {ok, ListenSock} = gen_tcp:listen(Port, ?TCP_OPTIONS),
     DBpid = spawn(serv_ul, start, []),
-    spawn(?MODULE, wait_for_connection, [ListenSock, DBpid]).
+    spawn(?MODULE, wait_for_connection, [ListenSock, DBpid]),
+    register(global, spawn(?MODULE, globalPort, [Port])).
 	 
 wait_for_connection(ListenSocket, DBPid) ->
     case gen_tcp:accept(ListenSocket) of
-	 	% när någon connectar spawnar vi en process som hanterar meddelanden från den socketen,
-	 	% samtidigt som vi loopar och väntar på fler connections.
 	{ok, Socket} ->
-		case gen_tcp:recv(Socket, 0) of
-			{ok, Packet} ->
-				Lpid = spawn(?MODULE, listen_state, [Socket, DBPid]), 
-				Lpid ! binary_to_term(Packet);
-			{error, _ } -> ok
-		end;
-	{error, _ } -> ok
-    end,
-    wait_for_connection(ListenSocket, DBPid).
+	    case gen_tcp:recv(Socket, 0) of
+		{ok, Packet} ->
+		    case Data = binary_to_term(Packet) of
+			{server, shutdown} ->
+			    io:format("Server shutdown\n", []),
+			    DBPid ! Data,
+			    gen_tcp:close(ListenSocket);
+			_ ->
+			    Lpid = spawn(?MODULE, listen_state, [Socket, DBPid]), 
+			    Lpid ! Data,
+			    wait_for_connection(ListenSocket, DBPid)
+		    end;
+		{error, _ } ->
+		    wait_for_connection(ListenSocket, DBPid)
+	    end;
+	{error, _ } ->
+	    wait_for_connection(ListenSocket, DBPid)
+    end.
 
 
 listen_state(Socket, DBPid) ->
@@ -122,6 +145,7 @@ listen_state(Socket, DBPid) ->
 	{db, changename, NetInfo, ok} -> 0;
 		%user succesfully changed name
 	{db, changepass, NetInfo, ok} -> 0
+	        %user succesfullt changed password
     end.
 	
 send(Socket, <<Chunk:100/binary, Rest/binary>>) ->
