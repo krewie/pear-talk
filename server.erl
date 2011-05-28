@@ -259,7 +259,7 @@ listen_state(Socket, DBPid) ->
 			     ok
 		    end;
 		[] -> ok
-	    end;
+	    end
 
 	end.
 
