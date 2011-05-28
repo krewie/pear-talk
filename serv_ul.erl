@@ -1,5 +1,5 @@
 -module(serv_ul).
--export([addUser/6, addFriend/3, removeFriend/3, changeName/3, changePassword/4, onlineStatus/3, login/3, retrieveFriend/2, retrieveFriends/2, start/0, loop/1, acceptFriend/3, findPeople/2]).
+-export([addUser/6, addFriend/3, removeFriend/3, changeName/3, changePassword/4, onlineStatus/3, login/3, retrieveFriend/2, retrieveFriends/2, start/0, loop/1, acceptFriend/3, searchUsers/2]).
 -define(DB, "users").
 
 
@@ -241,7 +241,7 @@ getNetInfo(Table, ID) ->
 
 
 %% @doc Hämtar ut de ID vars ID eller visningsnamn som börjar med strängen Search.
-findPeople(Table, Search) ->
+searchUsers(Table, Search) ->
     [X || [X, Y] <- dapi:select(Table, [{{ '$1', ['_', '_', '_', '$2']}, [], [['$1', '$2']]}]),
 	  case (string:str(Y, Search) == 1) of
 	      false -> string:str(X, Search) == 1;
@@ -352,6 +352,10 @@ loop(Table) ->
 		_ ->
 		    Pid!{db, badID, Netinfo}
 	    end,
+	    loop(Table);
+
+	{client, search, ID, Search, Pid} ->
+	    Pid!{db, search, getNetInfo(Table, ID), searchUsers(Table, Search)},
 	    loop(Table);
 
         %% server requests %%
