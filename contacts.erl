@@ -144,7 +144,7 @@ loop(State) ->
 	% DENNA FUNKTION KAN ANROPAS BÅDE NÄR MAN LOGGAR IN FÖRSTA GÅNGEN OCH NÄR MAN LÄGGER TILL NY VÄN
 	{client, friendlist} ->
 	    wxListCtrl:deleteAllItems(AllList),
-	    online:status(0, lists:sort(rul:toList(friends)), AllList),
+	    online:status(0, lists:sort(rul:tolist(friends)), AllList),
 	    loop(State);
 	% UPPDATERAR TILL MIN FÖRHOPPNING RÄTT PERSON PÅ RÄTT PLATS
 	{client, update, IDData} ->

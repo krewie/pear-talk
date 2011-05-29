@@ -30,13 +30,16 @@ make_window() ->
     wxTextCtrl:setEditable(T1001, false),
     T1002 = wxTextCtrl:new(Panel, 1002,[{size,{100, 60}},{style, ?wxTE_MULTILINE}]),
     B101 = wxButton:new(Panel, 101, [{label, "&Send"}]),
+    B102  = wxButton:new(Panel, 997, [{label, "Send file"}]), %%
     wxSizer:add(Sizer1, T1001, [{flag, ?wxEXPAND}]),
     wxSizer:add(Sizer2, T1002, [{flag, ?wxEXPAND}]),
     wxSizer:add(MainSizer, Sizer1,  [{flag, ?wxEXPAND}]),
     wxSizer:addSpacer(MainSizer, 10),
     wxSizer:add(MainSizer, Sizer2, [{flag, ?wxEXPAND}]),
     wxSizer:addSpacer(MainSizer, 20),
-    wxSizer:addSpacer(ButtonSizer, 325),
+    wxSizer:addSpacer(ButtonSizer, 300),
+    wxSizer:add(ButtonSizer, B102,  []),
+    wxSizer:addSpacer(ButtonSizer, 5),
     wxSizer:add(ButtonSizer, B101,  []),
     wxSizer:add(MainSizer, ButtonSizer, []),
     wxPanel:setSizer(Panel, MainSizer),
@@ -62,6 +65,7 @@ make_window() ->
     %% Draw the window and return values:
     wxFrame:show(Frame),
     {Frame, T1001, T1002}.
+		
 
 %% @doc Writes content of input field to conversation field, then clears the input field. 
 %% @spec 
@@ -94,6 +98,14 @@ loop(State) ->
     			write(T1001, T1002),
     			loop(State);
     			
+	    	#wx{id = 997, event=#wxCommand{type = command_button_clicked}} ->
+				Obj = wxFileDialog:new(Frame,[]),
+				wxFileDialog:showModal(Obj),
+				File = wxFileDialog:getPath(Obj),
+				chat!{chat_send_file, [File, wxFileDialog:getFilename(Obj)], self()},
+				wxFileDialog:destroy(Obj),
+        	        	loop(State);
+
     		#wx{id = 101, event=#wxCommand{type = command_button_clicked}} ->
     			Message = wxTextCtrl:getValue(T1002),
     			chat ! {chat_send, self(), Message},
@@ -106,8 +118,26 @@ loop(State) ->
          		wxWindow:destroy(Frame),
          		ok;
             
-            {message_received, Sender, Message} ->
+	    {message_received, Sender, Message} ->
             	wxTextCtrl:appendText(T1001,Sender++": "++Message++"\n"),
             	loop(State)
-            
     end.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

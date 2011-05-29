@@ -61,6 +61,12 @@ start(G) ->
 %% @end
 status(Status) ->
     receive
+	{chat_send_file, Obj, Pid} ->
+	    {value, {Receiver, _}} = lists:keysearch(Pid, 2, Status),
+	    [Path, Name] = Obj,
+	    io:format("preparing to sending file ~p~p to ~p \n", [Path, Name, Receiver]),
+	    spawn(peer, send_file, [Receiver, Path, Name]),
+	    status(Status);
 	{file_accept, {{_, _}, FileName, File}} ->
 	    file:write_file(FileName, File),
 	    write_log("File " ++ FileName ++ " written on disk."),
@@ -191,12 +197,19 @@ get_request(Sender_address, Socket, BinaryList) ->
 			{Sender_listen_port, Sender_username, Sender_showed_name} = Obj,
 			spawn(peer,acceptFr,[Sender_username, Sender_showed_name, Sender_address, Sender_listen_port]);
 		    friendlist ->						
-			fillTable(friends, Obj); 
+			fillTable(friends, Obj),
+			gf();
 		    file ->
-			spawn(peer, handle_file_sending,[Obj]);
+			case my(graphic) of
+				1 ->
+					spawn(dialog, make_window , [Obj]);
+				_ ->
+					spawn(peer, handle_file_sending,[Obj])
+			end;
 		    ping ->
 			{Sender_listen_port, Sender_username} = Obj,
 			rul:set_online(friends, Sender_username, Sender_address, Sender_listen_port),
+			gf(),
 			chat!{send, Sender_username, pong, my(id)},
 			case my(ping_mode) of
 			    pingon ->
@@ -423,6 +436,7 @@ old ([{X,_}|L]) ->
 		String = Sender_showed_name ++ " is offline.",
 		io:format("~p~n", [String]),
 		rul:logout(friends, X),
+		gf(),
 		my(X)!{message_received, X, String},
 		[];
 	    _ ->
@@ -559,7 +573,7 @@ ping(Receiver) ->
 %% @end
 send_file(Receiver, Path, Name) ->
     try
-	{ok, File} = file:read_file([Path ++ Name]),
+	{ok, File} = file:read_file([Path]),
 	chat!{send, Receiver, file, {my(id),Name, File}},
 	sent
     catch _:_ ->
@@ -623,8 +637,8 @@ confirmfriend(Usr) ->
 
 accept_friend(Sender_username, Sender_showed_name) ->
 	case my(graphic) of
-		%1->
-		%	contacts_window ! {friendaccept, Sender_username, Sender_showed_name};
+		1->
+			spawn(dialog, acc_friend, [{friendaccept, Sender_username, Sender_showed_name}]);
 		_->
 			Line = io_lib:format("accept friend request from ~p as ~p (y/n)? ", [Sender_username, Sender_showed_name]),
 			case io:get_line(Line) of
@@ -648,4 +662,12 @@ deletefriend(Usr) ->
 	    {Ek,En}
     end,
     refresh().
+
+gf() -> 
+	case my(graphic) of
+		1 ->
+			contacts_window!{client, friendlist};
+		_ ->
+			[]
+	end.
 
