@@ -56,9 +56,12 @@ addFriend(Table,MyID, FriendID) ->
 		    addUser(Table, MyID, ShowedName, [FriendID|FriendList], NetInfo, Password),
 		    dapi:sync(Table),
 		    case FriendID of
-			{ID, w} ->
-			    addFriend(Table, ID, {MyID, p});
-    		    	_ -> ok
+			{ID, w} -> case dapi:member(Table, ID) of
+				       true ->
+					   addFriend(Table, ID, {MyID, p});
+				       _ -> ok
+				   end;
+			_ -> ok
     		    end;
 		true ->
 		    ok
