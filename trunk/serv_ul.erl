@@ -164,7 +164,7 @@ onlineStatus(Table, MyID, NetInfo) ->
 %% ID = any()
 %% Password = any()
 retrievePassword(Table, ID) ->
-	{ID, [_,_,Password,_]} = dapi:retrieve(Table, ID),
+	[{ID, [_,_,Password,_]}] = dapi:retrieve(Table, ID),
 	Password.
 
 %% @doc Undersöker hurvida lösenordet Password som givits av personen ID stämmer överens med vad som lagrats i tabellen Table. True om det stämmer, false om det inte stämmer.
@@ -287,7 +287,8 @@ loop(Table) ->
 			Pid!{db, noUser, Netinfo};
 		true ->
 			Pid!{db, reminder, ID,Netinfo, retrievePassword(Table, ID)}
-	   end;
+	   end,
+	   loop(Table);
 	
 	{client, login, ID,Netinfo, Password, ClientPid} ->
 	    io:format("Checking login info\n"),
