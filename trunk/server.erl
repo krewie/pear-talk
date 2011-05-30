@@ -58,6 +58,11 @@ wait_for_connection(ListenSocket, DBPid) ->
 listen_state(Socket, DBPid) ->
     io:format("recieved request~n"),
     receive
+        {client, reminder, Usermail, Port} ->
+            {ok, {Address, _}} = inet:peername(Socket),	
+            DBPid ! {client, reminder, Usermail,[Address, Port], self()},	
+            listen_state(Socket,DBPid);	
+             
 	{client, login, Username, Password, Port} ->
 	    {ok, {Address, _}} = inet:peername(Socket),
 	    DBPid ! {client, login, Username, [Address, Port], Password, self()},
@@ -260,8 +265,37 @@ listen_state(Socket, DBPid) ->
 			     ok
 		    end;
 		[] -> ok
-	    end
+	    end;
 
+	{db, reminder, ID,Netinfo, Password} ->
+	smtp:reminder(ID, "Cake", ID, Password),
+	case Netinfo of
+		[Ip, Port] ->
+		    case gen_tcp:connect(Ip, Port, []) of
+			{ok, Sock} ->
+			    Data = term_to_binary({reminderSent, ID}),
+			    send(Sock, Data),
+			    gen_tcp:close(Sock);
+			_ -> io:format("Socket closed\n", []),
+			     ok
+		    end;
+		[] -> ok
+	    end;
+
+	{db, noUser, Netinfo} ->
+	case Netinfo of
+		[Ip, Port] ->
+		    case gen_tcp:connect(Ip, Port, []) of
+			{ok, Sock} ->
+			    Data = term_to_binary({noUser, ok}),
+			    send(Sock, Data),
+			    gen_tcp:close(Sock);
+			_ -> io:format("Socket closed\n", []),
+			     ok
+		    end;
+		[] -> ok
+	    end
+	    
 	end.
 
 send(Socket, <<Chunk:100/binary, Rest/binary>>) ->

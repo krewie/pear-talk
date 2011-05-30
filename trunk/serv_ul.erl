@@ -1,5 +1,5 @@
 -module(serv_ul).
--export([addUser/6, addFriend/3, removeFriend/3, changeName/3, changePassword/4, onlineStatus/3, login/3, retrieveFriend/2, retrieveFriends/2, start/0, loop/1, acceptFriend/3, searchUsers/2]).
+-export([addUser/6, addFriend/3, removeFriend/3, changeName/3, changePassword/4, onlineStatus/3, login/3, retrieveFriend/2, retrieveFriends/2, start/0, loop/1, acceptFriend/3, searchUsers/2, retrievePassword/2]).
 -define(DB, "users").
 
 
@@ -158,6 +158,14 @@ onlineStatus(Table, MyID, NetInfo) ->
 	_ -> {error, {badmatch, MyID}}
     end.
 
+%% @doc Hämtar ut en persons lösenord.
+%% @spec retrievePassword (Table,ID) -> Password
+%% Table = atom()|reference()
+%% ID = any()
+%% Password = any()
+retrievePassword(Table, ID) ->
+	{ID, [_,_,Password,_]} = dapi:retrieve(Table, ID),
+	Password.
 
 %% @doc Undersöker hurvida lösenordet Password som givits av personen ID stämmer överens med vad som lagrats i tabellen Table. True om det stämmer, false om det inte stämmer.
 %% @spec login(Table, ID , Password) -> true | false | {error, Reason}
@@ -273,6 +281,13 @@ close(Table) ->
 loop(Table) -> 
     receive
 	%% client requests %%
+	{client, reminder, ID, Netinfo, Pid}
+	case dapi:member(Table, ID) of 
+		false -> 
+			Pid!{db, noUser, Netinfo}
+		true ->
+			Pid!{db, reminder, ID,Netinfo, retrievePassword(Table, ID)};	
+	
 	{client, login, ID,Netinfo, Password, ClientPid} ->
 	    io:format("Checking login info\n"),
 	    case login(Table, ID, Password) of 
@@ -342,7 +357,7 @@ loop(Table) ->
 	    case dapi:member(Table, ID) of
 		false ->
 		    addUser(Table, ID, Name, [], Netinfo, Password),
-		    Pid ! {db, adduser, getNetInfo(Table, ID), ok};
+		    Pid ! {db, adduser, Netinfo, ok};
 		true ->
 		    Pid !{db, badID, Netinfo}
 	    end,
