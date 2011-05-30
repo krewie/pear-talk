@@ -61,6 +61,9 @@ start(G) ->
 %% @end
 status(Status) ->
     receive
+        {reg_window, close} ->
+            spawn(login_frame, start, ["username"]),
+            status(Status);
     	{client, registerNewUser, Mail, Password, ShowedName} ->
     	    spawn(peer, newUser, [Mail, Password, ShowedName]),
     	    status(Status);
@@ -212,7 +215,7 @@ get_request(Sender_address, Socket, BinaryList) ->
 		    	reg_window ! {usedID};
 		    addUser ->
 		    	reg_window ! {addUser},
-		    	spawn(login_frame,start,["username"]);
+		    	spawn(login_frame,start,[Obj]);
 		    reminderSent ->
 		    	spawn(login_frame,start,["reminder sent to mail"]);
 		    noUser ->

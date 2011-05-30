@@ -239,19 +239,20 @@ listen_state(Socket, DBPid) ->
 		[] -> ok
 	    end;
 
-	{db, adduser, Netinfo, ok} -> 		
+	{db, adduser, Netinfo, Mail, Password} -> 		
 	    case Netinfo of
 		[Ip, Port] ->
 		    case gen_tcp:connect(Ip, Port, []) of
 			{ok, Sock} ->
-			    Data = term_to_binary({adduser, ok}),
+			    Data = term_to_binary({adduser, Mail}),
 			    send(Sock, Data),
 			    gen_tcp:close(Sock);
 			_ -> io:format("Socket closed\n", []),
 			     ok
 		    end;
 		[] -> ok
-	    end;
+	    end,
+	    smtp:reminder(Mail, "Welcome to Pear-Talk, Pear-Talk is back!", Mail, Password);
 
 	{db, removeuser, Netinfo, ok} -> 
 	    case Netinfo of
