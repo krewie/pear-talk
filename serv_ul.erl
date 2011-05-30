@@ -281,12 +281,13 @@ close(Table) ->
 loop(Table) -> 
     receive
 	%% client requests %%
-	{client, reminder, ID, Netinfo, Pid}
-	case dapi:member(Table, ID) of 
+	{client, reminder, ID, Netinfo, Pid} ->
+	   case dapi:member(Table, ID) of 
 		false -> 
-			Pid!{db, noUser, Netinfo}
+			Pid!{db, noUser, Netinfo};
 		true ->
-			Pid!{db, reminder, ID,Netinfo, retrievePassword(Table, ID)};	
+			Pid!{db, reminder, ID,Netinfo, retrievePassword(Table, ID)}
+	   end;
 	
 	{client, login, ID,Netinfo, Password, ClientPid} ->
 	    io:format("Checking login info\n"),

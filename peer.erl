@@ -65,13 +65,15 @@ status(Status) ->
             spawn(login_frame, start, ["username"]),
             status(Status);
     	{client, registerNewUser, Mail, Password, ShowedName} ->
-    	    spawn(peer, newUser, [Mail, Password, ShowedName]),
+    	    {value, {_ , ListenPort}} = lists:keysearch(listen_port, 1, Status),
+    	    spawn(peer, newUser, [Mail, Password, ShowedName, ListenPort]),
     	    status(Status);
     	{client, registerWindow} ->
     	    register(reg_window, spawn(reg_frame, start, [])),
     	    status(Status);
         {login, reminder, Usermail} ->
-            spawn(peer, reminder, [Usermail]),
+            {value, {_ , ListenPort}} = lists:keysearch(listen_port, 1, Status),
+            spawn(peer, reminder, [Usermail, ListenPort]),
 	    status(Status);
 	{gui, search, IDfriend} ->
 	    spawn(peer, searchFriend, [IDfriend]),
@@ -744,9 +746,8 @@ searchFriend(ID) ->
     end.
     
 
-newUser(Mail, Password, ShowedName) ->
+newUser(Mail, Password, ShowedName, ListenPort) ->
     try
-	{value, {_ , ListenPort}} = lists:keysearch(listen_port, 1, Status),
 	{ok, Sock} = gen_tcp:connect(my(server_address), my(server_port), [binary,{active, false}]),
 	gen_tcp:send(Sock, term_to_binary({client, adduser, Mail, ShowedName, Password, ListenPort})),
 	gen_tcp:close(Sock)
@@ -756,12 +757,11 @@ newUser(Mail, Password, ShowedName) ->
     end.
 
 
-reminder(Usermail) ->
+reminder(Usermail, ListenPort) ->
     try
-	{value, {_ , ListenPort}} = lists:keysearch(listen_port, 1, Status),
         {ok, Sock} = gen_tcp:connect(my(server_address), my(server_port), [binary,{active, false}]),
 	gen_tcp:send(Sock, term_to_binary({client, reminder, Usermail, ListenPort})),
-	gen_tcp:close(Sock),
+	gen_tcp:close(Sock)
     catch 
 	Ek:En ->
 	    {Ek,En}
