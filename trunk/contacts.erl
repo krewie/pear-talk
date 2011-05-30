@@ -11,6 +11,8 @@
 -define(FIRST_COL, 1).
 -define(SECOND_COL, 0).
 -define(SEARCH, 101).
+-define(DELETE, 102).
+
 %% @doc 
 %% @spec chat_frame:start() -> no_return().
 start() ->
@@ -50,7 +52,7 @@ make_window() ->
     Server = wx:new(),
     %% Create new wx-object, new window with panel, main sizer and notebook
     %Server = wx:new(),
-    Frame = wxFrame:new(Server, -1, "Pear Talk", [{size,{355, 580}}]),
+    Frame = wxFrame:new(Server, -1, "Pear Talk", [{size,{430, 680}}]),
     Panel = wxPanel:new(Frame, []),
     MainSizer = wxStaticBoxSizer:new(?wxVERTICAL, Panel,[]),
     Notebook = wxNotebook:new(Panel, 111, [{style, ?wxBK_DEFAULT}]),
@@ -74,10 +76,12 @@ make_window() ->
 % Sökfält:
     SearchSizer = wxStaticBoxSizer:new(?wxHORIZONTAL, Panel,[{label, "Friend search:"}]),
     SearchCtrl = wxTextCtrl:new(Panel, 1, [{value, "Em@il"},{style, ?wxDEFAULT},{size, {235, 20}}]),
-    SearchButt = wxButton:new(Panel, 101, [{label, "&Search"}]),
+    SearchButt = wxButton:new(Panel, ?SEARCH, [{label, "&Search"}]),
+    SearchButt2 = wxButton:new(Panel, ?DELETE, [{label, "&Delete"}]),
     wxSizer:add(SearchSizer, SearchCtrl,[]),
     wxSizer:addSpacer(SearchSizer, 10),
     wxSizer:add(SearchSizer, SearchButt,[]),
+    wxSizer:add(SearchSizer, SearchButt2,[]),
 % Sizer stuff:
     wxSizer:add(BitmapSizer, StaticBitmap, []),
     wxSizer:add(MainSizer, BitmapSizer, []),
@@ -131,9 +135,28 @@ loop(State) ->
 	#wx{id=?SEARCH, event=#wxCommand{type = command_button_clicked}} -> 
 	    RESULT = wxTextCtrl:getValue(SearchCtrl),
 	    Str = "Some text maybe...",                                                                                     
-	    SCD = wxSingleChoiceDialog:new(Frame, Str,"Result", [RESULT]),          
-	    wxSingleChoiceDialog:showModal(SCD),
-	    chat ! {gui, addfriend, RESULT},
+	    SCD = wxSingleChoiceDialog:new(Frame, Str,"Result", [RESULT]),   
+	    wxSingleChoiceDialog:showModal(SCD),          
+	    TheFriend = wxSingleChoiceDialog:getStringSelection(SCD),
+	    case TheFriend of
+		[] ->
+			[];
+		_ ->
+	    		chat ! {gui, addfriend, TheFriend}
+	    end,
+	    loop(State);
+	#wx{id=?DELETE, event=#wxCommand{type = command_button_clicked}} -> 
+	    RESULT = wxTextCtrl:getValue(SearchCtrl),
+	    Str = "Delete friend",                                                                                     
+	    SCD = wxSingleChoiceDialog:new(Frame, Str,"Result", [RESULT]),    
+	    wxSingleChoiceDialog:showModal(SCD),            
+	    TheFriend = wxSingleChoiceDialog:getStringSelection(SCD),
+	    case TheFriend of
+		[] ->
+			[];
+		_ ->
+	    		chat ! {delete_friend, TheFriend}
+	    end,
 	    loop(State);                                                                                                   
 	%#wx{id=?PREFERENCES, event=#wxCommand{}} -> 
 	
