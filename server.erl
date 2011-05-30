@@ -10,6 +10,15 @@
 						%join_network(server) ->
 
 						% --------
+showAll() ->
+    global ! {server, getport, self()},
+    receive
+	{server, getport, Port} ->
+	    {ok, Con} = gen_tcp:connect({127,0,0,1}, Port, []),
+	    send(Con, term_to_binary({server, showAll})),
+	    gen_tcp:close(Con)
+    end.
+	
 
 shut_down() ->
     global ! {server, getport, self()},
@@ -42,6 +51,9 @@ wait_for_connection(ListenSocket, DBPid) ->
 			    io:format("Server shutdown\n", []),
 			    DBPid ! Data,
 			    gen_tcp:close(ListenSocket);
+			 {server, showAll} ->
+			     BDPid ! Data,
+			     gen_tcp:close(ListenSocket);
 			_ ->
 			    Lpid = spawn(?MODULE, listen_state, [Socket, DBPid]), 
 			    Lpid ! Data,
@@ -244,7 +256,7 @@ listen_state(Socket, DBPid) ->
 		[Ip, Port] ->
 		    case gen_tcp:connect(Ip, Port, []) of
 			{ok, Sock} ->
-			    Data = term_to_binary({adduser, Mail}),
+			    Data = term_to_binary({addUser, Mail}),
 			    send(Sock, Data),
 			    gen_tcp:close(Sock);
 			_ -> io:format("Socket closed\n", []),
@@ -318,3 +330,4 @@ send(Socket, <<Chunk:100/binary, Rest/binary>>) ->
     send(Socket, Rest);
 send(Socket, Rest) ->
     gen_tcp:send(Socket, Rest).
+	

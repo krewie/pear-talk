@@ -378,7 +378,10 @@ loop(Table) ->
 	    loop(Table);
 
         %% server requests %%
-
+	{server, showAll} ->
+		dapi:showAll(Table),
+		loop(Table);
+		
 	{server, ping, Pid} ->
 	    Pid!{db, pong, self()},
 	    loop(Table);
