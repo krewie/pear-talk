@@ -357,7 +357,7 @@ loop(Table) ->
 	    case dapi:member(Table, ID) of
 		false ->
 		    addUser(Table, ID, Name, [], Netinfo, Password),
-		    Pid ! {db, adduser, Netinfo, ok};
+		    Pid ! {db, adduser, Netinfo, ID, Password};
 		true ->
 		    Pid !{db, usedID, Netinfo}
 	    end,
