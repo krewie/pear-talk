@@ -102,21 +102,22 @@ loop(State) ->
 		    Mail = wxTextCtrl:getValue(TextCtrl1),  % kolla mot serverna om epost-adressen är upptagen
 		    Password = wxTextCtrl:getValue(TextCtrl2),
 		    ShowedName = vwTextCtrl:getValue(TextCtrl3),
-		    chat ! {client, add_user, Mail, Password, ShowedName, self()},
-		    receive
-			{register, true} ->
-			    ok; % Låt servern lägga till användaren
+		    chat ! {client, add_user, Mail, Password, ShowedName, self()}
+	   end,
+	   loop(State);
+	   
+	  {addUser} ->
+		    wxWindow:destroy(Frame),
+         	    ok;  % Låt servern lägga till användaren
 			      % skicka en "reminder" till epost-adressen (lägg till ett valfritt meddelande till reminder.erl)
-			{register, false} ->
-			    Str = "The email address is already used.",
-			    MD = wxMessageDialog:new(Frame,Str,
-						     [{style, ?wxOK bor ?wxICON_INFORMATION},
-						      {caption, "Notification!"}]),
-			    wxDialog:showModal(MD),
-			    wxDialog:destroy(MD),
-			    loop(State)
-		    end
-	     end;											
+	   {usedID} ->
+		    Str = "The email address is already used.",
+		    MD = wxMessageDialog:new(Frame,Str,
+					     [{style, ?wxOK bor ?wxICON_INFORMATION},
+					      {caption, "Notification!"}]),
+		    wxDialog:showModal(MD),
+		    wxDialog:destroy(MD),
+		    loop(State);
 	Msg ->
 	    loop(State)
     end.
