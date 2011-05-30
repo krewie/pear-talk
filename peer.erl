@@ -79,9 +79,12 @@ status(Status) ->
 	    spawn(peer, searchFriend, [IDfriend]),
 	    status(Status);
 	{delete_friend, Username} ->
-	    spawn(rul,delete, [friends, Username]),
+          io:format("~n******************************************************************************"),
+	    io:format("~n**************Hej nu fick jag kommandot för att ta bort en vän****************"),
+          io:format("~n******************************************************************************~n"),
 	    spawn(peer, deletefriend,[Username]),
 	    spawn(peer, deletefriend,[{Username, w}]),
+	    spawn(rul,delete, [friends, Username]),
 	    status(Status);
 	{write, Obj}->
 	    io:format("~w", [Obj]),
