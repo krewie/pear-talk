@@ -12,6 +12,7 @@
 -define(SECOND_COL, 0).
 -define(SEARCH, 101).
 -define(CHANGE, 102).
+-define(DELETE, 107).
 
 %% @doc 
 %% @spec chat_frame:start() -> no_return().
@@ -104,6 +105,7 @@ make_window() ->
     wxMenu:append(Help, ?ABOUT, "About Pear Talk"),
     wxMenu:append(File, ?LOGOUT, "Log out\tCtrl-L"),	
     wxMenu:append(File, ?PREFERENCES, "Preferences\tCtrl-P"),
+    wxMenu:append(File, ?DELETE, "Delete\tCtrl-D"),
     wxMenu:append(File, ?SEND, "Send\tCtrl-S"),	
     wxMenuBar:append(MenuBar, File, "&File"),	
     wxMenuBar:append(MenuBar, Help, "&Help"),
@@ -114,6 +116,7 @@ make_window() ->
 % Events:        
 	wxListCtrl:connect(AllList, command_list_item_activated, []),
     wxListCtrl:connect(AllList, command_list_delete_item, []),
+    wxListCtrl:connect(AllList, command_list_item_selected, []),
     wxFrame:connect(Panel, command_menu_selected),
     wxFrame:connect(Frame, close_window),
     wxPanel:connect(Panel, command_button_clicked),
@@ -135,7 +138,7 @@ loop(State) ->
 	    wxDialog:destroy(MD),
 	    loop(State);
 	    
-	#wx{id=?CHANGE, event=#wxCommand{type = command_button_clicked}} ->	%
+	#wx{id=?CHANGE, event=#wxCommand{type = command_button_clicked}} ->	
 		% Test och uppdatering
 		io:format(" ~p\n", [wxTextCtrl:getValue(UserCtrl)]),			%
 		loop(State);
@@ -150,10 +153,20 @@ loop(State) ->
 	    	[] -> ok;
 	    	_ -> chat ! {gui, search, Search_string}
 	    end,
-	    loop(State);                               
-	                                                                        
-	%#wx{id=?PREFERENCES, event=#wxCommand{}} -> 
-	
+	    loop(State);                 
+	    
+	#wx{event=#wxList{type = command_list_item_selected, itemIndex = Item}} ->
+		io:format("sending frienddelete, index:~p", [Item]),
+		receive
+				#wx{id=?DELETE, event=#wxCommand{type = command_menu_selected}} ->
+					 	Friend = wxListCtrl:getItemText(AllList, Item),
+			    		chat ! {delete_friend, Friend},
+	    				io:format("sending frienddelete, index:~p", [Item]),
+	    				%wxListCtrl:deleteItem(AllList, Item),
+	    				loop(State);
+				_ -> 	loop(State)
+		end;              
+	                                            		
 	#wx{event=#wxList{type = command_list_item_activated, itemIndex = Item}} ->
 	    Receiver = wxListCtrl:getItemText(AllList, Item),
 	    chat ! {chat_window, Receiver},
@@ -194,7 +207,10 @@ loop(State) ->
 	    SCD = wxSingleChoiceDialog:new(Frame, Str,"Result", ID),          
 	    wxSingleChoiceDialog:showModal(SCD),
 	    Selection = wxSingleChoiceDialog:getStringSelection(SCD),
-	    chat ! {gui, addfriend, Selection},
+	    case Selection of
+	    	[] -> ok;
+	    	_ -> chat ! {gui, addfriend, Selection}
+	    end,
 	    wxSingleChoiceDialog:destroy(SCD),
 	    loop(State)
 	    

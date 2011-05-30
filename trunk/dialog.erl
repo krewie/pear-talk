@@ -22,7 +22,7 @@ acc_friend(Obj) ->
     Wx = wx:new(),
     Frame = wxFrame:new(Wx, -1, "pear", [{size,{300,300}}]),
     MD = wxMessageDialog:new(Frame, Line, [{style, ?wxYES_NO bor ?wxICON_INFORMATION bor ?wxCANCEL bor ?wxSTAY_ON_TOP},{caption, "Friend Request"}]),
-    case wxDialog: showModal(MD) of
+    case wxDialog:showModal(MD) of
 	?wxID_YES ->
 	    chat!{confirm, Sender_username};
 	?wxID_NO ->
