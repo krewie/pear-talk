@@ -8,8 +8,8 @@
 -define(LOGOUT, 137).
 -define(ABOUT , ?wxID_ABOUT).
 -define(PREFERENCES, 3).
--define(FIRST_COL, 0).
--define(SECOND_COL, 1).
+-define(FIRST_COL, 1).
+-define(SECOND_COL, 0).
 -define(SEARCH, 101).
 %% @doc 
 %% @spec chat_frame:start() -> no_return().
@@ -28,6 +28,17 @@ offline_add(AllList, INDEX, COL1, COL2, Str1, Str2, {offline}) ->
     wxListCtrl:setItem(AllList,INDEX, COL2, Str2);
 offline_add(AllList, INDEX, COL1, COL2, Str1, Str2, {online}) ->
     wxListCtrl:insertItem(AllList, INDEX, ""),
+    wxListCtrl:setItemImage(AllList, INDEX, 1),
+    wxListCtrl:setItem(AllList,INDEX, COL1, Str1),
+    wxListCtrl:setItem(AllList,INDEX, COL2, Str2).
+
+update(AllList, INDEX, COL1, COL2, Str1, Str2, {offline}) -> 	
+    wxListCtrl:setItemBackgroundColour(AllList, INDEX, {189,189,189,0}),
+    wxListCtrl:setItemImage(AllList, INDEX, 0),
+    wxListCtrl:setItem(AllList,INDEX, COL1, Str1),
+    wxListCtrl:setItem(AllList,INDEX, COL2, Str2);
+update(AllList, INDEX, COL1, COL2, Str1, Str2, {online}) ->
+    wxListCtrl:setItemBackgroundColour(AllList, INDEX, {255,255,255,0}),
     wxListCtrl:setItemImage(AllList, INDEX, 1),
     wxListCtrl:setItem(AllList,INDEX, COL1, Str1),
     wxListCtrl:setItem(AllList,INDEX, COL2, Str2).
@@ -144,13 +155,13 @@ loop(State) ->
 	% DENNA FUNKTION KAN ANROPAS BÅDE NÄR MAN LOGGAR IN FÖRSTA GÅNGEN OCH NÄR MAN LÄGGER TILL NY VÄN
 	{client, friendlist} ->
 	    wxListCtrl:deleteAllItems(AllList),
-	    online:status(0, lists:sort(rul:tolist(friends)), AllList),
+	    online_status(0, rul:tolist(friends), AllList),
 	    loop(State);
 	% UPPDATERAR TILL MIN FÖRHOPPNING RÄTT PERSON PÅ RÄTT PLATS
 	{client, update, IDData} ->
 	    [User, ShowedName, Status] = IDData,
-	    Place = wxListCtrl:findItem(-1, User),
-	    offline_add(AllList, Place, ?FIRST_COL, ?SECOND_COL, ShowedName, User, {Status}),
+	    Place = wxListCtrl:findItem(AllList, -1, User,[]),
+	    update(AllList, Place, ?FIRST_COL, ?SECOND_COL, ShowedName, User, Status),
 	    loop(State)
     end.
 
@@ -161,5 +172,3 @@ online_status(Acc, [{User, [Showed_Name, _, _]}|Rest], AllList) ->
 online_status(Acc, [{User, [Showed_Name]}|Rest], AllList) -> 
     offline_add(AllList, Acc, ?FIRST_COL, ?SECOND_COL, Showed_Name,  User,{offline}),
     online_status(Acc+1, Rest, AllList).
-
-	

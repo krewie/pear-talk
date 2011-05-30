@@ -61,6 +61,9 @@ start(G) ->
 %% @end
 status(Status) ->
     receive
+	{write, Obj}->
+	    io:format("~w", [Obj]),
+	    status(Status);
 	{chat_send_file, Obj, Pid} ->
 	    {value, {Receiver, _}} = lists:keysearch(Pid, 2, Status),
 	    [Path, Name] = Obj,
@@ -189,7 +192,8 @@ get_request(Sender_address, Socket, BinaryList) ->
 			String = Sender_showed_name ++ " has left.",
 			io:format("~p~n", [String]),
 			rul:logout(friends, Sender_username),
-			my(Sender_username)!{message_received, Sender_username, String};
+			gfu([Sender_username, Sender_showed_name, {offline}]),
+			my(Sender_username)!{message_received, Sender_showed_name, String};
 		    confirmfriend ->
 			{_, Sender_username, Sender_showed_name} = Obj,
 			rul:change(friends, Sender_username, name, Sender_showed_name);
@@ -208,14 +212,23 @@ get_request(Sender_address, Socket, BinaryList) ->
 			end;
 		    ping ->
 			{Sender_listen_port, Sender_username} = Obj,
-			rul:set_online(friends, Sender_username, Sender_address, Sender_listen_port),
-			gf(),
+			R = rul:set_online(friends, Sender_username, Sender_address, Sender_listen_port),
+			Sender_showed_name = rul:peek(friends, Sender_username, name),
+			gfu([Sender_username, Sender_showed_name, {online}]),
 			chat!{send, Sender_username, pong, my(id)},
+
 			case my(ping_mode) of
 			    pingon ->
 				io:format("ping from ~p ~n", [Sender_username]);
 			    _ ->
 				[]
+			end,
+			case R of
+				ok ->
+					String = Sender_showed_name ++ " is online.",
+					my(Sender_username)!{message_received, Sender_showed_name, String};
+				_->
+					[]
 			end;
 		    pong -> 
 			{Sender_username, _} = Obj,
@@ -436,7 +449,7 @@ old ([{X,_}|L]) ->
 		String = Sender_showed_name ++ " is offline.",
 		io:format("~p~n", [String]),
 		rul:logout(friends, X),
-		gf(),
+		gfu([X, Sender_showed_name, {offline}]),
 		my(X)!{message_received, X, String},
 		[];
 	    _ ->
@@ -667,6 +680,14 @@ gf() ->
 	case my(graphic) of
 		1 ->
 			contacts_window!{client, friendlist};
+		_ ->
+			[]
+	end.
+
+gfu(Obj) -> 
+	case my(graphic) of
+		1 ->
+			contacts_window!{client, update, Obj};
 		_ ->
 			[]
 	end.

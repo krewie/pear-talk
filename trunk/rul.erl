@@ -93,12 +93,18 @@ take(Table, Mail) ->
 %% @doc <br>Pre:NULL</br><br>SIDE-EFFECT:Saves the tcp/ip information about a user in table when user is online.</br><br>Post:ok | error tuple</br>
 set_online(Table, Sender, SenderIP, SenderPort) ->
 	try
+		case length(take(Table, Sender)) of
+			1 ->
+				R = ok;
+			_ ->
+				R = allready_online
+		end, 
 		change(Table, Sender, age, 0),
 		change(Table, Sender, old_ip, SenderIP),
 		change(Table, Sender, old_port, SenderPort),
 		change(Table, Sender, ip, SenderIP),
 		change(Table, Sender, port, SenderPort),
-		ok
+		R
 	catch		
 		Ek:En -> 
 			{Ek,En}
