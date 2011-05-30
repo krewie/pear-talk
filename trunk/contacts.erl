@@ -128,9 +128,9 @@ loop(State) ->
 	    wxDialog:destroy(MD),
 	    loop(State);
 	
-	#wx{id=?LOGOUT, event=#wxCommand{}} -> 
-	    spawn(login_frame, start, []),
-	    wxWindow:destroy(Frame);
+	#wx{id=?LOGOUT, event=#wxContextMenu{type=command_menu_selected}} -> 
+	    chat!logout,
+	    loop(State);
 	
 	#wx{id=?SEARCH, event=#wxCommand{type = command_button_clicked}} -> 
 	    RESULT = wxTextCtrl:getValue(SearchCtrl),
