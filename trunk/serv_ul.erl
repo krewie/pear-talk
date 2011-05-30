@@ -359,7 +359,7 @@ loop(Table) ->
 		    addUser(Table, ID, Name, [], Netinfo, Password),
 		    Pid ! {db, adduser, Netinfo, ok};
 		true ->
-		    Pid !{db, badID, Netinfo}
+		    Pid !{db, usedID, Netinfo}
 	    end,
 	    loop(Table);
 

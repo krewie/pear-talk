@@ -294,6 +294,20 @@ listen_state(Socket, DBPid) ->
 			     ok
 		    end;
 		[] -> ok
+	    end;
+	    
+	    {db, usedID, Netinfo}->
+	    	case Netinfo of
+		[Ip, Port] ->
+		    case gen_tcp:connect(Ip, Port, []) of
+			{ok, Sock} ->
+			    Data = term_to_binary({usedID, ok}),
+			    send(Sock, Data),
+			    gen_tcp:close(Sock);
+			_ -> io:format("Socket closed\n", []),
+			     ok
+		    end;
+		[] -> ok
 	    end
 	    
 	end.

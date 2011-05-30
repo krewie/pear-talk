@@ -108,8 +108,8 @@ loop(State) ->
 	    loop(State);
 
 	#wx{id = 103, event=#wxCommand{type = command_button_clicked} } ->
-	    spawn(reg_frame,start,[]),
-	    loop(State);
+	    chat ! {client, registerWindow},
+	    wxWindow:destroy(Frame);
 
     	#wx{id = 101, event=#wxCommand{type = command_button_clicked}} ->
             TextCtrl_val = wxTextCtrl:getValue(TextCtrl),

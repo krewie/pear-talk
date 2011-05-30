@@ -61,6 +61,12 @@ start(G) ->
 %% @end
 status(Status) ->
     receive
+    	{client, registerNewUser, Mail, Password, ShowedName} ->
+    	    spawn(peer, newUser, [Mail, Password, ShowedName]),
+    	    status(Status);
+    	{client, registerWindow} ->
+    	    register(reg_window, spawn(reg_frame, start, [])),
+    	    status(Status);
         {login, reminder, Usermail} ->
             {value, {_ , ListenPort}} = lists:keysearch(listen_port, 1, Status),
             {ok, Sock} = gen_tcp:connect(my(server_address), my(server_port), [binary,{active, false}]),
@@ -202,6 +208,11 @@ get_request(Sender_address, Socket, BinaryList) ->
 		{Mode, Obj} = 
 		binary_to_term(list_to_binary(lists:reverse(BinaryList))),
 		case Mode of
+		    usedID ->
+		    	reg_window ! {usedID};
+		    addUser ->
+		    	reg_window ! {addUser},
+		    	spawn(login_frame,start,["username"]);
 		    reminderSent ->
 		    	spawn(login_frame,start,["reminder sent to mail"]);
 		    noUser ->
@@ -720,6 +731,7 @@ gfu(Obj) ->
 			[]
 	end.
 
+
 searchFriend(ID) ->
 	try
 	{MyUser, _} = my(id),
@@ -730,3 +742,16 @@ searchFriend(ID) ->
 	Ek:En ->
 	    {Ek,En}
     end.
+    
+
+newUser(Mail, Password, ShowedName) ->
+	try
+	{value, {_ , ListenPort}} = lists:keysearch(listen_port, 1, Status),
+	{ok, Sock} = gen_tcp:connect(my(server_address), my(server_port), [binary,{active, false}]),
+	gen_tcp:send(Sock, term_to_binary({client, adduser, Mail, ShowedName, Password, ListenPort})),
+	gen_tcp:close(Sock)
+    catch 
+	Ek:En ->
+	    {Ek,En}
+    end.
+
