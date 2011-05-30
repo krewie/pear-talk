@@ -100,7 +100,7 @@ loop(State) ->
 		true ->
 		    Mail = wxTextCtrl:getValue(TextCtrl1),  % kolla mot serverna om epost-adressen är upptagen
 		    Password = wxTextCtrl:getValue(TextCtrl2),
-		    ShowedName = vwTextCtrl:getValue(TextCtrl3),
+		    ShowedName = wxTextCtrl:getValue(TextCtrl3),
 		    chat ! {client, add_user, Mail, Password, ShowedName, self()}
 	   end,
 	   loop(State);
