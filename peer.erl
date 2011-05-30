@@ -216,9 +216,9 @@ get_request(Sender_address, Socket, BinaryList) ->
 		    	reg_window ! {addUser},
 		    	spawn(login_frame,start,[Obj]);
 		    reminderSent ->
-		    	spawn(login_frame,start,["reminder sent to mail"]);
+		    	spawn(dialog, msgbox,["reminder sent to mail"]);
 		    noUser ->
-		    	spawn(login_frame, start, ["no such email"]);
+		    	spawn(dialog, msgbox, ["no such email"]);
 		    search ->
 		    	contacts_window ! {client, search, Obj};
 		    client_logout ->
@@ -766,5 +766,5 @@ reminder(Usermail, ListenPort) ->
 	Ek:En ->
 	    {Ek,En}
     end.
-	
+
 

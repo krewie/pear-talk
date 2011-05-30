@@ -31,3 +31,8 @@ acc_friend(Obj) ->
 		[]
     end,
     wxDialog:destroy(MD).
+msgbox(S) ->
+    Wx = wx:new(),
+    Frame = wxFrame:new(Wx, -1, "pear", [{size,{300,300}}]),
+    MD = wxMessageDialog:new(Frame, S, [{style, ?wxOK bor ?wxSTAY_ON_TOP bor ?wxICON_INFORMATION},{caption, "Pear-Talk"}]),
+    wxDialog: showModal(MD).
