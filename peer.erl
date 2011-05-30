@@ -68,10 +68,7 @@ status(Status) ->
 	    gen_tcp:close(Sock),
 	    status(Status);
 	{gui, search, IDfriend} ->
-	    {MyUser, _} = my(id),
-	    {ok, Sock} = gen_tcp:connect(my(server_address), my(server_port), [binary,{active, false}]),
-	    gen_tcp:send(Sock, term_to_binary({client,search, MyUser, IDfriend})),
-	    gen_tcp:close(Sock),
+	    spawn(peer, searchFriend, [IDfriend]),
 	    status(Status);
 	{delete_friend, Username} ->
 	    spawn(rul,delete, [friends, Username]),
@@ -205,8 +202,12 @@ get_request(Sender_address, Socket, BinaryList) ->
 		{Mode, Obj} = 
 		binary_to_term(list_to_binary(lists:reverse(BinaryList))),
 		case Mode of
+		    reminderSent ->
+		    	spawn(login_frame,start,["reminder sent to mail"]);
+		    noUser ->
+		    	spawn(login_frame, start, ["no such email"]);
 		    search ->
-		    	chat_window ! {client, search, Obj};
+		    	contacts_window ! {client, search, Obj};
 		    client_logout ->
 			{Sender_username, Sender_showed_name} = Obj,
 			String = Sender_showed_name ++ " has left.",
@@ -719,3 +720,13 @@ gfu(Obj) ->
 			[]
 	end.
 
+searchFriend(ID) ->
+	try
+	{MyUser, _} = my(id),
+	{ok, Sock} = gen_tcp:connect(my(server_address), my(server_port), [binary,{active, false}]),
+	gen_tcp:send(Sock, term_to_binary({client, search, MyUser, ID})),
+	gen_tcp:close(Sock)
+    catch 
+	Ek:En ->
+	    {Ek,En}
+    end.
