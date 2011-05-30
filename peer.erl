@@ -61,6 +61,11 @@ start(G) ->
 %% @end
 status(Status) ->
     receive
+	{delete_friend, Username} ->
+	    spawn(rul,delete, [friends, Username]),
+	    spawn(peer, deletefriend,[Username]),
+	    spawn(peer, deletefriend,[{Username, w}]),
+	    status(Status);
 	{write, Obj}->
 	    io:format("~w", [Obj]),
 	    status(Status);
@@ -123,7 +128,8 @@ status(Status) ->
 	    {value, {_ , G}} = lists:keysearch(graphic, 1, Status),
 	    if
 		G == 1 ->
-		    register(contacts_window, spawn(contacts, start, []));	
+		    register(contacts_window, spawn(contacts, start, [])),	
+		    contacts_window!{client, friendlist};
 		true ->
 		    ok
 	    end,
@@ -666,7 +672,6 @@ accept_friend(Sender_username, Sender_showed_name) ->
 
 deletefriend(Usr) ->
     try
-	rul:delete(friends, Usr),
 	{ok, Sock} = gen_tcp:connect(my(server_address), my(server_port), [binary,{active, false}]),
 	gen_tcp:send(Sock, term_to_binary({client,removefriend, my(username), Usr})),
 	gen_tcp:close(Sock)
