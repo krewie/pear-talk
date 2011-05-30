@@ -96,8 +96,7 @@ loop(State) ->
 					     [{style, ?wxOK bor ?wxICON_INFORMATION},
 					      {caption, "Notification!"}]),
 		    wxDialog:showModal(MD),
-		    wxDialog:destroy(MD),
-		    loop(State);
+		    wxDialog:destroy(MD);
 		true ->
 		    Mail = wxTextCtrl:getValue(TextCtrl1),  % kolla mot serverna om epost-adressen är upptagen
 		    Password = wxTextCtrl:getValue(TextCtrl2),
