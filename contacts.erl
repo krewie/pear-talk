@@ -183,7 +183,7 @@ loop(State) ->
 	% UPPDATERAR TILL MIN FÖRHOPPNING RÄTT PERSON PÅ RÄTT PLATS
 	{client, update, IDData} ->
 	    [User, ShowedName, Status] = IDData,
-	    Place = wxListCtrl:findItem(AllList, -1, User,[]),
+	    Place = wxListCtrl:findItem(AllList, -1, User, []),
 	    update(AllList, Place, ?FIRST_COL, ?SECOND_COL, ShowedName, User, Status),
 	    loop(State)
     end.
