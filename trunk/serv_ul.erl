@@ -80,7 +80,7 @@ acceptFriend(Table, MyID, FriendID) ->
 	{ID, w} ->
 	    removeFriend(Table, MyID, FriendID),
 	    addFriend(Table, MyID, ID);
-	_ -> {error, badID}
+	_ -> ok
     end,
     ok.
 
@@ -276,7 +276,7 @@ loop(Table) ->
 		true -> 
 		    Friendlist = retrieveFriends(Table, ID),
 		    onlineStatus(Table, ID, Netinfo),
-		    ClientPid ! {db, friendlist, Netinfo, Friendlist};
+		    ClientPid ! {db, friendlist, Netinfo, {ID, Friendlist}};
 		false ->
 		    io:format("Bad password\n", []),
 		    ClientPid!{db, badPass, Netinfo}; %% fel lösenord
@@ -290,7 +290,7 @@ loop(Table) ->
 	    case addFriend(Table, MyID, FriendID) of
 		ok ->
 		    {ID, w} = FriendID,
-		    Pid ! {db, addfriend, getNetInfo(Table, ID), retrieveFriends(Table, ID), ok};
+		    Pid ! {db, addfriend, getNetInfo(Table, ID), {ID, retrieveFriends(Table, ID)}, ok};
 		{error, {badmatch, MyID}} ->
 		    Pid!{db, badID, getNetInfo(Table, MyID)} %% användare existerar inte
 	    end,
@@ -300,7 +300,7 @@ loop(Table) ->
 	    case acceptFriend(Table, MyID, FriendID) of
 		ok ->
 		    {ID, p} = FriendID,
-		    Pid ! {db, acceptfriend, retrieveFriends(Table, MyID), retrieveFriends(Table, ID), getNetInfo(Table, MyID), getNetInfo(Table, ID)};
+		    Pid ! {db, acceptfriend, {MyID, retrieveFriends(Table, MyID)}, {ID, retrieveFriends(Table, ID)}, getNetInfo(Table, MyID), getNetInfo(Table, ID)};
 		{error, _} -> ok
 	    end,
 	    loop(Table);

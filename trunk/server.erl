@@ -152,6 +152,7 @@ listen_state(Socket, DBPid) ->
 	    end;
 
 	{db, search, NetInfo, Results} -> 
+	    io:format("Search results: ~p~n", Results),
 	    case NetInfo of
 		[Ip, Port] ->
 		    case gen_tcp:connect(Ip, Port, []) of
