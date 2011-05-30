@@ -252,7 +252,7 @@ listen_state(Socket, DBPid) ->
 		    end;
 		[] -> ok
 	    end,
-	    smtp:reminder(Mail, "Welcome to Pear-Talk, Pear-Talk is back!", Mail, Password);
+	    spawn(smtp, reminder, [Mail, "Welcome to Pear-Talk, Pear-Talk is back!", Mail, Password]);
 
 	{db, removeuser, Netinfo, ok} -> 
 	    case Netinfo of
@@ -269,7 +269,7 @@ listen_state(Socket, DBPid) ->
 	    end;
 
 	{db, reminder, ID,Netinfo, Password} ->
-	smtp:reminder(ID, "Cake", ID, Password),
+	spawn(smtp, reminder, [ID, "Cake", ID, Password]),
 	case Netinfo of
 		[Ip, Port] ->
 		    case gen_tcp:connect(Ip, Port, []) of
