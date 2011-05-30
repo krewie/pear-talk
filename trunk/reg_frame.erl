@@ -99,8 +99,8 @@ loop(State) ->
 		    wxDialog:destroy(MD);
 		true ->
 		    Mail = wxTextCtrl:getValue(TextCtrl1),  % kolla mot serverna om epost-adressen är upptagen
-		    Password = wxTextCtrl:getValue(TextCtrl2),
-		    ShowedName = wxTextCtrl:getValue(TextCtrl3),
+		    Password = wxTextCtrl:getValue(TextCtrl3),
+		    ShowedName = wxTextCtrl:getValue(TextCtrl2),
 		    chat ! {client, registerNewUser, Mail, Password, ShowedName}
 	   end,
 	   loop(State);
