@@ -105,7 +105,7 @@ loop(State) ->
 		    chat ! {client, add_user, Mail, Password, ShowedName, self()},
 		    receive
 			{register, true} ->
-			    ; % Låt servern lägga till användaren
+			    ok; % Låt servern lägga till användaren
 			      % skicka en "reminder" till epost-adressen (lägg till ett valfritt meddelande till reminder.erl)
 			{register, false} ->
 			    Str = "The email address is already used.",

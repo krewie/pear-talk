@@ -11,7 +11,7 @@
 -define(FIRST_COL, 1).
 -define(SECOND_COL, 0).
 -define(SEARCH, 101).
--define(DELETE, 102).
+-define(CHANGE, 102).
 
 %% @doc 
 %% @spec chat_frame:start() -> no_return().
@@ -52,14 +52,14 @@ make_window() ->
     Server = wx:new(),
     %% Create new wx-object, new window with panel, main sizer and notebook
     %Server = wx:new(),
-    Frame = wxFrame:new(Server, -1, "Pear Talk", [{size,{430, 680}}]),
+    Frame = wxFrame:new(Server, -1, "Pear Talk", [{size,{355, 580}}]),
     Panel = wxPanel:new(Frame, []),
     MainSizer = wxStaticBoxSizer:new(?wxVERTICAL, Panel,[]),
     Notebook = wxNotebook:new(Panel, 111, [{style, ?wxBK_DEFAULT}]),
 % List with all contacts:		
     AllList = wxListCtrl:new(Notebook, [{style, ?wxLC_REPORT bor ?wxLC_SINGLE_SEL}]),
-    wxListCtrl:insertColumn(AllList, ?FIRST_COL, "Contact", []),
-    wxListCtrl:insertColumn(AllList, ?SECOND_COL, "Name", []),
+    wxListCtrl:insertColumn(AllList, ?SECOND_COL, "Contact", []),
+    wxListCtrl:insertColumn(AllList, ?FIRST_COL, "Name", []),
 % Pear-icons: 
     IL = wxImageList:new(16,16),
     wxImageList:add(IL, wxBitmap:new(wxImage:scale(wxImage:new("smiley.jpg", []), 16, 16))),
@@ -73,18 +73,24 @@ make_window() ->
 					round(wxImage:getHeight(Image)*0.25),
 					[{quality, ?wxIMAGE_QUALITY_HIGH}])),
     StaticBitmap = wxStaticBitmap:new(Panel, 1, Bitmap),
+% Ändra -namn -fält:
+	UserSizer = wxStaticBoxSizer:new(?wxHORIZONTAL, Panel,[{label, "Change username:"}]),
+    UserCtrl = wxTextCtrl:new(Panel, 1, [{value, "Name"},{style, ?wxDEFAULT},{size, {235, 20}}]),
+    UserButt = wxButton:new(Panel, 102, [{label, "&Change"}]),
+    wxSizer:add(UserSizer, UserCtrl,[]),
+    wxSizer:addSpacer(UserSizer, 10),
+    wxSizer:add(UserSizer, UserButt,[]),
 % SÃ¶kfÃ¤lt:
     SearchSizer = wxStaticBoxSizer:new(?wxHORIZONTAL, Panel,[{label, "Friend search:"}]),
     SearchCtrl = wxTextCtrl:new(Panel, 1, [{value, "Em@il"},{style, ?wxDEFAULT},{size, {235, 20}}]),
     SearchButt = wxButton:new(Panel, ?SEARCH, [{label, "&Search"}]),
-    SearchButt2 = wxButton:new(Panel, ?DELETE, [{label, "&Delete"}]),
     wxSizer:add(SearchSizer, SearchCtrl,[]),
     wxSizer:addSpacer(SearchSizer, 10),
     wxSizer:add(SearchSizer, SearchButt,[]),
-    wxSizer:add(SearchSizer, SearchButt2,[]),
 % Sizer stuff:
     wxSizer:add(BitmapSizer, StaticBitmap, []),
     wxSizer:add(MainSizer, BitmapSizer, []),
+    wxSizer:add(MainSizer, UserSizer, [{flag, ?wxEXPAND}]),
     wxNotebook:addPage(Notebook, AllList, "Contacts", []),
     wxSizer:add(MainSizer, Notebook, [{proportion, 1},{flag, ?wxEXPAND}]),
     wxSizer:addSpacer(MainSizer, 4),
@@ -105,18 +111,19 @@ make_window() ->
     wxFrame:setMenuBar(Frame, MenuBar),
     wxFrame:createStatusBar(Frame),
     wxFrame:setStatusText(Frame, "Welcome to Pear Talk!"),
-% Events:
-    wxListCtrl:connect(AllList, command_list_item_selected, []),
+% Events:        
+	wxListCtrl:connect(AllList, command_list_item_activated, []),
+    wxListCtrl:connect(AllList, command_list_delete_item, []),
     wxFrame:connect(Panel, command_menu_selected),
     wxFrame:connect(Frame, close_window),
     wxPanel:connect(Panel, command_button_clicked),
 % Draw the Frame:	
     wxFrame:show(Frame),
 % Return:
-   {Frame, AllList, SearchCtrl}.
+   {Frame, AllList, SearchCtrl, UserCtrl}.
 
 loop(State) ->
-    {Frame, AllList, SearchCtrl}  = State,  
+    {Frame, AllList, SearchCtrl, UserCtrl}  = State,  
     %io:format("--waiting in the loop--~n", []), 
     receive
 	#wx{id=?ABOUT, event=#wxCommand{}} ->
@@ -127,47 +134,34 @@ loop(State) ->
 	    wxDialog:showModal(MD),
 	    wxDialog:destroy(MD),
 	    loop(State);
-	
-	#wx{id=?LOGOUT, event=#wxContextMenu{type=command_menu_selected}} -> 
-	    chat!logout,
-	    loop(State);
+	    
+	#wx{id=?CHANGE, event=#wxCommand{type = command_button_clicked}} ->	%
+		% Test och uppdatering
+		io:format(" ~p\n", [wxTextCtrl:getValue(UserCtrl)]),			%
+		loop(State);
+					
+	#wx{id=?LOGOUT, event=#wxCommand{}} -> 
+	    spawn(login_frame, start, []),
+	    wxWindow:destroy(Frame);
 	
 	#wx{id=?SEARCH, event=#wxCommand{type = command_button_clicked}} -> 
-	    RESULT = wxTextCtrl:getValue(SearchCtrl),
-	    Str = "Some text maybe...",                                                                                     
-	    SCD = wxSingleChoiceDialog:new(Frame, Str,"Result", [RESULT]),   
-	    wxSingleChoiceDialog:showModal(SCD),          
-	    TheFriend = wxSingleChoiceDialog:getStringSelection(SCD),
-	    case TheFriend of
-		[] ->
-			[];
-		_ ->
-	    		chat ! {gui, addfriend, TheFriend}
+	    Search_string = wxTextCtrl:getValue(SearchCtrl),
+	    case Search_string of
+	    	[] -> ok;
+	    	_ -> chat ! {gui, search, Search_string}
 	    end,
-	    loop(State);
-	#wx{id=?DELETE, event=#wxCommand{type = command_button_clicked}} -> 
-	    RESULT = wxTextCtrl:getValue(SearchCtrl),
-	    Str = "Delete friend",                                                                                     
-	    SCD = wxSingleChoiceDialog:new(Frame, Str,"Result", [RESULT]),    
-	    wxSingleChoiceDialog:showModal(SCD),            
-	    TheFriend = wxSingleChoiceDialog:getStringSelection(SCD),
-	    case TheFriend of
-		[] ->
-			[];
-		_ ->
-	    		chat ! {delete_friend, TheFriend}
-	    end,
-	    loop(State);                                                                                                   
+	    loop(State);                               
+	                                                                        
 	%#wx{id=?PREFERENCES, event=#wxCommand{}} -> 
 	
-	#wx{event=#wxList{type = command_list_item_selected, itemIndex = Item}} ->
-	    io:format("lala ~p \n",[Item]),
-	    {Reciever, _} = lists:nth(Item+1, rul:tolist(friends)),
-	    chat ! {chat_window, Reciever},
+	#wx{event=#wxList{type = command_list_item_activated, itemIndex = Item}} ->
+	    Receiver = wxListCtrl:getItemText(AllList, Item),
+	    chat ! {chat_window, Receiver},
 	    loop(State);  
 	
 	#wx{event=#wxList{type = command_list_delete_item, itemIndex = Item}} ->
-	    io:format("lala ~p \n",[Item]),
+	    Friend = wxListCtrl:getItemText(AllList, Item),
+	    chat ! {delete_friend, Friend},
 	    wxListCtrl:deleteItem(AllList, Item),
 	    loop(State);  	
 	
@@ -177,15 +171,34 @@ loop(State) ->
 	    ok;
 	% DENNA FUNKTION KAN ANROPAS BÅDE NÄR MAN LOGGAR IN FÖRSTA GÅNGEN OCH NÄR MAN LÄGGER TILL NY VÄN
 	{client, friendlist} ->
+		io:format("Entering friendlist"),
 	    wxListCtrl:deleteAllItems(AllList),
 	    online_status(0, rul:tolist(friends), AllList),
 	    loop(State);
 	% UPPDATERAR TILL MIN FÖRHOPPNING RÄTT PERSON PÅ RÄTT PLATS
 	{client, update, IDData} ->
 	    [User, ShowedName, Status] = IDData,
-	    Place = wxListCtrl:findItem(AllList, -1, User, []),
+	    Place = wxListCtrl:findItem(AllList, 0, User,[]),
 	    update(AllList, Place, ?FIRST_COL, ?SECOND_COL, ShowedName, User, Status),
+	    loop(State);
+	    
+	{client, search, []} ->
+		Str = "No users matched",                                                                                     
+	    SCD = wxSingleChoiceDialog:new(Frame, Str,"Result", []),          
+	    wxSingleChoiceDialog:showModal(SCD),
+	    wxSingleChoiceDialog:destroy(SCD),
+	    loop(State);
+	    
+	{client, search, ID} ->
+		Str = "Found friend.",                                                                                     
+	    SCD = wxSingleChoiceDialog:new(Frame, Str,"Result", ID),          
+	    wxSingleChoiceDialog:showModal(SCD),
+	    Selection = wxSingleChoiceDialog:getStringSelection(SCD),
+	    chat ! {gui, addfriend, Selection},
+	    wxSingleChoiceDialog:destroy(SCD),
 	    loop(State)
+	    
+		
     end.
 
 online_status(_, [], _) -> ok;
