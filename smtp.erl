@@ -1,7 +1,7 @@
 -module(smtp).
 -export([reminder/3]).
 
-reminder(Mail, User, Password) ->
+reminder(Mail, Option, User, Password) ->
    ssl:start(),
    {ok, Socket} = ssl:connect("smtp.gmail.com", 465, [{active, false}], 1000),
    recv(Socket),
@@ -17,6 +17,7 @@ reminder(Mail, User, Password) ->
    send_no_receive(Socket, "Date: Tue, 15 Jan 2008 16:02:43 +0000"),
    send_no_receive(Socket, "Subject: Account reminder"),
    send_no_receive(Socket, ""),
+   send_no_receive(Socket, Option),
    send_no_receive(Socket, "Username: "++User),
    send_no_receive(Socket, "Password: "++Password),
    send_no_receive(Socket, ""),
