@@ -82,11 +82,11 @@ loop(State) ->
     receive
         #wx{event=#wxClose{}} ->
          	wxWindow:destroy(Frame), 
-         	ok;  % exit the loop
+         	chat ! {reg_window, close};  % exit the loop
  
     	#wx{id = ?wxID_EXIT, event=#wxCommand{type = command_button_clicked} } ->
          	wxWindow:destroy(Frame),
-         	ok; 		
+         	chat ! {reg_window, close}; 		
          	
     	#wx{id = 101, event=#wxCommand{type = command_button_clicked}} ->
 	    case wxTextCtrl:getValue(TextCtrl3) == wxTextCtrl:getValue(TextCtrl4) of							
