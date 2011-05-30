@@ -206,9 +206,16 @@ get_request(Sender_address, Socket, BinaryList) ->
 		    befriends ->
 			{Sender_listen_port, Sender_username, Sender_showed_name} = Obj,
 			spawn(peer,acceptFr,[Sender_username, Sender_showed_name, Sender_address, Sender_listen_port]);
-		    friendlist ->						
-			fillTable(friends, Obj),
-			gf();
+		    friendlist ->	
+			{Id, FriendList} = Obj,	
+			U = my(username),
+			case Id of
+				U ->			
+					fillTable(friends, FriendList),
+					gf();
+				_->
+					[]
+			end;
 		    file ->
 			case my(graphic) of
 				1 ->
@@ -423,6 +430,7 @@ refresh() -> autentication(my(username), my(password)).
 
 autentication(Username, Password) ->
     try
+	chat!newfriends,
 	chat!{change, password, Password},
 	chat!{change, username, Username},	
 	{ok, Sock} = gen_tcp:connect(my(server_address), my(server_port), [binary,{active, false}]),
