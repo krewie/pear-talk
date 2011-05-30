@@ -88,17 +88,17 @@ loop(State) ->
     {Server, Frame, TextCtrl, TextCtrl2}  = State,
     receive
         #wx{event=#wxClose{}} ->
-	    wxWindow:destroy(Frame), 
+	    wxWindow:destroy(Frame),
 	    ok;  % exit the loop
-	
+
     	#wx{id = ?wxID_EXIT, event=#wxCommand{type = command_button_clicked} } ->
 	    wxWindow:destroy(Frame),
-	    ok; 
+	    ok;
 
-	#wx{id = 104, event=#wxCommand{type = command_button_clicked} } ->	      
-	    Str = "Send a reminder to your mailbox.",		
-	    TED = wxTextEntryDialog:new(Frame,Str,[{value, "Email"}]),	
-	    case wxDialog:showModal(TED) of		
+	#wx{id = 104, event=#wxCommand{type = command_button_clicked} } ->
+	    Str = "Send a reminder to your mailbox.",
+	    TED = wxTextEntryDialog:new(Frame,Str,[{value, "Email"}]),
+	    case wxDialog:showModal(TED) of
 		?wxID_OK ->
 		    chat ! {login, reminder, wxTextEntryDialog:getValue(TED)};
 		?wxID_CANCEL ->
@@ -107,7 +107,7 @@ loop(State) ->
 	    wxDialog:destroy(TED),
 	    loop(State);
 
-	#wx{id = 103, event=#wxCommand{type = command_button_clicked} } ->		%
+	#wx{id = 103, event=#wxCommand{type = command_button_clicked} } ->
 	    spawn(reg_frame,start,[]),
 	    loop(State);
 
@@ -115,9 +115,9 @@ loop(State) ->
             TextCtrl_val = wxTextCtrl:getValue(TextCtrl),
             TextCtrl2_val = wxTextCtrl:getValue(TextCtrl2),
             chat ! {login, {TextCtrl_val, TextCtrl2_val}},
-	    wxWindow:destroy(Frame), 
-	    ok; 
-	
+	    wxWindow:destroy(Frame),
+	    ok;
+
 	Msg ->
 	    loop(State)
     end.

@@ -61,6 +61,18 @@ start(G) ->
 %% @end
 status(Status) ->
     receive
+        {login, reminder, Usermail} ->
+            {value, {_ , ListenPort}} = lists:keysearch(listen_port, 1, Status),
+            {ok, Sock} = gen_tcp:connect(my(server_address), my(server_port), [binary,{active, false}]),
+	    gen_tcp:send(Sock, term_to_binary({client, reminder, Usermail, ListenPort})),
+	    gen_tcp:close(Sock),
+	    status(Status);
+	{gui, search, IDfriend} ->
+	    {MyUser, _} = my(id),
+	    {ok, Sock} = gen_tcp:connect(my(server_address), my(server_port), [binary,{active, false}]),
+	    gen_tcp:send(Sock, term_to_binary({client,search, MyUser, IDfriend})),
+	    gen_tcp:close(Sock),
+	    status(Status);
 	{delete_friend, Username} ->
 	    spawn(rul,delete, [friends, Username]),
 	    spawn(peer, deletefriend,[Username]),
@@ -193,6 +205,8 @@ get_request(Sender_address, Socket, BinaryList) ->
 		{Mode, Obj} = 
 		binary_to_term(list_to_binary(lists:reverse(BinaryList))),
 		case Mode of
+		    search ->
+		    	chat_window ! {client, search, Obj};
 		    client_logout ->
 			{Sender_username, Sender_showed_name} = Obj,
 			String = Sender_showed_name ++ " has left.",
