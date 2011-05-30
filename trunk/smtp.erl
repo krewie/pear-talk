@@ -1,5 +1,5 @@
 -module(smtp).
--export([reminder/3]).
+-export([reminder/4]).
 
 reminder(Mail, Option, User, Password) ->
    ssl:start(),
