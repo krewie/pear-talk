@@ -4,15 +4,15 @@
 -define(PORT, 9945).
 -define(TIMEOUT, 12000).
 
-						%Server calls
-						% ------- funktioner att implementera för servernätverk
+%%Server calls
+%% ------- funktioner att implementera för servernätverk
 
-						%join_network(server) ->
+%%join_network(server) ->
 
-						% --------
+%% --------
 
 %% @doc Anropar servern för att skriva ut användarlistan.
-%% @spec showAll() -> ok.
+%% @spec showAll() -> ok | {error, Reason}
 showAll() ->
     global ! {server, getport, self()},
     receive
@@ -21,9 +21,9 @@ showAll() ->
 	    send(Con, term_to_binary({server, showAll})),
 	    gen_tcp:close(Con)
     end.
-	
+
 %% @doc Stänger av servern.
-%% @spec shut_down() -> undefined
+%% @spec shut_down() -> | {error, Reason}s
 shut_down() ->
     global ! {server, getport, self()},
     receive
@@ -33,8 +33,8 @@ shut_down() ->
 	    gen_tcp:close(Con)
     end.
 
-%% @doc returnerar Port till anropande Pid
-%% @spec globalPort(Port) -> any()
+%% @doc Returnerar serverns port Port till anropande Pid
+%% @spec globalPort(Port) -> ok | {error, Reason}
 globalPort(Port) ->
     receive
 	{server, getport, Pid} ->
@@ -51,7 +51,7 @@ start_server(Port) ->
     register(global, spawn(?MODULE, globalPort, [Port])).
 
 %% @doc Väntar på uppkoppling, spawnar process för att hantera uppkopplingen. 
-%% @spec wait_for_connect(ListenSocket, DBPid) -> any()
+%% @spec wait_for_connect(ListenSocket, DBPid) -> ok | {error, Reason}
 wait_for_connection(ListenSocket, DBPid) ->
     case gen_tcp:accept(ListenSocket) of
 	{ok, Socket} ->
@@ -62,9 +62,9 @@ wait_for_connection(ListenSocket, DBPid) ->
 			    io:format("Server shutdown\n", []),
 			    DBPid ! Data,
 			    gen_tcp:close(ListenSocket);
-			 {server, showAll} ->
-			     DBPid ! Data,
-			     wait_for_connection(ListenSocket, DBPid);
+			{server, showAll} ->
+			    DBPid ! Data,
+			    wait_for_connection(ListenSocket, DBPid);
 			_ ->
 			    Lpid = spawn(?MODULE, listen_state, [Socket, DBPid]), 
 			    Lpid ! Data,
@@ -78,7 +78,7 @@ wait_for_connection(ListenSocket, DBPid) ->
     end.
 
 %% @doc Hanterar ett client request genom att kontakta DB och därefter invänta svar för hantering
-%% @spec listen_state(Socket, DBPid) -> any()
+%% @spec listen_state(Socket, DBPid) -> ok | {error, Reason}
 listen_state(Socket, DBPid) ->
     io:format("recieved request~n"),
     receive
@@ -86,7 +86,7 @@ listen_state(Socket, DBPid) ->
             {ok, {Address, _}} = inet:peername(Socket),	
             DBPid ! {client, reminder, Usermail,[Address, Port], self()},	
             listen_state(Socket,DBPid);	
-             
+
 	{client, login, Username, Password, Port} ->
 	    {ok, {Address, _}} = inet:peername(Socket),
 	    DBPid ! {client, login, Username, [Address, Port], Password, self()},
@@ -126,13 +126,13 @@ listen_state(Socket, DBPid) ->
 	    DBPid ! {client, removeuser, ID, [Address, Port], self()},
 	    listen_state(Socket,DBPid);
 
-						%Server-calls
-						%{server, serverlogin, {Netinfo}} ->
-						%se till så att servern blir up-to-date
-						%{server, userinfo, {server, client, Netinfo}} ->
-						%skicka tillbaka clientinfo till server som ännu inte har infon
-						%funkar för clientlogin likaså när man skapar vänlistan
-						%{server, 
+	%%Server-calls
+	%%{server, serverlogin, {Netinfo}} ->
+	%%se till så att servern blir up-to-date
+	%%{server, userinfo, {server, client, Netinfo}} ->
+	%%skicka tillbaka clientinfo till server som ännu inte har infon
+	%%funkar för clientlogin likaså när man skapar vänlistan
+	%%{server, 
 
 	{db, friendlist, NetInfo, Friendlist} ->
 	    io:format("sending friendlist: ~p to ~w~n", [Friendlist, NetInfo]),
@@ -207,7 +207,8 @@ listen_state(Socket, DBPid) ->
 			     ok
 		    end;
 		[] -> ok
-	    end;	%friend succesfully removed
+	    end;	
+	%%friend succesfully removed
 
 	{db, changename, NetInfo, ok} -> 
 	    case NetInfo of
@@ -221,7 +222,8 @@ listen_state(Socket, DBPid) ->
 			     ok
 		    end;
 		[] -> ok
-	    end;	%user succesfully changed name
+	    end;	
+	%%user succesfully changed name
 
 	{db, changepass, NetInfo, ok} -> 
 	    case NetInfo of
@@ -235,7 +237,8 @@ listen_state(Socket, DBPid) ->
 			     ok
 		    end;
 		[] -> ok
-	    end;	%user succesfullt changed password
+	    end;	
+	%%user succesfullt changed password
 
 	{db, acceptfriend, MyFrList, FriendFrList, MyInfo, FriendInfo} ->
 	    case MyInfo of
@@ -293,8 +296,8 @@ listen_state(Socket, DBPid) ->
 	    end;
 
 	{db, reminder, ID,Netinfo, Password} ->
-	spawn(smtp, reminder, [ID, "Cake", ID, Password]),
-	case Netinfo of
+	    spawn(smtp, reminder, [ID, "Cake", ID, Password]),
+	    case Netinfo of
 		[Ip, Port] ->
 		    case gen_tcp:connect(Ip, Port, []) of
 			{ok, Sock} ->
@@ -308,7 +311,7 @@ listen_state(Socket, DBPid) ->
 	    end;
 
 	{db, noUser, Netinfo} ->
-	case Netinfo of
+	    case Netinfo of
 		[Ip, Port] ->
 		    case gen_tcp:connect(Ip, Port, []) of
 			{ok, Sock} ->
@@ -320,9 +323,9 @@ listen_state(Socket, DBPid) ->
 		    end;
 		[] -> ok
 	    end;
-	    
-	    {db, usedID, Netinfo}->
-	    	case Netinfo of
+
+	{db, usedID, Netinfo}->
+	    case Netinfo of
 		[Ip, Port] ->
 		    case gen_tcp:connect(Ip, Port, []) of
 			{ok, Sock} ->
@@ -334,15 +337,15 @@ listen_state(Socket, DBPid) ->
 		    end;
 		[] -> ok
 	    end
-	    
-	end.
+
+    end.
 
 %% @doc Regulerar hur stora paketen som skickas skall vara, samt skickar delarna till Socket.
-%% @spec send(Socket, Rest) -> any()
+%% @spec send(Socket, Rest) -> ok | {error, Reason}
 %% Rest = binary()
 send(Socket, <<Chunk:100/binary, Rest/binary>>) ->
     gen_tcp:send(Socket, Chunk),
     send(Socket, Rest);
 send(Socket, Rest) ->
     gen_tcp:send(Socket, Rest).
-	
+
