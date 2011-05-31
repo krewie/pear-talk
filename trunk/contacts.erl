@@ -174,7 +174,7 @@ loop(State) ->
 	
 	#wx{event=#wxList{type = command_list_delete_item, itemIndex = Item}} ->
 	    Friend = wxListCtrl:getItemText(AllList, Item),
-	    wxListCtrl:deleteItem(AllList, Item),
+	    %wxListCtrl:deleteItem(AllList, Item),
 	    chat ! {delete_friend, Friend},
 	    loop(State);  	
 	
