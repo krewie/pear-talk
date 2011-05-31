@@ -23,28 +23,49 @@ start() ->
 
 %% @doc  
 %% @spec 	
-offline_add(AllList, INDEX, COL1, COL2, Str1, Str2, {offline}) -> 	
-    wxListCtrl:insertItem(AllList, INDEX, ""),		
-    wxListCtrl:setItemBackgroundColour(AllList, INDEX, {189,189,189,255}),
-    wxListCtrl:setItemImage(AllList, INDEX, 0),
-    wxListCtrl:setItem(AllList,INDEX, COL1, Str1),
-    wxListCtrl:setItem(AllList,INDEX, COL2, Str2);
-offline_add(AllList, INDEX, COL1, COL2, Str1, Str2, {online}) ->
-    wxListCtrl:insertItem(AllList, INDEX, ""),
-    wxListCtrl:setItemImage(AllList, INDEX, 1),
-    wxListCtrl:setItem(AllList,INDEX, COL1, Str1),
-    wxListCtrl:setItem(AllList,INDEX, COL2, Str2).
+offline_add(AllList, INDEX, COL1, COL2, Str1, Str2, {offline}) ->
 
+    try
+    	wxListCtrl:insertItem(AllList, INDEX, ""),		
+    	wxListCtrl:setItemBackgroundColour(AllList, INDEX, {189,189,189,255}),
+   	 	wxListCtrl:setItemImage(AllList, INDEX, 0),
+    	wxListCtrl:setItem(AllList,INDEX, COL1, Str1),
+    	wxListCtrl:setItem(AllList,INDEX, COL2, Str2)
+    catch 
+    	_:_ ->
+    		io:format("coulden't add to the contact list")
+    end;
+offline_add(AllList, INDEX, COL1, COL2, Str1, Str2, {online}) ->
+	try
+    	wxListCtrl:insertItem(AllList, INDEX, ""),
+    	wxListCtrl:setItemImage(AllList, INDEX, 1),
+    	wxListCtrl:setItem(AllList,INDEX, COL1, Str1),
+    	wxListCtrl:setItem(AllList,INDEX, COL2, Str2)
+    catch 
+    	_:_ ->
+    		io:format("coulden't add to the contact list")
+    end.
+    
 update(AllList, INDEX, COL1, COL2, Str1, Str2, {offline}) -> 	
-    wxListCtrl:setItemBackgroundColour(AllList, INDEX, {189,189,189,0}),
-    wxListCtrl:setItemImage(AllList, INDEX, 0),
-    wxListCtrl:setItem(AllList,INDEX, COL1, Str1),
-    wxListCtrl:setItem(AllList,INDEX, COL2, Str2);
+	try
+    	wxListCtrl:setItemBackgroundColour(AllList, INDEX, {189,189,189,0}),
+    	wxListCtrl:setItemImage(AllList, INDEX, 0),
+    	wxListCtrl:setItem(AllList,INDEX, COL1, Str1),
+    	wxListCtrl:setItem(AllList,INDEX, COL2, Str2)
+    catch 
+    	_:_ ->
+    		io:format("coulden't update the contact list")
+    end;
 update(AllList, INDEX, COL1, COL2, Str1, Str2, {online}) ->
-    wxListCtrl:setItemBackgroundColour(AllList, INDEX, {255,255,255,0}),
-    wxListCtrl:setItemImage(AllList, INDEX, 1),
-    wxListCtrl:setItem(AllList,INDEX, COL1, Str1),
-    wxListCtrl:setItem(AllList,INDEX, COL2, Str2).
+	try
+    	wxListCtrl:setItemBackgroundColour(AllList, INDEX, {255,255,255,0}),
+    	wxListCtrl:setItemImage(AllList, INDEX, 1),
+    	wxListCtrl:setItem(AllList,INDEX, COL1, Str1),
+   		wxListCtrl:setItem(AllList,INDEX, COL2, Str2)
+    catch 
+    	_:_ ->
+    		io:format("coulden't update the contact list")
+    end.
 
 fill_contact() -> 0.
 %% @doc 
