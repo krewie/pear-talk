@@ -1,4 +1,4 @@
-%% @author Göran Hagelin, Gabriel Tholsgård
+%% @author Grupp 2 (Staffan Rodgren, Gabriel Tholsgård, Kristian Ionescu, Mårten Blomberg, Göran Hagelin, Staffan Reinius)
 %% @doc modul med DETS API för projektet.
  
 -module(dapi).

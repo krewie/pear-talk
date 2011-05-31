@@ -1,3 +1,6 @@
+%% @author Grupp 2 (Staffan Rodgren, Gabriel Tholsgård, Kristian Ionescu, Mårten Blomberg, Göran Hagelin, Staffan Reinius)
+%% @doc modul som sköter DETS tables, en sorts databas manager skulle man kunna säga.
+
 -module(serv_ul).
 -export([addUser/6, addFriend/3, removeFriend/3, changeName/3, changePassword/4, onlineStatus/3, login/3, retrieveFriend/2, retrieveFriends/2, start/0, loop/1, acceptFriend/3, searchUsers/2, retrievePassword/2]).
 -define(DB, "users").
