@@ -61,6 +61,9 @@ start(G) ->
 %% @end
 status(Status) ->
     receive
+    	logout ->
+    		spawn(peer, shut_down, []),
+    		status(Status);
     	{changename, Name} ->
     		{value, {_ , {ID, _}}} = lists:keysearch(id, 1, Status),
     		spawn(peer,send_to_server,[{client, changename, ID, Name}]),
