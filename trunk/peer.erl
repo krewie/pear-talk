@@ -62,6 +62,7 @@ start(G) ->
 status(Status) ->
     receive
     	logout ->
+    		rul:friends(),
     		spawn(login_frame, start, ["Username"]),
     		status(Status);
     	{changename, Name} ->
@@ -111,8 +112,7 @@ status(Status) ->
 		spawn(peer, friend, [FriendID]),
 		status(Status);
 	{confirm, Sender_username} ->
-	    spawn(peer, confirmfriend, [{Sender_username, p}]),
-	    spawn(peer, refresh,[]),
+	    spawn(peer,confirmfriend, [{Sender_username, p}]),
 	    status(Status);
 	{refuse, Sender_username} ->
 	    spawn(peer,deletefriend, [{Sender_username, p}]),
@@ -145,7 +145,6 @@ status(Status) ->
 		    end
 	    end;
 	{login, {Username, Password}}  ->
-	    rul:add(friends, Username, Username),
 	    {value, {_ , NetworkInterface}} = lists:keysearch(network_interface, 1, Status),
 	    {value, {_ , ListenPort}} = lists:keysearch(listen_port, 1, Status),
 	    rul:set_online(friends, Username, NetworkInterface, ListenPort),
@@ -153,8 +152,8 @@ status(Status) ->
 	    {value, {_ , G}} = lists:keysearch(graphic, 1, Status),
 	    if
 		G == 1 ->
-		    register(contacts_window, spawn(contacts, start, [])),	
-		    contacts_window!{client, friendlist};
+		    register(contacts_window, spawn(contacts, start, []));
+		    %contacts_window!{client, friendlist};
 		true ->
 		    ok
 	    end,
@@ -237,35 +236,35 @@ get_request(Sender_address, Socket, BinaryList) ->
 			gfu([Sender_username, Sender_showed_name, {offline}]),
 			my(Sender_username)!{message_received, Sender_showed_name, String};
 		    confirmfriend ->
-			{_, Sender_username, Sender_showed_name} = Obj,
-			rul:change(friends, Sender_username, name, Sender_showed_name);
+				{_, Sender_username, Sender_showed_name} = Obj,
+				rul:change(friends, Sender_username, name, Sender_showed_name);
 		    befriends ->
-			{Sender_listen_port, Sender_username, Sender_showed_name} = Obj,
-			spawn(peer,acceptFr,[Sender_username, Sender_showed_name, Sender_address, Sender_listen_port]);
+				{Sender_listen_port, Sender_username, Sender_showed_name} = Obj,
+				spawn(peer,acceptFr,[Sender_username, Sender_showed_name, Sender_address, Sender_listen_port]);
 		    friendlist ->	
-			{Id, FriendList} = Obj,	
-			U = my(username),
-			case Id of
-				U ->			
-					fillTable(friends, FriendList),
-					gf();
-				_->
-					[]
-			end;
+		    	{Id, My_showed_name, FriendList} = Obj,	
+				U = my(username),
+				case Id of
+					U ->
+						fillTable(friends, FriendList),
+						chat!{change, id, {Id, My_showed_name}},
+						gf();
+					_->
+						[]
+				end;	
 		    file ->
-			case my(graphic) of
-				1 ->
-					spawn(dialog, make_window , [Obj]);
-				_ ->
-					spawn(peer, handle_file_sending,[Obj])
-			end;
+				case my(graphic) of
+					1 ->
+						spawn(dialog, make_window , [Obj]);
+					_ ->
+						spawn(peer, handle_file_sending,[Obj])
+				end;
 		    ping ->
-			{Sender_listen_port, {Sender_username, Sender_showed_name}} = Obj,
-			R = rul:set_online(friends, Sender_username, Sender_address, Sender_listen_port),
-			rul:change(friends, Sender_username, name, Sender_showed_name),
-			gfu([Sender_username, Sender_showed_name, {online}]),
-			chat!{send, Sender_username, pong, my(id)},
-
+				{Sender_listen_port, {Sender_username, Sender_showed_name}} = Obj,
+				chat!{send, Sender_username, pong, {Sender_listen_port,my(id)}},
+				gfu([Sender_username, Sender_showed_name, {online}]),
+				R = rul:set_online(friends, Sender_username, Sender_address, Sender_listen_port),
+				rul:change(friends, Sender_username, name, Sender_showed_name),
 			case my(ping_mode) of
 			    pingon ->
 				io:format("ping from ~p ~n", [Sender_username]);
@@ -280,11 +279,10 @@ get_request(Sender_address, Socket, BinaryList) ->
 					[]
 			end;
 		    pong -> 
-			{Sender_listen_port, {Sender_username, Sender_showed_name}} = Obj,
-			R = rul:set_online(friends, Sender_username, Sender_address, Sender_listen_port),
-			rul:change(friends, Sender_username, name, Sender_showed_name),
-			gfu([Sender_username, Sender_showed_name, {online}]),
-			chat!{send, Sender_username, pong, my(id)},
+				{Sender_listen_port, {Sender_username, Sender_showed_name}} = Obj,
+				gfu([Sender_username, Sender_showed_name, {online}]),
+				R = rul:set_online(friends, Sender_username, Sender_address, Sender_listen_port),
+				rul:change(friends, Sender_username, name, Sender_showed_name),
 			case my(ping_mode) of
 			    pingon ->
 				io:format("pong from ~p ~n", [Sender_username]);
@@ -470,9 +468,9 @@ refresh() -> autentication(my(username), my(password)).
 
 autentication(Username, Password) ->
     try
-	chat!newfriends,
 	chat!{change, password, Password},
 	chat!{change, username, Username},
+	
 	send_to_server({client,login, Username, Password, my(listen_port)})
     catch 
 	Ek:En ->
@@ -502,7 +500,7 @@ old ([{X,_}|L]) ->
 		io:format("~p~n", [String]),
 		rul:logout(friends, X),
 		gfu([X, Sender_showed_name, {offline}]),
-		my(X)!{message_received, X, String},
+		my(X)!{message_received, Sender_showed_name, String},
 		[];
 	    _ ->
 		rul:change(friends, X, age, Count + 1),
@@ -681,7 +679,7 @@ fillTable(_, []) ->
 fillTable(Table, [Friend|List]) ->
     case Friend of
 	[{M,p},[Sn|_]] = Friend ->
-	    spawn(peer,accept_friend,[M, Sn]);
+	    accept_friend(M, Sn);
 	[M,[Sn, Pip, Lp]] = Friend ->
 	    ets:insert(Table, {M, [{name, Sn}, {old_ip, Pip}, {old_port, Lp}, {age, 0}]});
 	[M, [Sn]] = Friend ->
@@ -690,12 +688,13 @@ fillTable(Table, [Friend|List]) ->
     fillTable(Table, List).
 
 confirmfriend(Usr) ->
-	send_to_server({client,acceptfriend, my(username), Usr}).
+	send_to_server({client,acceptfriend, my(username), Usr}),
+	refresh().
 
 accept_friend(Sender_username, Sender_showed_name) ->
 	case my(graphic) of
 		1->
-			spawn(dialog, acc_friend, [{friendaccept, Sender_username, Sender_showed_name}]);
+			dialog:acc_friend({friendaccept, Sender_username, Sender_showed_name});
 		_->
 			Line = io_lib:format("accept friend request from ~p as ~p (y/n)? ", [Sender_username, Sender_showed_name]),
 			case io:get_line(Line) of

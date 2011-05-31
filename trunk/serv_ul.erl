@@ -296,7 +296,8 @@ loop(Table) ->
 		true -> 
 		    Friendlist = retrieveFriends(Table, ID),
 		    onlineStatus(Table, ID, Netinfo),
-		    ClientPid ! {db, friendlist, Netinfo, {ID, Friendlist}};
+		    [{ ID, [_,_,_, ShownName]}] = dapi:retrieve(Table, ID),
+		    ClientPid ! {db, friendlist, Netinfo, {ID, ShownName, Friendlist}};
 		false ->
 		    io:format("Bad password\n", []),
 		    ClientPid!{db, badPass, Netinfo}; %% fel lösenord
@@ -310,7 +311,8 @@ loop(Table) ->
 	    case addFriend(Table, MyID, FriendID) of
 		ok ->
 		    {ID, w} = FriendID,
-		    Pid ! {db, addfriend, getNetInfo(Table, ID), {ID, retrieveFriends(Table, ID)}, ok};
+		    [{ ID, [_,_,_, ShownName]}] = dapi:retrieve(Table, ID),
+		    Pid ! {db, addfriend, getNetInfo(Table, ID), {ID, ShownName,retrieveFriends(Table, ID)}, ok};
 		{error, {badmatch, MyID}} ->
 		    Pid!{db, badID, getNetInfo(Table, MyID)} %% användare existerar inte
 	    end,
@@ -320,7 +322,9 @@ loop(Table) ->
 	    case acceptFriend(Table, MyID, FriendID) of
 		ok ->
 		    {ID, p} = FriendID,
-		    Pid ! {db, acceptfriend, {MyID, retrieveFriends(Table, MyID)}, {ID, retrieveFriends(Table, ID)}, getNetInfo(Table, MyID), getNetInfo(Table, ID)};
+		    [{ MyID, [_,_,_, MyName]}] = dapi:retrieve(Table, MyID),
+		    [{ ID, [_,_,_, HisName]}] = dapi:retrieve(Table, ID),
+		    Pid ! {db, acceptfriend, {MyID, MyName,retrieveFriends(Table, MyID)}, {ID, HisName,retrieveFriends(Table, ID)}, getNetInfo(Table, MyID), getNetInfo(Table, ID)};
 		{error, _} -> ok
 	    end,
 	    loop(Table);
