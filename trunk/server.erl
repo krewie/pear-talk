@@ -10,6 +10,9 @@
 						%join_network(server) ->
 
 						% --------
+
+%% @doc Anropar servern för att skriva ut användarlistan.
+%% @spec showAll() -> ok.
 showAll() ->
     global ! {server, getport, self()},
     receive
@@ -19,7 +22,8 @@ showAll() ->
 	    gen_tcp:close(Con)
     end.
 	
-
+%% @doc Stänger av servern.
+%% @spec shut_down() -> undefined
 shut_down() ->
     global ! {server, getport, self()},
     receive
@@ -29,18 +33,25 @@ shut_down() ->
 	    gen_tcp:close(Con)
     end.
 
+%% @doc returnerar Port till anropande Pid
+%% @spec globalPort(Port) -> any()
 globalPort(Port) ->
     receive
 	{server, getport, Pid} ->
 	    Pid ! {server, getport, Port}
     end.
 
+%% @doc Initierar server.
+%% @spec start_server(Port) -> bool()
+%% Port = integer()
 start_server(Port) ->
     {ok, ListenSock} = gen_tcp:listen(Port, ?TCP_OPTIONS),
     DBpid = spawn(serv_ul, start, []),
     spawn(?MODULE, wait_for_connection, [ListenSock, DBpid]),
     register(global, spawn(?MODULE, globalPort, [Port])).
 
+%% @doc Väntar på uppkoppling, spawnar process för att hantera uppkopplingen. 
+%% @spec wait_for_connect(ListenSocket, DBPid) -> any()
 wait_for_connection(ListenSocket, DBPid) ->
     case gen_tcp:accept(ListenSocket) of
 	{ok, Socket} ->
@@ -66,7 +77,8 @@ wait_for_connection(ListenSocket, DBPid) ->
 	    wait_for_connection(ListenSocket, DBPid)
     end.
 
-
+%% @doc Hanterar ett client request genom att kontakta DB och därefter invänta svar för hantering
+%% @spec listen_state(Socket, DBPid) -> any()
 listen_state(Socket, DBPid) ->
     io:format("recieved request~n"),
     receive
@@ -325,6 +337,9 @@ listen_state(Socket, DBPid) ->
 	    
 	end.
 
+%% @doc Regulerar hur stora paketen som skickas skall vara, samt skickar delarna till Socket.
+%% @spec send(Socket, Rest) -> any()
+%% Rest = binary()
 send(Socket, <<Chunk:100/binary, Rest/binary>>) ->
     gen_tcp:send(Socket, Chunk),
     send(Socket, Rest);
