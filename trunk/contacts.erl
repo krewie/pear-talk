@@ -145,7 +145,6 @@ loop(State) ->
 		loop(State);
 					
 	#wx{id=?LOGOUT, event=#wxCommand{}} -> 
-	    %spawn(login_frame, start, ["Username"]),
 	    chat ! logout,
 	    wxWindow:destroy(Frame);
 	

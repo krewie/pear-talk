@@ -62,7 +62,7 @@ start(G) ->
 status(Status) ->
     receive
     	logout ->
-    		spawn(peer, shut_down, []),
+    		spawn(login_frame, start, ["Username"]),
     		status(Status);
     	{changename, Name} ->
     		{value, {_ , {ID, _}}} = lists:keysearch(id, 1, Status),
