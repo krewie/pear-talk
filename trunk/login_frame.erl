@@ -22,7 +22,7 @@ connect_to_server() -> 0.
 make_window(User) ->
 	%% Create new wx-object, new window with panel and menubar...
     Server = wx:new(),
-    Frame = wxFrame:new(Server, -1, "Pear Talk", [{size,{365, 320}}]),
+    Frame = wxFrame:new(Server, -1, "Pear Talk", [{size,{395, 340}}]),
     Panel = wxPanel:new(Frame, []),
     MainSizer = wxBoxSizer:new(?wxVERTICAL),
     Sizer = wxStaticBoxSizer:new(?wxVERTICAL, Panel,[{label, "Email"}]),
@@ -36,7 +36,7 @@ make_window(User) ->
     TextCtrl = wxTextCtrl:new(Panel, 201, [{value, User},{style, ?wxDEFAULT}]),
     TextCtrl2 = wxTextCtrl:new(Panel, 202, [{value, "password"},{style, ?wxDEFAULT bor ?wxTE_PASSWORD}]), 
     %Icon:
-    BitmapSizer = wxStaticBoxSizer:new(?wxVERTICAL, Panel,[]),
+    %BitmapSizer = wxStaticBoxSizer:new(?wxVERTICAL, Panel,[]),
     Image = wxImage:new("icon2.png", []),
     Bitmap = wxBitmap:new(wxImage:scale(Image, round(wxImage:getWidth(Image)*0.34),
 					round(wxImage:getHeight(Image)*0.25),
@@ -88,10 +88,12 @@ loop(State) ->
     {Server, Frame, TextCtrl, TextCtrl2}  = State,
     receive
         #wx{event=#wxClose{}} ->
+        peer:shut_down(),
 	    wxWindow:destroy(Frame),
 	    ok;  % exit the loop
 
     	#wx{id = ?wxID_EXIT, event=#wxCommand{type = command_button_clicked} } ->
+    	peer:shut_down(),
 	    wxWindow:destroy(Frame),
 	    ok;
 

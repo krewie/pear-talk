@@ -150,6 +150,10 @@ loop(State) ->
     {Frame, AllList, SearchCtrl, UserCtrl}  = State,  
     %io:format("--waiting in the loop--~n", []), 
     receive
+    {showed_name, Username} ->
+    	wxTextCtrl:setValue(UserCtrl, Username),
+    	loop(State);
+    	
 	#wx{id=?ABOUT, event=#wxCommand{}} ->
 	    Str = "Pear Talk is an awesmoe Peer-to-Peer Chat.",
 	    MD = wxMessageDialog:new(Frame,Str,

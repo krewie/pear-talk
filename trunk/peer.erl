@@ -134,7 +134,8 @@ status(Status) ->
 			    {value, {_ , G}} = lists:keysearch(graphic, 1, Status),
 			    if
 				G == 1 ->
-				    Pid = spawn(chat_frame, start, []),
+					N = rul:peek(friends, Receiver, name),
+				    Pid = spawn(chat_frame, start, [N]),
 				    NewStatus = lists:keystore(Receiver, 1, Status, {Receiver, Pid}),
 				    status(NewStatus);
 				true ->
@@ -248,6 +249,7 @@ get_request(Sender_address, Socket, BinaryList) ->
 					U ->
 						fillTable(friends, FriendList),
 						chat!{change, id, {Id, My_showed_name}},
+						contacts_window!{showed_name, My_showed_name},
 						gf();
 					_->
 						[]
