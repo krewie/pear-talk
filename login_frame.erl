@@ -37,7 +37,7 @@ make_window(User) ->
     TextCtrl2 = wxTextCtrl:new(Panel, 202, [{value, "password"},{style, ?wxDEFAULT bor ?wxTE_PASSWORD}]), 
     %Icon:
     BitmapSizer = wxStaticBoxSizer:new(?wxVERTICAL, Panel,[]),
-    Image = wxImage:new("icon2.jpg", []),
+    Image = wxImage:new("icon2.png", []),
     Bitmap = wxBitmap:new(wxImage:scale(Image, round(wxImage:getWidth(Image)*0.34),
 					round(wxImage:getHeight(Image)*0.25),
 					[{quality, ?wxIMAGE_QUALITY_HIGH}])),
