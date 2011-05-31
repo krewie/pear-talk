@@ -1,5 +1,5 @@
-%% @author Staffan
-%% @doc Register frame
+%% @author Grupp 2 (Staffan Rodgren, Gabriel Tholsgård, Kristian Ionescu, Mårten Blomberg, Göran Hagelin, Staffan Reinius)
+%% @doc Register frame. Collects information from the user and sends the registration request to the server.
 %% @copyright 2011 Peer-talk
 -module(reg_frame).
 -compile(export_all).
@@ -8,20 +8,21 @@
 -define(SEND, 136).
 -define(Preferences, 3).
 
-%% @doc Init function for registration window. 
-%% @spec chat_frame:start() -> no_return().
+%% @doc Start function for registration window. 
+%% @spec reg_frame:start() -> ok.
 start() ->
     State = make_window(),
     loop(State),
     ok.
 
-%% @doc 
-%% @spec 
+%% @doc Init function for registration window.
+%% @spec reg_frame:make_window() -> {wx, wxFrame, wxTextCtrl, wxTextCtrl, wxTextCtrl, wxTextCtrl}.
 make_window() ->
-	%% Create new wx-object, new window with panel and menubar...
+%% Create new wx-object, new window with panel and menubar
     Server = wx:new(),
     Frame = wxFrame:new(Server, -1, "Pear Talk - Registration", [{size,{395, 360}}]),
     Panel = wxPanel:new(Frame, []),
+% Sizers:
     MainSizer = wxBoxSizer:new(?wxVERTICAL),
     Sizer1 = wxStaticBoxSizer:new(?wxVERTICAL, Panel,[{label, "Email"}]),
     Sizer2 = wxStaticBoxSizer:new(?wxVERTICAL, Panel,[{label, "Username"}]),
@@ -35,7 +36,7 @@ make_window() ->
     TextCtrl2 = wxTextCtrl:new(Panel, 202, [{value, "Username"},{style, ?wxDEFAULT}]), 
     TextCtrl3 = wxTextCtrl:new(Panel, 203, [{value, "password"},{style, ?wxDEFAULT bor ?wxTE_PASSWORD}]), 
     TextCtrl4 = wxTextCtrl:new(Panel, 204, [{value, "password"},{style, ?wxDEFAULT bor ?wxTE_PASSWORD}]), 
-% Sizers:
+% Sizer stuff:
 	wxSizer:addSpacer(ButtonSizer, 220),
 	wxSizer:add(ButtonSizer, B102,  []),
 	wxSizer:addSpacer(ButtonSizer, 10), 
@@ -76,7 +77,9 @@ make_window() ->
     wxFrame:show(Frame),
 % the return value
     {Server, Frame, TextCtrl1, TextCtrl2, TextCtrl3, TextCtrl4}.
- 
+
+%% @doc Receive function for registration window. Manage the events "close_window", "command_button_clicked"; and "ok" and "already used email".
+%% @spec reg_frame:loop(wx, wxFrame, wxTextCtrl, wxTextCtrl, wxTextCtrl, wxTextCtrl) -> ok. 
 loop(State) ->
     {Server, Frame, TextCtrl1, TextCtrl2, TextCtrl3, TextCtrl4} = State,
     receive
@@ -98,18 +101,17 @@ loop(State) ->
 		    wxDialog:showModal(MD),
 		    wxDialog:destroy(MD);
 		true ->
-		    Mail = wxTextCtrl:getValue(TextCtrl1),  % kolla mot serverna om epost-adressen är upptagen
+		    Mail = wxTextCtrl:getValue(TextCtrl1),  
 		    Password = wxTextCtrl:getValue(TextCtrl3),
 		    ShowedName = wxTextCtrl:getValue(TextCtrl2),
-		    chat ! {client, registerNewUser, Mail, Password, ShowedName}
+		    chat ! {client, registerNewUser, Mail, Password, ShowedName} % Check against the server
 	   end,
 	   loop(State);
 	   
-	  {addUser} ->
+	  {addUser} -> % Server Msg: ok
 		    wxWindow:destroy(Frame),
-         	    ok;  % Låt servern lägga till användaren
-			      % skicka en "reminder" till epost-adressen (lägg till ett valfritt meddelande till reminder.erl)
-	   {usedID} ->
+         	    ok;  
+	   {usedID} -> % Server Msg: already used email
 		    Str = "The email address is already used.",
 		    MD = wxMessageDialog:new(Frame,Str,
 					     [{style, ?wxOK bor ?wxICON_INFORMATION},
@@ -117,6 +119,6 @@ loop(State) ->
 		    wxDialog:showModal(MD),
 		    wxDialog:destroy(MD),
 		    loop(State);
-	Msg ->
+	Msg -> % everything else
 	    loop(State)
     end.
