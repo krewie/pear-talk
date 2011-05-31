@@ -69,10 +69,13 @@ make_window(User) ->
 
 %% @doc Writes content of input field to conversation field, then clears the input field. 
 %% @spec chat_frame:write(T1001, T1002) -> ok.
-write(wxTextCtrl, wxTextCtrl) -> 
-	T =  deletenewline(wxTextCtrl:getValue(T1002)),
-	wxTextCtrl:appendText(T1001,"Me: "++ T ++"\n"),
-      wxTextCtrl:clear(T1002).
+write(T1001, T1002) -> 
+	case wxTextCtrl:getValue(T1002) of
+    				"" -> nothing_to_write; %% bad implementation
+    				_  -> T1002_val = wxTextCtrl:getValue(T1002),
+            			  wxTextCtrl:appendText(T1001,"ME: "++T1002_val++"\n"),
+            			  wxTextCtrl:clear(T1002)
+      end.
 
 %% @doc Main loop, handles some events...
 %% @spec chat_frame:loop(wxFrame, wxTextCtrl, wxTextCtrl) -> ok. 
@@ -104,15 +107,9 @@ loop(State) ->
 
     		#wx{id = 101, event=#wxCommand{type = command_button_clicked}} ->
     			Message = wxTextCtrl:getValue(T1002),
-			M =deletenewline(Message),
-			case M of
-    				"" -> 
-					wxTextCtrl:clear(T1002);
-				_->
-    					chat!{chat_send, self(), Message},
-    					write(T1001, T1002)
-			end,
-			loop(State);
+    			chat ! {chat_send, self(), Message},
+    			write(T1001, T1002),
+    			loop(State);
             
             #wx{event=#wxClose{}} ->
             	io:format("~p Closing window ~n",[self()]), 
@@ -123,42 +120,7 @@ loop(State) ->
 	    {message_received, Sender, Message} ->
             	wxTextCtrl:appendText(T1001,Sender++": "++Message++"\n"),
             	loop(State)
-	    after 1 ->
-			poll(T1001, T1002),
-			loop(State)
     end.
-
-poll(T1001, T1002) ->
-	try
-		T = wxTextCtrl:getValue(T1002),
-		L = length(T),
-		E = [lists:nth(L,T)],
-		case E of
-			"\n" ->
-			 	Message = deletenewline(T),
-	    			case (Message) of
-    					"" -> 
-						wxTextCtrl:clear(T1002);
-					_->
-    						chat!{chat_send, self(), Message},
-    						write(T1001, T1002)
-				end;
-	    		_->
-				[]
-		end
-	catch
-		_:_ ->
-			 []
-	end.
-
-deletenewline([]) ->[];
-deletenewline([C|L]) ->
-	case [C] of
-		"\n" ->
-			deletenewline(L);
-		_->
-			[C|deletenewline(L)]
-	end.
 
 	
 	
