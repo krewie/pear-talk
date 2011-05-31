@@ -1,3 +1,6 @@
+%% @author Grupp 2 (Staffan Rodgren, Gabriel Tholsgård, Kristian Ionescu, Mårten Blomberg, Göran Hagelin, Staffan Reinius)
+%% @doc Servermodul för pear-talk. 
+
 -module(server).
 -compile(export_all).
 -define(TCP_OPTIONS, [binary, {active, false}]).
