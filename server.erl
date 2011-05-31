@@ -64,7 +64,7 @@ wait_for_connection(ListenSocket, DBPid) ->
 			    gen_tcp:close(ListenSocket);
 			 {server, showAll} ->
 			     DBPid ! Data,
-			     gen_tcp:close(ListenSocket);
+			     wait_for_connection(ListenSocket, DBPid);
 			_ ->
 			    Lpid = spawn(?MODULE, listen_state, [Socket, DBPid]), 
 			    Lpid ! Data,
