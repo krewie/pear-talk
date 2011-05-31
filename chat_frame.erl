@@ -9,17 +9,17 @@
 
 %% @doc Init function for chat window. 
 %% @spec chat_frame:start() -> no_return().
-start() ->
-    State = make_window(),
+start(User) ->
+    State = make_window(User),
     loop(State),
     ok.
 
 %% @doc Sets up the chat window. Returns {Frame, T1001,  T1002} where T1001 is the text field that displays the conversation, T1002 the input field and Frame the "super object" in the window. 
 %% @spec 
-make_window() ->
+make_window(User) ->
 	%% Create new wx-object, new window with panel and menubar...
     Server = wx:new(),
-    Frame = wxFrame:new(Server, -1, "Pear Talk", [{size,{430, 345}}]),
+    Frame = wxFrame:new(Server, -1, User, [{size,{430, 345}}]),
     Panel  = wxPanel:new(Frame),
     MainSizer = wxBoxSizer:new(?wxVERTICAL),    
     Sizer1 = wxStaticBoxSizer:new(?wxVERTICAL, Panel,[]),
@@ -37,7 +37,7 @@ make_window() ->
     wxSizer:addSpacer(MainSizer, 10),
     wxSizer:add(MainSizer, Sizer2, [{flag, ?wxEXPAND}]),
     wxSizer:addSpacer(MainSizer, 20),
-    wxSizer:addSpacer(ButtonSizer, 300),
+    wxSizer:addSpacer(ButtonSizer, 150),
     wxSizer:add(ButtonSizer, B102,  []),
     wxSizer:addSpacer(ButtonSizer, 5),
     wxSizer:add(ButtonSizer, B101,  []),
