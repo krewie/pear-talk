@@ -153,12 +153,12 @@ poll(T1001, T1002) ->
 	end.
 
 deletenewline([]) ->[];
-deletenewline([X|L]) ->
-	case [X] of
+deletenewline([C|L]) ->
+	case [C] of
 		"\n" ->
 			deletenewline(L);
 		_->
-			[X|deletenewline(L)]
+			[C|deletenewline(L)]
 	end.
 
 	
