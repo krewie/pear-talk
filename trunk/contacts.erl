@@ -63,8 +63,8 @@ make_window() ->
     wxListCtrl:insertColumn(AllList, ?FIRST_COL, "Name", []),
 % Pear-icons: 
     IL = wxImageList:new(16,16),
-    wxImageList:add(IL, wxBitmap:new(wxImage:scale(wxImage:new("Smiley.png", []), 16, 16))),
     wxImageList:add(IL, wxBitmap:new(wxImage:scale(wxImage:new("Smiley_red.png", []), 16, 16))),
+    wxImageList:add(IL, wxBitmap:new(wxImage:scale(wxImage:new("Smiley.png", []), 16, 16))),
 % Icons associated with both list
     wxListCtrl:assignImageList(AllList, IL, ?wxIMAGE_LIST_SMALL),
 % Logo:   
@@ -140,7 +140,8 @@ loop(State) ->
 	    
 	#wx{id=?CHANGE, event=#wxCommand{type = command_button_clicked}} ->	
 		% Test och uppdatering
-		io:format(" ~p\n", [wxTextCtrl:getValue(UserCtrl)]),			%
+		Showed_name = wxTextCtrl:getValue(UserCtrl),
+		chat ! {changename, Showed_name},
 		loop(State);
 					
 	#wx{id=?LOGOUT, event=#wxCommand{}} -> 
