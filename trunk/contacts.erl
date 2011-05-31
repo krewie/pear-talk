@@ -63,13 +63,13 @@ make_window() ->
     wxListCtrl:insertColumn(AllList, ?FIRST_COL, "Name", []),
 % Pear-icons: 
     IL = wxImageList:new(16,16),
-    wxImageList:add(IL, wxBitmap:new(wxImage:scale(wxImage:new("smiley.jpg", []), 16, 16))),
-    wxImageList:add(IL, wxBitmap:new(wxImage:scale(wxImage:new("smiley_vit.jpg", []), 16, 16))),
+    wxImageList:add(IL, wxBitmap:new(wxImage:scale(wxImage:new("Smiley.png", []), 16, 16))),
+    wxImageList:add(IL, wxBitmap:new(wxImage:scale(wxImage:new("Smiley_red.png", []), 16, 16))),
 % Icons associated with both list
     wxListCtrl:assignImageList(AllList, IL, ?wxIMAGE_LIST_SMALL),
 % Logo:   
     BitmapSizer = wxStaticBoxSizer:new(?wxVERTICAL, Panel,[]),
-    Image = wxImage:new("icon.jpg", []),
+    Image = wxImage:new("icon.png", []),
     Bitmap = wxBitmap:new(wxImage:scale(Image, round(wxImage:getWidth(Image)*0.34),
 					round(wxImage:getHeight(Image)*0.25),
 					[{quality, ?wxIMAGE_QUALITY_HIGH}])),
@@ -160,9 +160,9 @@ loop(State) ->
 		receive
 				#wx{id=?DELETE, event=#wxCommand{type = command_menu_selected}} ->
 					 	Friend = wxListCtrl:getItemText(AllList, Item),
+					 	%wxListCtrl:deleteItem(AllList, Item),
 			    		chat ! {delete_friend, Friend},
 	    				io:format("sending frienddelete, index:~p", [Item]),
-	    				%wxListCtrl:deleteItem(AllList, Item),
 	    				loop(State);
 				_ -> 	loop(State)
 		end;              
@@ -174,8 +174,8 @@ loop(State) ->
 	
 	#wx{event=#wxList{type = command_list_delete_item, itemIndex = Item}} ->
 	    Friend = wxListCtrl:getItemText(AllList, Item),
-	    chat ! {delete_friend, Friend},
 	    wxListCtrl:deleteItem(AllList, Item),
+	    chat ! {delete_friend, Friend},
 	    loop(State);  	
 	
 	#wx{event=#wxClose{}} ->

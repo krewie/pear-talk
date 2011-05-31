@@ -5,7 +5,7 @@ FLAGS = -W
 
 SERVER_DEPENDENCIES = dapi.beam serv_ul.beam server.beam
 
-GUI_DEPENDENCIES = chat_frame.beam contacts.beam login_frame.beam reg_frame.beam
+GUI_DEPENDENCIES = chat_frame.beam contacts.beam login_frame.beam reg_frame.beam dialog.beam
 
 CLIENT_DEPENDENCIES = peer.beam rul.beam smtp.beam
 
