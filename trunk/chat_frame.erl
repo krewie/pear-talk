@@ -149,7 +149,7 @@ poll(T1001, T1002) ->
 		end
 	catch
 		_:_ ->
-			[]
+			 []
 	end.
 
 deletenewline([]) ->[];
