@@ -1,7 +1,12 @@
+%% @author Grupp 2 (Staffan Rodgren, Gabriel Tholsgård, Kristian Ionescu, Mårten Blomberg, Göran Hagelin, Staffan Reinius)
+%% @doc E-mail communication module. Sends reminders about passwords and usernames and welcomes new users.
+%% @copyright http://www.planeterlang.org/en/planet/article/How_to_send_email_via_Gmail_using_Erlang/
 -module(smtp).
 -export([reminder/4]).
 
-reminder(Mail, Option, User, Password) ->
+%% @doc Start function for registration window. 
+%% @spec smtp:reminder(String, String, String, String) -> ok.
+reminder(Mail, Optional_Mess, User, Password) ->
    ssl:start(),
    {ok, Socket} = ssl:connect("smtp.gmail.com", 465, [{active, false}], 1000),
    recv(Socket),
@@ -17,7 +22,7 @@ reminder(Mail, Option, User, Password) ->
    send_no_receive(Socket, "Date: Tue, 15 Jan 2008 16:02:43 +0000"),
    send_no_receive(Socket, "Subject: Account reminder"),
    send_no_receive(Socket, ""),
-   send_no_receive(Socket, Option),
+   send_no_receive(Socket, Optional_Mess),
    send_no_receive(Socket, "Username: "++User),
    send_no_receive(Socket, "Password: "++Password),
    send_no_receive(Socket, ""),
@@ -27,7 +32,6 @@ reminder(Mail, Option, User, Password) ->
 
 send_no_receive(Socket, Data) ->
    ssl:send(Socket, Data ++ "\r\n").
-
 
 send(Socket, Data) ->
    ssl:send(Socket, Data ++ "\r\n"),

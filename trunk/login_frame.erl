@@ -1,5 +1,5 @@
-%% @author Staffan
-%% @doc First draft of the chat window 
+%% @author Grupp 2 (Staffan Rodgren, Gabriel Tholsgård, Kristian Ionescu, Mårten Blomberg, Göran Hagelin, Staffan Reinius)
+%% @doc The login frame.
 %% @copyright 2011 Peer-talk
 -module(login_frame).
 -compile(export_all).
@@ -8,17 +8,15 @@
 -define(SEND, 136).
 -define(Preferences, 3).
 
-%% @doc Init function for chat window. 
-%% @spec chat_frame:start() -> no_return().
+%% @doc Init function for login frame. 
+%% @spec login_frame:start(String) -> ok.
 start(User) ->
     State = make_window(User),
     loop(State),
     ok.
 
-connect_to_server() -> 0.
-
-%% @doc 
-%% @spec 
+%% @doc Sets up the login window.  
+%% @spec login_frame:make_window(String) -> {wx, wxFrame, wxTextCtrl, wxTextCtrl}.
 make_window(User) ->
 	%% Create new wx-object, new window with panel and menubar...
     Server = wx:new(),
@@ -28,21 +26,20 @@ make_window(User) ->
     Sizer = wxStaticBoxSizer:new(?wxVERTICAL, Panel,[{label, "Email"}]),
     Sizer2 = wxStaticBoxSizer:new(?wxVERTICAL, Panel,[{label, "Password"}]),
     ButtonSizer = wxBoxSizer:new(?wxHORIZONTAL),
-    %%
+%% Buttons and txtCrtl
     B101  = wxButton:new(Panel, 101, [{label, "&Go!"}]),
     B102  = wxButton:new(Panel, ?wxID_EXIT, [{label, "E&xit"}]),
     B103  = wxButton:new(Panel, 103, [{label, "&Register"}]),		      
     B104  = wxButton:new(Panel, 104, [{label, "Forgot Password?"}]),
     TextCtrl = wxTextCtrl:new(Panel, 201, [{value, User},{style, ?wxDEFAULT}]),
     TextCtrl2 = wxTextCtrl:new(Panel, 202, [{value, "password"},{style, ?wxDEFAULT bor ?wxTE_PASSWORD}]), 
-    %Icon:
-    %BitmapSizer = wxStaticBoxSizer:new(?wxVERTICAL, Panel,[]),
+%Icon:
     Image = wxImage:new("icon2.png", []),
     Bitmap = wxBitmap:new(wxImage:scale(Image, round(wxImage:getWidth(Image)*0.34),
 					round(wxImage:getHeight(Image)*0.25),
 					[{quality, ?wxIMAGE_QUALITY_HIGH}])),
     StaticBitmap = wxStaticBitmap:new(Panel, 1, Bitmap),
-    % Sizers:
+% Sizers:
     wxSizer:addSpacer(MainSizer, 105), 
     wxSizer:addSpacer(ButtonSizer, 10),
     wxSizer:add(ButtonSizer, B103,  []),
@@ -83,7 +80,9 @@ make_window(User) ->
     wxFrame:show(Frame),
 % the return value
     {Server, Frame, TextCtrl, TextCtrl2}.
- 
+
+%% @doc Main loop, handles some events from GUI. 
+%% @spec login_frame:loop(wx, wxFrame, wxTextCtrl, wxTextCtrl) -> ok.  
 loop(State) ->
     {Server, Frame, TextCtrl, TextCtrl2}  = State,
     receive

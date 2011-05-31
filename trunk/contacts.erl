@@ -1,5 +1,5 @@
-%% @author Staffan
-%% @doc First draft of the chat window 
+%% @author Grupp 2 (Staffan Rodgren, Gabriel Tholsgård, Kristian Ionescu, Mårten Blomberg, Göran Hagelin, Staffan Reinius)
+%% @doc Contacts -frame. Mainframe with field for searching friends and entering new "show namn" and a list of all contacts. 
 %% @copyright 2011 Peer-talk
 -module(contacts).
 -compile(export_all).
@@ -14,17 +14,16 @@
 -define(CHANGE, 102).
 -define(DELETE, 107).
 
-%% @doc 
-%% @spec chat_frame:start() -> no_return().
+%% @doc Start function for contacts window. 
+%% @spec contacts:start() -> ok.
 start() ->
     State = make_window(),
     loop(State),
     ok.
 
-%% @doc  
-%% @spec 	
+%% @doc Updates the contact list at INDEX where the user is either offline or online.   
+%% @spec contacts:offline_add(wxListCtrl, Int, Int, Int, String, String, {offline}) -> ok.	
 offline_add(AllList, INDEX, COL1, COL2, Str1, Str2, {offline}) ->
-
     try
     	wxListCtrl:insertItem(AllList, INDEX, ""),		
     	wxListCtrl:setItemBackgroundColour(AllList, INDEX, {189,189,189,255}),
@@ -45,7 +44,6 @@ offline_add(AllList, INDEX, COL1, COL2, Str1, Str2, {online}) ->
     	_:_ ->
     		io:format("coulden't add to the contact list")
     end.
-    
 update(AllList, INDEX, COL1, COL2, Str1, Str2, {offline}) -> 	
 	try
     	wxListCtrl:setItemBackgroundColour(AllList, INDEX, {189,189,189,0}),
@@ -67,13 +65,11 @@ update(AllList, INDEX, COL1, COL2, Str1, Str2, {online}) ->
     		io:format("coulden't update the contact list")
     end.
 
-fill_contact() -> 0.
-%% @doc 
-%% @spec 
+%% @doc Init function for Contact window.
+%% @spec contacts:make_window() -> {wxFrame, wxListCtrl, wxTextCtrl, wxTextCtrl}
 make_window() ->
     Server = wx:new(),
-    %% Create new wx-object, new window with panel, main sizer and notebook
-    %Server = wx:new(),
+%% Create new wx-object, new window with panel, main sizer and notebook
     Frame = wxFrame:new(Server, -1, "Pear Talk", [{size,{355, 580}}]),
     Panel = wxPanel:new(Frame, []),
     MainSizer = wxStaticBoxSizer:new(?wxVERTICAL, Panel,[]),
@@ -95,14 +91,14 @@ make_window() ->
 					round(wxImage:getHeight(Image)*0.25),
 					[{quality, ?wxIMAGE_QUALITY_HIGH}])),
     StaticBitmap = wxStaticBitmap:new(Panel, 1, Bitmap),
-% Ändra -namn -fält:
+% Change name field:
 	UserSizer = wxStaticBoxSizer:new(?wxHORIZONTAL, Panel,[{label, "Change username:"}]),
     UserCtrl = wxTextCtrl:new(Panel, 1, [{value, "Name"},{style, ?wxDEFAULT},{size, {235, 20}}]),
     UserButt = wxButton:new(Panel, 102, [{label, "&Change"}]),
     wxSizer:add(UserSizer, UserCtrl,[]),
     wxSizer:addSpacer(UserSizer, 10),
     wxSizer:add(UserSizer, UserButt,[]),
-% SÃ¶kfÃ¤lt:
+% Search field:
     SearchSizer = wxStaticBoxSizer:new(?wxHORIZONTAL, Panel,[{label, "Friend search:"}]),
     SearchCtrl = wxTextCtrl:new(Panel, 1, [{value, "Em@il"},{style, ?wxDEFAULT},{size, {235, 20}}]),
     SearchButt = wxButton:new(Panel, ?SEARCH, [{label, "&Search"}]),
@@ -146,16 +142,17 @@ make_window() ->
 % Return:
    {Frame, AllList, SearchCtrl, UserCtrl}.
 
+%% @doc Receive function for Chat window. Manage the events invoked by GUI, Server or other clients.
+%% @spec contacts:loop(wxFrame, wxListCtrl, wxTextCtrl, wxTextCtrl) -> ok.
 loop(State) ->
     {Frame, AllList, SearchCtrl, UserCtrl}  = State,  
-    %io:format("--waiting in the loop--~n", []), 
     receive
     {showed_name, Username} ->
     	wxTextCtrl:setValue(UserCtrl, Username),
     	loop(State);
     	
 	#wx{id=?ABOUT, event=#wxCommand{}} ->
-	    Str = "Pear Talk is an awesmoe Peer-to-Peer Chat.",
+	    Str = "Pear Talk is an awesome Peer-to-Peer Chat.",
 	    MD = wxMessageDialog:new(Frame,Str,
 				     [{style, ?wxOK bor ?wxICON_INFORMATION},
 				      {caption, "About Pear Talk"}]),
@@ -164,7 +161,6 @@ loop(State) ->
 	    loop(State);
 	    
 	#wx{id=?CHANGE, event=#wxCommand{type = command_button_clicked}} ->	
-		% Test och uppdatering
 		Showed_name = wxTextCtrl:getValue(UserCtrl),
 		chat ! {changename, Showed_name},
 		loop(State);
@@ -186,7 +182,6 @@ loop(State) ->
 		receive
 				#wx{id=?DELETE, event=#wxCommand{type = command_menu_selected}} ->
 					 	Friend = wxListCtrl:getItemText(AllList, Item),
-					 	%wxListCtrl:deleteItem(AllList, Item),
 			    		chat ! {delete_friend, Friend},
 	    				io:format("sending frienddelete, index:~p", [Item]),
 	    				loop(State);
@@ -200,7 +195,6 @@ loop(State) ->
 	
 	#wx{event=#wxList{type = command_list_delete_item, itemIndex = Item}} ->
 	    Friend = wxListCtrl:getItemText(AllList, Item),
-	    %wxListCtrl:deleteItem(AllList, Item),
 	    chat ! {delete_friend, Friend},
 	    loop(State);  	
 	
