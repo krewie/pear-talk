@@ -168,7 +168,7 @@ status(Status) ->
 	{change, Status_element, New_status} ->
 	    status(lists:keystore(Status_element, 1, Status, {Status_element, New_status}));
 	{send, Receiver, Mode, Obj} ->
-	    send(Receiver, Mode, Obj),
+	    spawn(peer,send,[Receiver, Mode, Obj]),
 	    status(Status);
 	stop ->
 	    true;
