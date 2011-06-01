@@ -87,12 +87,12 @@ loop(State) ->
     {Server, Frame, TextCtrl, TextCtrl2}  = State,
     receive
         #wx{event=#wxClose{}} ->
-        peer:shut_down(),
+            chat!shut_down,
 	    wxWindow:destroy(Frame),
 	    ok;  % exit the loop
 
     	#wx{id = ?wxID_EXIT, event=#wxCommand{type = command_button_clicked} } ->
-    	peer:shut_down(),
+    	    chat!shut_down,
 	    wxWindow:destroy(Frame),
 	    ok;
 

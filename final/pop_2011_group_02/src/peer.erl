@@ -61,6 +61,9 @@ start(G) ->
 %% @end
 status(Status) ->
     receive
+	shut_down ->
+		spawn(peer,shut_down,[]),
+		status(Status);
     	logout ->
     		rul:friends(),
     		spawn(login_frame, start, ["Username"]),

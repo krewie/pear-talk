@@ -199,6 +199,7 @@ loop(State) ->
 	    loop(State);  	
 	
 	#wx{event=#wxClose{}} ->
+	    chat!shut_down,
 	    io:format("~p Closing window ~n",[self()]), 
 	    wxWindow:destroy(Frame),
 	    ok;
