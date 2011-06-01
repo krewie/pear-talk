@@ -61,7 +61,7 @@ svn checkout http://pear-talk.googlecode.com/svn/trunk/ src
 
 >>> ERLANG VERSION >>>
 
-This code has been developed and tested using Erlang version XX. 
+This code has been developed and tested using Erlang version R14B02 and Eshell V5.8.3. 
 
 >>> MAKE IT HAPPEN >>>
 
