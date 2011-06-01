@@ -25,11 +25,11 @@ the server doesn't need to be so powerful.
 >>> GROUP MEMBERS >>>
 
 881019-5613 Gabriel.Tholsgard.5951@student.uu.se
-YYMMDD-XXXX Firstname.Lastname.1234@student.uu.se
-YYMMDD-XXXX Firstname.Lastname.1234@student.uu.se
-YYMMDD-XXXX Firstname.Lastname.1234@student.uu.se
-YYMMDD-XXXX Firstname.Lastname.1234@student.uu.se
-YYMMDD-XXXX Firstname.Lastname.1234@student.uu.se
+881007-1491 nilsgoran.hagelin.8069@student.uu.se
+900907-3751 kristian.ionescu.3965@student.uu.se
+851101-4915 marten.blomberg.1234@student.uu.se
+841106-7138 staffan.reinius.5353@student.uu.se
+791006-4133 Stefano.Pellegrini.2533@student.uu.se
 
 
 >>> MAY THE SOURCE BE WITH YOU >>>
@@ -77,14 +77,21 @@ make test    ==> Runs all Eunit tests.
 
 >>> TO COMPILE >>>
 
-To compile the project, simply type make and press enter.
+To compile the project, simply type "make server <Enter>" and "make client <Enter>".
 
 
 >>> TO RUN AND TEST THE SYSTEM >>>
 
-Add a short description on how to run and test your system. Here you
-might give pointers to more details in the doc/final_presentation.pdf
-document. 
+just type server:start_server(Your server port) in the erlang shell and the server will start
+
+to start a client just type peer:start(1) in the erlang shell and the program will ask for the
+needed data.
+
+local port is the client's port and you have to specify different numbers if you wish to run 
+several clients on the same computer. You cannot start more than one client per erlang shell, so
+in this case you'll have to open as many shells as the number of client you want to test. Normally
+you will have one for each computer
+
 
 If possible, add targets to the Makefile that can be used to start the
 system (make start, make start_server, make start_client or similar as

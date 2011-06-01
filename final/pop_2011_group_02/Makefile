@@ -25,9 +25,6 @@ all: $(BEAM_FILES)
 ebin/%.beam: src/%.erl
 	$(ERLC) $(ERLC_FLAGS) -o ebin $<
 
-start: all
-	(cd ebin && erl -eval 'foo:start(), init:stop()')
-
 test: all
 	(cd ebin && erl -noinput -eval 'eunit:test({dir, "."}, [verbose]), init:stop()')
 
