@@ -25,9 +25,6 @@ start(G) ->
 
 
 	{ok,{_, _, _, _, _, [NetworkInterface|_]}} = host_info(),
-	
-	application:set_env(kernel, inet_dist_listen_min, ListenPort),
-	application:set_env(kernel, inet_dist_listen_max, ListenPort),
 
 	register(chat_server, spawn(peer, server, [ListenPort])),
 
@@ -61,6 +58,9 @@ start(G) ->
 %% @end
 status(Status) ->
     receive
+	shut_down ->
+		spawn(peer,shut_down,[]),
+		status(Status);
     	logout ->
     		rul:friends(),
     		spawn(login_frame, start, ["Username"]),
@@ -168,7 +168,7 @@ status(Status) ->
 	{change, Status_element, New_status} ->
 	    status(lists:keystore(Status_element, 1, Status, {Status_element, New_status}));
 	{send, Receiver, Mode, Obj} ->
-	    spawn(peer,send,[Receiver, Mode, Obj]),
+	    send(Receiver, Mode, Obj),
 	    status(Status);
 	stop ->
 	    true;

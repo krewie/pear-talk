@@ -200,6 +200,7 @@ loop(State) ->
 	
 	#wx{event=#wxClose{}} ->
 	    io:format("~p Closing window ~n",[self()]), 
+	    chat!shut_down,
 	    wxWindow:destroy(Frame),
 	    ok;
 	% DENNA FUNKTION KAN ANROPAS BÅDE NÄR MAN LOGGAR IN FÖRSTA GÅNGEN OCH NÄR MAN LÄGGER TILL NY VÄN
