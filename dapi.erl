@@ -57,14 +57,19 @@ sync(Table) ->
 retrieve(Table, Key) ->
     dets:lookup(Table, Key).
 
-%% @doc öppnar ett DETS table om filen FileName är ett DETS table (kan ej skapa nya filer vilket openTable kan). 
-%% @spec open(FileName) -> {ok, TableName} | {error, Reason}
+%% @doc öppnar ett DETS table om filen FileName är ett DETS table.
+%% @spec open(FileName) -> {ok, TableName} | {error, Reason} | false
 %% FileName = atom()| reference()
 open(FileName) ->
     case isDets(FileName) of
 	true ->
 	    dets:open_file(FileName);
-	{error, Reason} -> {error, Reason}
+	false ->
+		false;
+	{error,{file_error,FileName,enoent}} ->
+		dapi:openTable(FileName, []);
+	{error, Reason} ->
+		{error, Reason}
     end.
 
 %% @doc Skriver ut alla information som finns inuti Table
