@@ -1,0 +1,117 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Module peer</title>
+<link rel="stylesheet" type="text/css" href="stylesheet.css" title="EDoc">
+</head>
+<body bgcolor="white">
+<div class="navbar"><a name="#navbar_top"></a><table width="100%" border="0" cellspacing="0" cellpadding="2" summary="navigation bar"><tr><td><a href="overview-summary.html" target="overviewFrame">Overview</a></td><td><a href="http://www.erlang.org/"><img src="erlang.png" align="right" border="0" alt="erlang logo"></a></td></tr></table></div>
+<hr>
+
+<h1>Module peer</h1>
+<ul class="index"><li><a href="#description">Description</a></li><li><a href="#index">Function Index</a></li><li><a href="#functions">Function Details</a></li></ul>The module for the peer client.
+<p>Copyright © 2011 Peer-talk.</p>
+
+<p><b>Authors:</b> Kristian Ionesku &amp; Staffan Rodgren.</p>
+
+<h2><a name="description">Description</a></h2>The module for the peer client.
+<h2><a name="index">Function Index</a></h2>
+<table width="100%" border="1" cellspacing="0" cellpadding="2" summary="function index"><tr><td valign="top"><a href="#friends-0">friends/0</a></td><td><h4>friends()</h4> shows the friend list.</td></tr>
+<tr><td valign="top"><a href="#get_status-0">get_status/0</a></td><td><h4>get_status()</h4> gives information about your status.</td></tr>
+<tr><td valign="top"><a href="#host_info-0">host_info/0</a></td><td><h4>host_info()</h4> gives information about your computer.</td></tr>
+<tr><td valign="top"><a href="#mess-2">mess/2</a></td><td><h4>mess(Receiver , String)</h4>  sends String to Receiver if Receiver is in the friend list.</td></tr>
+<tr><td valign="top"><a href="#my-1">my/1</a></td><td><h4>my(Status_element)</h4> returns the value of Status_element.</td></tr>
+<tr><td valign="top"><a href="#ping-1">ping/1</a></td><td><h4>ping(Receiver)</h4>  pings Receiver if Receiver is in the friend list.</td></tr>
+<tr><td valign="top"><a href="#pingoff-0">pingoff/0</a></td><td><h4>pingoff()</h4> disallows you to see who pings you.</td></tr>
+<tr><td valign="top"><a href="#pingon-0">pingon/0</a></td><td><h4>pingon()</h4> allows you to see who pings you.</td></tr>
+<tr><td valign="top"><a href="#read_address-1">read_address/1</a></td><td><h4>read_address(Address)</h4> reads Address and if Address is a domain it returns Address if Address is an ip-address of the type "xx.yy.zz.ww"  it returns a tuple of the type {xx,yy,zz,ww}.</td></tr>
+<tr><td valign="top"><a href="#send-3">send/3</a></td><td><h4>send(Receiver, Mode, Obj)</h4> sends Mode and Obj to Receiver if Receiver is in the friend list,
+ Mode specifies for Receiver what kind of data that is beeing sent.</td></tr>
+<tr><td valign="top"><a href="#sendFr-3">sendFr/3</a></td><td><h4>sendFr(Receiver_username, Friend_public_ip, Friend_listen_port)</h4> Sends a friend request to your friend.</td></tr>
+<tr><td valign="top"><a href="#send_file-3">send_file/3</a></td><td><h4>send_file(Receiver, Path, Name)</h4> sends the file Path ++ Name to Receiver if Receiver is in the friend list.</td></tr>
+<tr><td valign="top"><a href="#shut_down-0">shut_down/0</a></td><td><h4>shut_down()</h4> stops the client.</td></tr>
+<tr><td valign="top"><a href="#start-1">start/1</a></td><td><h4>start(G)</h4> Starts the client and creates an empty ets called friends that is the default friend list,
+ if G is set to 1 then the gui is activated.</td></tr>
+</table>
+
+<h2><a name="functions">Function Details</a></h2>
+
+<h3 class="function"><a name="friends-0">friends/0</a></h3>
+<div class="spec">
+<p><tt>friends() -&gt; any()</tt></p>
+</div><p><h4>friends()</h4> shows the friend list.</p>
+
+<h3 class="function"><a name="get_status-0">get_status/0</a></h3>
+<div class="spec">
+<p><tt>get_status() -&gt; any()</tt></p>
+</div><p><h4>get_status()</h4> gives information about your status</p>
+
+<h3 class="function"><a name="host_info-0">host_info/0</a></h3>
+<div class="spec">
+<p><tt>host_info() -&gt; any()</tt></p>
+</div><p><h4>host_info()</h4> gives information about your computer</p>
+
+<h3 class="function"><a name="mess-2">mess/2</a></h3>
+<div class="spec">
+<p><tt>mess(Receiver_username, String) -&gt; any()</tt></p>
+</div><p><h4>mess(Receiver , String)</h4>  sends String to Receiver if Receiver is in the friend list</p>
+
+<h3 class="function"><a name="my-1">my/1</a></h3>
+<div class="spec">
+<p><tt>my(Status_element) -&gt; any()</tt></p>
+</div><p><h4>my(Status_element)</h4> returns the value of Status_element</p>
+
+<h3 class="function"><a name="ping-1">ping/1</a></h3>
+<div class="spec">
+<p><tt>ping(Receiver) -&gt; any()</tt></p>
+</div><p><h4>ping(Receiver)</h4>  pings Receiver if Receiver is in the friend list</p>
+
+<h3 class="function"><a name="pingoff-0">pingoff/0</a></h3>
+<div class="spec">
+<p><tt>pingoff() -&gt; any()</tt></p>
+</div><p><h4>pingoff()</h4> disallows you to see who pings you.</p>
+
+<h3 class="function"><a name="pingon-0">pingon/0</a></h3>
+<div class="spec">
+<p><tt>pingon() -&gt; any()</tt></p>
+</div><p><h4>pingon()</h4> allows you to see who pings you.</p>
+
+<h3 class="function"><a name="read_address-1">read_address/1</a></h3>
+<div class="spec">
+<p><tt>read_address(Address) -&gt; any()</tt></p>
+</div><p><h4>read_address(Address)</h4> reads Address and if Address is a domain it returns Address if Address is an ip-address of the type "xx.yy.zz.ww"  it returns a tuple of the type {xx,yy,zz,ww}</p>
+
+<h3 class="function"><a name="send-3">send/3</a></h3>
+<div class="spec">
+<p><tt>send(Receiver_username, Mode, Obj) -&gt; any()</tt></p>
+</div><p><h4>send(Receiver, Mode, Obj)</h4> sends Mode and Obj to Receiver if Receiver is in the friend list,
+ Mode specifies for Receiver what kind of data that is beeing sent.<br>When Mode is set to file, friendlist,
+ ping or pong, Receiver will neglect Data and process Obj that will be supposed to contain respectively
+ a file a friend list or an empty list in the case of a ping or a pong.</p>
+
+<h3 class="function"><a name="sendFr-3">sendFr/3</a></h3>
+<div class="spec">
+<p><tt>sendFr(Receiver_username, Receiver_address, Receiver_listen_port) -&gt; any()</tt></p>
+</div><p><h4>sendFr(Receiver_username, Friend_public_ip, Friend_listen_port)</h4> Sends a friend request to your friend.</p>
+
+<h3 class="function"><a name="send_file-3">send_file/3</a></h3>
+<div class="spec">
+<p><tt>send_file(Receiver, Path, Name) -&gt; any()</tt></p>
+</div><p><h4>send_file(Receiver, Path, Name)</h4> sends the file Path ++ Name to Receiver if Receiver is in the friend list</p>
+
+<h3 class="function"><a name="shut_down-0">shut_down/0</a></h3>
+<div class="spec">
+<p><tt>shut_down() -&gt; any()</tt></p>
+</div><p><h4>shut_down()</h4> stops the client</p>
+
+<h3 class="function"><a name="start-1">start/1</a></h3>
+<div class="spec">
+<p><tt>start(G) -&gt; any()</tt></p>
+</div><p><h4>start(G)</h4> Starts the client and creates an empty ets called friends that is the default friend list,
+ if G is set to 1 then the gui is activated.</p>
+<hr>
+
+<div class="navbar"><a name="#navbar_bottom"></a><table width="100%" border="0" cellspacing="0" cellpadding="2" summary="navigation bar"><tr><td><a href="overview-summary.html" target="overviewFrame">Overview</a></td><td><a href="http://www.erlang.org/"><img src="erlang.png" align="right" border="0" alt="erlang logo"></a></td></tr></table></div>
+<p><i>Generated by EDoc, May 20 2011, 09:01:09.</i></p>
+</body>
+</html>

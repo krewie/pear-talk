@@ -1,0 +1,17 @@
+-module(a).
+-compile(export_all).
+a()->
+	c:c(upnp),
+	c:c(reg_frame.erl),
+	c:c(smtp.erl),
+	c:c(dialog.erl),
+	c:c(dapi.erl),
+	c:c(detsapp.erl),
+	c:c(serv_ul.erl),
+	c:c(server.erl),
+	c:c(ul.erl),
+	c:c(chat_frame.erl),
+	c:c(contacts.erl),
+	c:c(login_frame.erl),
+	c:c(peer.erl),
+	c:c(rul.erl).
