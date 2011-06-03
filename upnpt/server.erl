@@ -7,6 +7,12 @@
 -define(PORT, 9945).
 -define(TIMEOUT, 12000).
 
+start()->
+	Name = io:get_line("Give me a name: ") -- "\n",
+	start_server(Name).
+
+
+
 %%Server calls
 %% ------- funktioner att implementera för servernätverk
 
