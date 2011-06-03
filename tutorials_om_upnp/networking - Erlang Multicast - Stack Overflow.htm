@@ -1,0 +1,808 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<!-- saved from url=(0057)http://stackoverflow.com/questions/78826/erlang-multicast -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<title>networking - Erlang Multicast - Stack Overflow</title>
+<link rel="shortcut icon" href="http://cdn.sstatic.net/stackoverflow/img/favicon.ico">
+<link rel="apple-touch-icon" href="http://cdn.sstatic.net/stackoverflow/img/apple-touch-icon.png">
+<link rel="search" type="application/opensearchdescription+xml" title="Stack Overflow" href="http://stackoverflow.com/opensearch.xml">
+<script type="text/javascript" async="" src="./networking - Erlang Multicast - Stack Overflow_files/ga.js"></script><script type="text/javascript" async="" src="./networking - Erlang Multicast - Stack Overflow_files/adzerk1_2_4_43,adzerk2_2_17_45,adzerk3_2_4_44"></script><script type="text/javascript" src="./networking - Erlang Multicast - Stack Overflow_files/jquery.min.js"></script>
+<script type="text/javascript" src="./networking - Erlang Multicast - Stack Overflow_files/stub.js"></script>
+<link rel="stylesheet" type="text/css" href="./networking - Erlang Multicast - Stack Overflow_files/all.css">
+
+
+    <link rel="canonical" href="./networking - Erlang Multicast - Stack Overflow_files/networking - Erlang Multicast - Stack Overflow.htm">
+    <link rel="alternate" type="application/atom+xml" title="Feed for question &#39;Erlang Multicast&#39;" href="http://stackoverflow.com/feeds/question/78826">
+    <script type="text/javascript">
+        
+        StackExchange.ready(function () {
+
+            StackExchange.question.init({showAnswerHelp:true,questionId:78826});
+
+            styleCode();
+        });
+    </script>
+
+
+    <script type="text/javascript">
+        StackExchange.init({"stackAuthUrl":"http://stackauth.com","serverTime":1307002252,"styleCode":true,"site":{"name":"Stack Overflow","description":"Q&A for professional and enthusiast programmers"},"user":{"isAnonymous":true,"fkey":"f9d2db8c9a6c3085cfc98adcc5761890","inboxUnviewedCount":-1}});
+        StackExchange.using.setCacheBreakers({"js/prettify-full.js":"dcf6d862901d","js/moderator.js":"daa73e02c234","js/full-anon.js":"1bd74c53ea17","js/full.js":"14387efaeeb3","js/wmd.js":"fff19522f52d","js/third-party/jquery.autocomplete.min.js":"e5f01e97f7c3"});
+    </script>
+
+</head>
+<body class="question-page" style="margin-top: 2.5em; ">
+    <noscript>&lt;div id="noscript-padding"&gt;&lt;/div&gt;</noscript>
+    <div id="notify-container"><div id="notify--1" style=""><span class="notify-close"><a title="dismiss this notification">×</a></span><span class="notify-text">Welcome to Q&amp;A for professional and enthusiast programmers — check out the <a onclick="StackExchange.notify.closeFirstTime(); return false;" href="http://stackoverflow.com/faq">FAQ</a>!</span></div></div>
+    <div id="overlay-header"></div>
+    <div id="custom-header"></div>
+    <div class="container">
+        <div id="header">
+            <div id="portalLink">
+                <a class="genu" onclick="StackExchange.ready(function(){genuwine.click();});return false;">Stack Exchange</a>
+            </div>
+            <div id="topbar">
+                <div id="hlinks">
+                    <span id="hlinks-user">
+                  
+                  </span>
+                  <span id="hlinks-nav">
+                  <a href="http://stackoverflow.com/users/login?returnurl=%2fquestions%2f78826%2ferlang-multicast">log in</a>
+ <span class="lsep">|</span>
+<span title="11 hours ago" class="new-blog-post">new</span> <a href="http://blog.stackoverflow.com/">blog</a>
+ <span class="lsep">|</span>
+<a href="http://careers.stackoverflow.com/">careers</a>
+ <span class="lsep">|</span>
+
+                  </span>
+                  <span id="hlinks-custom">
+                  <a href="http://chat.stackoverflow.com/">chat</a>
+ <span class="lsep">|</span>
+<a href="http://meta.stackoverflow.com/">meta</a>
+ <span class="lsep">|</span>
+<a href="http://stackoverflow.com/about">about</a>
+ <span class="lsep">|</span>
+<a href="http://stackoverflow.com/faq">faq</a>
+                  </span>
+                </div>
+                <div id="hsearch">
+                    <form id="search" action="http://stackoverflow.com/search" method="get">
+                    <div>
+                        <input name="q" class="textbox" tabindex="1" onfocus="if (this.value==&#39;search&#39;) this.value = &#39;&#39;" type="text" maxlength="140" size="28" value="search">
+                    </div>
+                    </form>
+                </div>
+            </div>
+            <br class="cbt">
+            <div id="hlogo">
+                <a href="http://stackoverflow.com/">Stack Overflow</a>
+            </div>
+            <div id="hmenus">
+                <div class="nav mainnavs">
+                    <ul>
+                        <li class="youarehere"><a id="nav-questions" href="http://stackoverflow.com/questions">Questions</a></li>
+                        <li><a id="nav-tags" href="http://stackoverflow.com/tags">Tags</a></li>
+                        <li><a id="nav-users" href="http://stackoverflow.com/users">Users</a></li>
+                        <li><a id="nav-badges" href="http://stackoverflow.com/badges">Badges</a></li>
+                        <li><a id="nav-unanswered" href="http://stackoverflow.com/unanswered">Unanswered</a></li>
+                    </ul>
+                </div>
+                <div class="nav askquestion">
+                    <ul>
+                        <li>
+                            <a id="nav-askquestion" href="http://stackoverflow.com/questions/ask">Ask Question</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div id="content">
+            
+
+
+
+<div id="question-header">
+    <h1><a href="./networking - Erlang Multicast - Stack Overflow_files/networking - Erlang Multicast - Stack Overflow.htm" class="question-hyperlink">Erlang Multicast</a></h1>
+</div>
+<div id="mainbar">
+
+
+<div id="question">
+
+    <div class="everyonelovesstackoverflow" id="adzerk1"><a href="http://engine.adzerk.net/redirect/0/3603/2444/8277/453f73c97c424775bd210ae7e0b4314c/43/1178/4219/634425990538424234?keywords=networking%2cerlang%2cmulticast" rel="nofollow" target="_blank" title=""><img src="./networking - Erlang Multicast - Stack Overflow_files/3603.jpg" title="" alt="" border="0" height="90" width="728"></a></div>
+
+    
+    <table>
+    <tbody><tr>
+    <td class="votecell">
+        
+<div class="vote">
+    <input type="hidden" value="78826">
+    <a class="vote-up-off" title="This question shows research effort; it is useful and clear (click again to undo)">up vote</a>
+    <span class="vote-count-post">6</span>
+    <a class="vote-down-off" title="This question does not show any research effort; it is unclear or not useful (click again to undo)">down vote</a>
+
+    <a class="star-off" href="http://stackoverflow.com/questions/78826/erlang-multicast#" title="This is a favorite question (click again to undo)">favorite</a>
+    <div class="favoritecount"><b>3</b></div>    
+
+</div>
+
+    </td>
+    <td class="postcell">
+        <div>          
+            <div class="post-text">
+                <p>How do you use gen_udp in Erlang to do multicasting? I know its in the code, there is just no documentation behind it. Sending out data is obvious and simple. I was wondering on how to add memberships. Not only adding memberships at start-up, but adding memberships while running would be useful too.</p>
+
+            </div>            
+            <div class="post-taglist">
+                <a href="http://stackoverflow.com/questions/tagged/networking" class="post-tag" title="show questions tagged &#39;networking&#39;" rel="tag">networking</a> <a href="http://stackoverflow.com/questions/tagged/erlang" class="post-tag" title="show questions tagged &#39;erlang&#39;" rel="tag">erlang</a> <a href="http://stackoverflow.com/questions/tagged/multicast" class="post-tag" title="show questions tagged &#39;multicast&#39;" rel="tag">multicast</a> 
+            </div>
+            <table class="fw">
+            <tbody><tr>
+            <td class="vt">
+                <div class="post-menu"><a href="http://stackoverflow.com/q/78826" title="short permalink to this question" id="link-post-78826">link</a><span class="lsep">|</span><a href="http://stackoverflow.com/posts/78826/edit" title="edit this post">edit</a><span class="lsep">|</span><a id="flag-post-78826" title="flag this post for serious problems or moderator attention">flag</a></div>
+            </td>
+            <td align="right" class="post-signature">
+<div class="user-info"><div class="user-action-time">edited <a href="http://stackoverflow.com/posts/78826/revisions" title="show all edits to this post"><span title="2008-09-17 08:41:23Z" class="relativetime">Sep 17 '08 at 8:41</span></a></div><div class="user-gravatar32"></div><div class="user-details"><br></div></div>            </td>
+                        
+
+            <td class="post-signature owner">
+            <div class="user-info"><div class="user-action-time">asked <span title="2008-09-17 01:06:59Z" class="relativetime">Sep 17 '08 at 1:06</span></div><div class="user-gravatar32"><a href="http://stackoverflow.com/users/10432/sargun-dhillon"><img src="./networking - Erlang Multicast - Stack Overflow_files/a20287b6a06d4c3bbf69dd15446a889a" height="32" width="32" alt=""></a></div><div class="user-details"><a href="http://stackoverflow.com/users/10432/sargun-dhillon">Sargun Dhillon</a><br><span class="reputation-score" title="reputation score">696</span><span title="6 silver badges"><span class="badge2"></span><span class="badgecount">6</span></span><span title="17 bronze badges"><span class="badge3"></span><span class="badgecount">17</span></span></div></div>
+                <br class="cbt">
+                <div class="accept-rate cool" title="this user has accepted an answer for 4 of 5 eligible questions">80% accept rate</div>
+            </td>
+            </tr>
+            </tbody></table>
+        </div>
+    </td>
+    </tr>
+
+
+<tr>
+<td class="votecell"></td>
+<td>
+    <div id="comments-78826" class="comments dno">
+        <table>
+        <tbody>
+        
+            <tr><td></td><td></td></tr>
+        
+        </tbody>
+    
+        </table>
+    </div>
+    
+</td>
+</tr>    </tbody></table>    
+</div>
+
+
+
+<div id="answers">
+
+    <a name="tab-top"></a>
+    <div id="answers-header">
+        <div class="subheader answers-subheader">
+            <h2>4 Answers</h2>
+            <div id="tabs">
+                <a href="http://stackoverflow.com/questions/78826/erlang-multicast?answertab=active#tab-top" title="Answers with the latest activity first">active</a>
+<a href="http://stackoverflow.com/questions/78826/erlang-multicast?answertab=oldest#tab-top" title="Answers in the order they were provided">oldest</a>
+<a class="youarehere" href="http://stackoverflow.com/questions/78826/erlang-multicast?answertab=votes#tab-top" title="Answers with the highest score first">votes</a>
+
+            </div>
+        </div>
+    </div>
+
+
+  
+    <a name="1740065"></a>
+    <div id="answer-1740065" class="answer">
+        <table>
+        <tbody><tr>
+        <td class="votecell">
+            
+<div class="vote">
+    <input type="hidden" value="1740065">
+    <a class="vote-up-off" title="This answer is useful (click again to undo)">up vote</a>
+    <span class="vote-count-post">4</span>
+    <a class="vote-down-off" title="This answer is not useful (click again to undo)">down vote</a>
+<span class="vote-accepted-on" title="The question owner accepted this as the best answer Mar 2 &#39;10 at 22:15">accepted</span>
+</div>
+
+        </td>
+        <td>
+            <div class="post-text"><p>Here is example code on how to listen in on Bonjour / Zeroconf traffic.</p>
+
+<pre><code>-module(zcclient).
+
+-export([open/2,start/0]).
+-export([stop/1,receiver/0]).
+
+open(Addr,Port) -&gt;
+   {ok,S} = gen_udp:open(Port,[{reuseaddr,true}, {ip,Addr}, {multicast_ttl,4}, {multicast_loop,false}, binary]),
+   inet:setopts(S,[{add_membership,{Addr,{0,0,0,0}}}]),
+   S.
+
+close(S) -&gt; gen_udp:close(S).
+
+start() -&gt;
+   S=open({224,0,0,251},5353),
+   Pid=spawn(?MODULE,receiver,[]),
+   gen_udp:controlling_process(S,Pid),
+   {S,Pid}.
+
+stop({S,Pid}) -&gt;
+   close(S),
+   Pid ! stop.
+
+receiver() -&gt;
+   receive
+       {udp, _Socket, IP, InPortNo, Packet} -&gt;
+           io:format("~n~nFrom: ~p~nPort: ~p~nData: ~p~n",[IP,InPortNo,inet_dns:decode(Packet)]),
+           receiver();
+       stop -&gt; true;
+       AnythingElse -&gt; io:format("RECEIVED: ~p~n",[AnythingElse]),
+           receiver()
+   end.
+</code></pre>
+</div>
+            <table class="fw">
+            <tbody><tr>
+            <td class="vt">
+                <div class="post-menu"><a href="http://stackoverflow.com/questions/78826/erlang-multicast/1740065#1740065" title="permalink to this answer" id="link-post-1740065">link</a><span class="lsep">|</span><a href="http://stackoverflow.com/posts/1740065/edit" title="edit this post">edit</a><span class="lsep">|</span><a id="flag-post-1740065" title="flag this post for serious problems or moderator attention">flag</a></div>
+            </td>
+            
+
+            <td align="right" class="post-signature">   
+       
+
+            <div class="user-info"><div class="user-action-time">answered <span title="2009-11-16 04:36:03Z" class="relativetime">Nov 16 '09 at 4:36</span></div><div class="user-gravatar32"><a href="http://stackoverflow.com/users/177800/jarrod-roberson"><img src="./networking - Erlang Multicast - Stack Overflow_files/12356ae4540e9286f4984eb7beef801e" height="32" width="32" alt=""></a></div><div class="user-details"><a href="http://stackoverflow.com/users/177800/jarrod-roberson">Jarrod Roberson</a><br><span class="reputation-score" title="reputation score">8,795</span><span title="7 silver badges"><span class="badge2"></span><span class="badgecount">7</span></span><span title="28 bronze badges"><span class="badge3"></span><span class="badgecount">28</span></span></div></div>
+            </td>
+            </tr>
+            </tbody></table>
+        </td>        </tr>
+
+
+<tr>
+<td class="votecell"></td>
+<td>
+    <div id="comments-1740065" class="comments dno">
+        <table>
+        <tbody>
+        
+            <tr><td></td><td></td></tr>
+        
+        </tbody>
+    
+        </table>
+    </div>
+    
+</td>
+</tr>    </tbody></table>
+</div>
+
+
+
+    <div class="everyonelovesstackoverflow" id="adzerk3"><a href="http://engine.adzerk.net/redirect/0/2539/4170/8277/65c85c90c36c43bf81b5e76731bb75b0/44/1178/5149/634425990538424234?keywords=networking%2cerlang%2cmulticast" rel="nofollow" target="_blank" title=""><img src="./networking - Erlang Multicast - Stack Overflow_files/2320.jpg" title="" alt="" border="0" height="90" width="728"></a></div>
+
+    
+  
+    <a name="81149"></a>
+    <div id="answer-81149" class="answer">
+        <table>
+        <tbody><tr>
+        <td class="votecell">
+            
+<div class="vote">
+    <input type="hidden" value="81149">
+    <a class="vote-up-off" title="This answer is useful (click again to undo)">up vote</a>
+    <span class="vote-count-post">7</span>
+    <a class="vote-down-off" title="This answer is not useful (click again to undo)">down vote</a>
+
+</div>
+
+        </td>
+        <td>
+            <div class="post-text"><p>Multicast sending has been answered, receipt requires subscription to the multicast group. </p>
+
+<p>It (still) seems undocumented, but has been covered on the erlang-questions mailing list before. <a href="http://www.erlang.org/pipermail/erlang-questions/2003-March/008070.html" rel="nofollow">http://www.erlang.org/pipermail/erlang-questions/2003-March/008070.html</a></p>
+
+<pre><code>    {ok, Socket} = gen_udp:open(Port, [binary, {active, false},
+                                       {reuseaddr, true},{ip, Addr}, 
+                                       {add_membership, {Addr, LAddr}}]).
+</code></pre>
+
+<p>where the <code>Addr</code> is the multicast group, and <code>LAddr</code> is a local interface. (code courtesy of mog)</p>
+
+<p>The same options used above can be passed to <a href="http://www.erlang.org/doc/man/inet.html#setopts-2" rel="nofollow"><code>inet:setopts</code></a> including <code>{drop_membership, {Addr, LAddr}}</code> to stop listening to the group. </p>
+</div>
+            <table class="fw">
+            <tbody><tr>
+            <td class="vt">
+                <div class="post-menu"><a href="http://stackoverflow.com/questions/78826/erlang-multicast/81149#81149" title="permalink to this answer" id="link-post-81149">link</a><span class="lsep">|</span><a href="http://stackoverflow.com/posts/81149/edit" title="edit this post">edit</a><span class="lsep">|</span><a id="flag-post-81149" title="flag this post for serious problems or moderator attention">flag</a></div>
+            </td>
+            <td align="right" class="post-signature">
+<div class="user-info"><div class="user-action-time">edited <a href="http://stackoverflow.com/posts/81149/revisions" title="show all edits to this post"><span title="2008-09-17 17:55:40Z" class="relativetime">Sep 17 '08 at 17:55</span></a></div><div class="user-gravatar32"></div><div class="user-details"><br></div></div>            </td>
+            
+
+            <td align="right" class="post-signature">   
+       
+
+            <div class="user-info"><div class="user-action-time">answered <span title="2008-09-17 08:32:44Z" class="relativetime">Sep 17 '08 at 8:32</span></div><div class="user-gravatar32"><a href="http://stackoverflow.com/users/15290/bwooce"><img src="./networking - Erlang Multicast - Stack Overflow_files/244d8d938d45c91d698672290d9f7592" height="32" width="32" alt=""></a></div><div class="user-details"><a href="http://stackoverflow.com/users/15290/bwooce">Bwooce</a><br><span class="reputation-score" title="reputation score">593</span><span title="5 silver badges"><span class="badge2"></span><span class="badgecount">5</span></span><span title="12 bronze badges"><span class="badge3"></span><span class="badgecount">12</span></span></div></div>
+            </td>
+            </tr>
+            </tbody></table>
+        </td>        </tr>
+
+
+<tr>
+<td class="votecell"></td>
+<td>
+    <div id="comments-81149" class="comments">
+        <table>
+        <tbody>
+                    
+    <tr id="comment-831733" class="comment">
+        <td></td>
+        <td class="comment-text"><div><span class="comment-copy">thanks for the props ^_^</span> –&nbsp;<a href="http://stackoverflow.com/users/125343/mog" title="778 reputation" class="comment-user">mog</a> <span class="comment-date"><span title="2009-06-20 16:57:07Z">Jun 20 '09 at 16:57</span></span></div></td>
+    </tr>
+
+        </tbody>
+    
+        </table>
+    </div>
+    
+</td>
+</tr>    </tbody></table>
+</div>
+
+
+
+  
+    <a name="1880167"></a>
+    <div id="answer-1880167" class="answer">
+        <table>
+        <tbody><tr>
+        <td class="votecell">
+            
+<div class="vote">
+    <input type="hidden" value="1880167">
+    <a class="vote-up-off" title="This answer is useful (click again to undo)">up vote</a>
+    <span class="vote-count-post">2</span>
+    <a class="vote-down-off" title="This answer is not useful (click again to undo)">down vote</a>
+
+</div>
+
+        </td>
+        <td>
+            <div class="post-text"><p>I try to get this example running on my PC. What could happen, if I get always the message {error,eaddrnotavail} by opening the receive socket?</p>
+
+<p>Example 1: This works:</p>
+
+<pre><code>{ok, Socket} = gen_udp:open(?PORT, [{reuseaddr,true}, {ip,?SERVER_IP},
+               {multicast_ttl,4}, {multicast_loop,false}, binary]),
+</code></pre>
+
+<p>Example 2: Getting an runtime Error:</p>
+
+<pre><code>{ok, Socket} = gen_udp:open(?PORT, [{reuseaddr,true}, {ip,?MULTICAST_IP},
+               {multicast_ttl,4}, {multicast_loop,false}, binary]),
+</code></pre>
+
+<p>% --&gt; {error,eaddrnotavail}</p>
+
+<pre><code>-define(SERVER_IP, {10,31,123,123}). % The IP of the current computer
+-define(PORT, 5353).
+-define(MULTICAST_IP, {224,0,0,251}).
+</code></pre>
+</div>
+            <table class="fw">
+            <tbody><tr>
+            <td class="vt">
+                <div class="post-menu"><a href="http://stackoverflow.com/questions/78826/erlang-multicast/1880167#1880167" title="permalink to this answer" id="link-post-1880167">link</a><span class="lsep">|</span><a href="http://stackoverflow.com/posts/1880167/edit" title="edit this post">edit</a><span class="lsep">|</span><a id="flag-post-1880167" title="flag this post for serious problems or moderator attention">flag</a></div>
+            </td>
+            
+
+            <td align="right" class="post-signature">   
+       
+
+            <div class="user-info"><div class="user-action-time">answered <span title="2009-12-10 10:49:23Z" class="relativetime">Dec 10 '09 at 10:49</span></div><div class="user-gravatar32"><a href="http://stackoverflow.com/users/228713/matthias"><img src="./networking - Erlang Multicast - Stack Overflow_files/c801792ca8645590765e83af4622f1dc" height="32" width="32" alt=""></a></div><div class="user-details"><a href="http://stackoverflow.com/users/228713/matthias">Matthias</a><br><span class="reputation-score" title="reputation score">26</span><span title="2 bronze badges"><span class="badge3"></span><span class="badgecount">2</span></span></div></div>
+            </td>
+            </tr>
+            </tbody></table>
+        </td>        </tr>
+
+
+<tr>
+<td class="votecell"></td>
+<td>
+    <div id="comments-1880167" class="comments">
+        <table>
+        <tbody>
+                    
+    <tr id="comment-4571806" class="comment">
+        <td></td>
+        <td class="comment-text"><div><span class="comment-copy">I have this problem on Windows, but exactly the same code works perfectly on Linux</span> –&nbsp;<a href="http://stackoverflow.com/users/24508/chris-huang-leaver" title="1723 reputation" class="comment-user">Chris Huang-Leaver</a> <span class="comment-date"><span title="2010-11-19 12:27:43Z">Nov 19 '10 at 12:27</span></span></div></td>
+    </tr>
+
+        </tbody>
+    
+        </table>
+    </div>
+    
+</td>
+</tr>    </tbody></table>
+</div>
+
+
+
+  
+    <a name="78886"></a>
+    <div id="answer-78886" class="answer">
+        <table>
+        <tbody><tr>
+        <td class="votecell">
+            
+<div class="vote">
+    <input type="hidden" value="78886">
+    <a class="vote-up-off" title="This answer is useful (click again to undo)">up vote</a>
+    <span class="vote-count-post">0</span>
+    <a class="vote-down-off" title="This answer is not useful (click again to undo)">down vote</a>
+
+</div>
+
+        </td>
+        <td>
+            <div class="post-text"><p><strong>Multicast is specified by IP Address</strong></p>
+
+<p>It's the same in erlang as for all languages.  The IP addresses 224.0.0.0 through 239.255.255.255 are multicast addresses.</p>
+
+<p>Pick an address in that range, check that you're not overlapping an already assigned address, and you are good to go.</p>
+
+<p><a href="http://www.iana.org/assignments/multicast-addresses" rel="nofollow">http://www.iana.org/assignments/multicast-addresses</a></p>
+</div>
+            <table class="fw">
+            <tbody><tr>
+            <td class="vt">
+                <div class="post-menu"><a href="http://stackoverflow.com/questions/78826/erlang-multicast/78886#78886" title="permalink to this answer" id="link-post-78886">link</a><span class="lsep">|</span><a href="http://stackoverflow.com/posts/78886/edit" title="edit this post">edit</a><span class="lsep">|</span><a id="flag-post-78886" title="flag this post for serious problems or moderator attention">flag</a></div>
+            </td>
+            
+
+            <td align="right" class="post-signature">   
+       
+
+            <div class="user-info"><div class="user-action-time">answered <span title="2008-09-17 01:18:29Z" class="relativetime">Sep 17 '08 at 1:18</span></div><div class="user-gravatar32"><a href="http://stackoverflow.com/users/116/mark-harrison"><img src="./networking - Erlang Multicast - Stack Overflow_files/f79b395a801bf291b74e8bccea8e03f8" height="32" width="32" alt=""></a></div><div class="user-details"><a href="http://stackoverflow.com/users/116/mark-harrison">Mark Harrison</a><br><span class="reputation-score" title="reputation score 21966">22k</span><span title="13 gold badges"><span class="badge1"></span><span class="badgecount">13</span></span><span title="80 silver badges"><span class="badge2"></span><span class="badgecount">80</span></span><span title="153 bronze badges"><span class="badge3"></span><span class="badgecount">153</span></span></div></div>
+            </td>
+            </tr>
+            </tbody></table>
+        </td>        </tr>
+
+
+<tr>
+<td class="votecell"></td>
+<td>
+    <div id="comments-78886" class="comments">
+        <table>
+        <tbody>
+                    
+    <tr id="comment-9591" class="comment">
+        <td></td>
+        <td class="comment-text"><div><span class="comment-copy">Well, I mean accepting multicast data. Its not the issue of sending out data. </span> –&nbsp;<a href="http://stackoverflow.com/users/10432/sargun-dhillon" title="696 reputation" class="comment-user owner">Sargun Dhillon</a> <span class="comment-date"><span title="2008-09-17 04:01:58Z">Sep 17 '08 at 4:01</span></span></div></td>
+    </tr>
+
+        </tbody>
+    
+        </table>
+    </div>
+    
+</td>
+</tr>    </tbody></table>
+</div>
+
+
+    
+    <a name="new-answer"></a>
+    <form id="post-form" action="http://stackoverflow.com/questions/78826/answer/submit" method="post">
+        <h2 class="space">Your Answer</h2>
+
+<script type="text/javascript">
+    StackExchange.ready(function() {
+     
+        initTagRenderer("".split(" "), "".split(" "));
+
+        
+            prepareEditor({
+                
+                heartbeatType: 'answer',
+                bindNavPrevention: true,
+                onDemand: true
+                ,autoShowMarkdownHelp:true
+            });
+        
+    });  
+</script>
+
+
+
+
+<div id="post-editor">  
+
+    
+    <div id="wmd-container">
+        <div id="wmd-button-bar"><ul id="wmd-button-row"><li id="wmd-bold-button" class="wmd-button" style="left: 0px; "><span style="background-position: 0px -20px; "></span></li><li id="wmd-italic-button" class="wmd-button" style="left: 25px; "><span style="background-position: -20px -20px; "></span></li><li id="wmd-spacer1" class="wmd-spacer" style="left: 50px; "><span style="background-position: -40px -20px; "></span></li><li id="wmd-link-button" class="wmd-button" style="left: 75px; "><span style="background-position: -40px -20px; "></span></li><li id="wmd-quote-button" class="wmd-button" style="left: 100px; "><span style="background-position: -60px -20px; "></span></li><li id="wmd-code-button" class="wmd-button" style="left: 125px; "><span style="background-position: -80px -20px; "></span></li><li id="wmd-image-button" class="wmd-button" style="left: 150px; "><span style="background-position: -100px -20px; "></span></li><li id="wmd-spacer2" class="wmd-spacer" style="left: 175px; "><span style="background-position: -120px -20px; "></span></li><li id="wmd-olist-button" class="wmd-button" style="left: 200px; "><span style="background-position: -120px -20px; "></span></li><li id="wmd-ulist-button" class="wmd-button" style="left: 225px; "><span style="background-position: -140px -20px; "></span></li><li id="wmd-heading-button" class="wmd-button" style="left: 250px; "><span style="background-position: -160px -20px; "></span></li><li id="wmd-hr-button" class="wmd-button" style="left: 275px; "><span style="background-position: -180px -20px; "></span></li><li id="wmd-spacer3" class="wmd-spacer" style="left: 300px; "><span style="background-position: -200px -20px; "></span></li><li id="wmd-undo-button" class="wmd-button" style="left: 325px; "><span style="background-position: -200px -20px; "></span></li><li id="wmd-redo-button" class="wmd-button" style="left: 350px; "><span style="background-position: -220px -20px; "></span></li></ul></div>
+        <textarea id="wmd-input" name="post-text" cols="92" rows="15" tabindex="101"></textarea>
+    </div>
+
+    <div class="fl" style="margin-top: 8px; height:24px;">&nbsp;</div>
+    <div id="draft-saved" class="community-option fl" style="margin-top: 8px; height:24px; display:none;">draft saved</div>
+
+
+    <div id="wmd-preview"></div>
+
+
+    <div id="edit-block">
+        <input id="fkey" name="fkey" type="hidden" value="f9d2db8c9a6c3085cfc98adcc5761890">
+        <input id="author" name="author" type="text">
+    </div>
+</div>   
+    <div class="form-item">
+        <table>
+        <tbody><tr>
+        <td class="vm open-id-login">
+            <a id="login-link" style="font-size: 200%; margin-left: 30px;" href="http://stackoverflow.com/users/login?returnurl=%2fquestions%2f78826%2ferlang-multicast">log in</a>
+            <script type="text/javascript">
+                StackExchange.ready(function () {
+                    StackExchange.helpers.onClickDraftSave('#login-link');
+                });
+            </script>
+        </td>
+
+    
+        <td class="orcell">
+            <div class="orword">or</div>
+            <div class="orline"></div>
+        </td>
+        <td class="vm">
+            <div>
+                <label for="display-name">Name</label>
+                <input id="display-name" name="display-name" type="text" size="30" maxlength="30" value="" tabindex="105">
+            </div>
+            <div>
+                <label for="m-address">Email</label>
+                <input id="m-address" name="m-address" type="text" size="40" maxlength="100" value="" tabindex="106">
+                <span class="edit-field-overlay">required, but never shown</span>
+            </div>
+            <div>
+                <label for="home-page">Home Page</label>
+                <input id="home-page" name="home-page" type="text" size="40" maxlength="200" value="" tabindex="107">
+            </div>
+        </td>
+    
+        </tr>
+        </tbody></table>
+    </div>
+               
+        <div class="form-submit cbt"><input id="submit-button" type="submit" value="Post Your Answer" tabindex="110"></div>
+    </form>
+    <h2 class="bottom-notice">
+        Not the answer you're looking for? 
+        Browse other questions tagged <a href="http://stackoverflow.com/questions/tagged/networking" class="post-tag" title="show questions tagged &#39;networking&#39;" rel="tag">networking</a> <a href="http://stackoverflow.com/questions/tagged/erlang" class="post-tag" title="show questions tagged &#39;erlang&#39;" rel="tag">erlang</a> <a href="http://stackoverflow.com/questions/tagged/multicast" class="post-tag" title="show questions tagged &#39;multicast&#39;" rel="tag">multicast</a> 
+        or <a href="http://stackoverflow.com/questions/ask">ask your own question</a>.
+    </h2>
+</div>
+</div>
+<div id="sidebar">
+
+<div class="module newuser newuser-greeting" style="">
+    <h4>Hello World!</h4>
+    <div>
+        <p>This is a collaboratively edited question and answer site for <b>professional and enthusiast programmers</b>. It's 100% free, no registration required.</p>
+        <p class="ar"><a href="http://stackoverflow.com/about">about »</a>&nbsp;&nbsp;&nbsp;<a href="http://stackoverflow.com/faq">faq »</a></p>
+    </div>
+</div>    <div class="module">
+        <p class="label-key">tagged</p>
+        <div class="tagged"><a href="http://stackoverflow.com/questions/tagged/networking" class="post-tag" title="show questions tagged &#39;networking&#39;" rel="tag">networking</a>&nbsp;<span class="item-multiplier">×&nbsp;4697</span><br>
+<a href="http://stackoverflow.com/questions/tagged/erlang" class="post-tag" title="show questions tagged &#39;erlang&#39;" rel="tag">erlang</a>&nbsp;<span class="item-multiplier">×&nbsp;1480</span><br>
+<a href="http://stackoverflow.com/questions/tagged/multicast" class="post-tag" title="show questions tagged &#39;multicast&#39;" rel="tag">multicast</a>&nbsp;<span class="item-multiplier">×&nbsp;169</span><br>
+</div>
+        <table id="qinfo">
+            <tbody><tr>
+                <td><p class="label-key">asked</p></td>
+                <td style="padding-left:10px"><p class="label-key" title="2008-09-17 01:06:59Z"><b>2 years ago</b></p></td>
+            </tr>
+            <tr>
+                <td><p class="label-key">viewed</p></td>
+
+                <td style="padding-left:10px"><p class="label-key"><b>1,359 times</b></p></td>
+            </tr>
+            <tr>
+                <td><p class="label-key">active</p></td>
+                <td style="padding-left:10px"><p class="label-key"><b><a href="http://stackoverflow.com/questions/78826/erlang-multicast?lastactivity" class="lastactivity-link" title="2009-12-10 10:49:23Z">1 year ago</a></b></p></td>
+            </tr>
+        </tbody></table>
+    </div>
+    
+        <script type="text/javascript">
+            var z = document.createElement("script"); z.type = "text/javascript"; z.async = true; z.src = "http://engine2.adzerk.net/z/8277/adzerk1_2_4_43,adzerk2_2_17_45,adzerk3_2_4_44?keywords=networking,erlang,multicast"; var s = document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(z, s);
+        </script>
+    
+    <div class="everyonelovesstackoverflow" id="adzerk2"><div id="SE20-ad-container" style="height: 250px; width: 220px;">
+<style>
+#launched-ad { width: 220px; height: 250px; overflow: hidden; background: url(http://sstatic.net/stackexchange/Img/launched-ads/english.png) no-repeat bottom center; }
+#launched-ad-link { display: block; width: 220px; height: 250px; line-height: 1.2; color: #923c3d; font-family: Georgia,"Times New Roman",serif; font-size: 20px; line-height: 26px; text-decoration: none; cursor: pointer; }
+#launched-ad-inner { width: 185px; margin: 30px 15px 0 20px;}
+</style>
+<a id="launched-ad-link" href="http://engine.adzerk.net/redirect/0/3194/3013/8277/9b58b1900fef4eabae4814bc563ccb64/45/1178/3561/634425990538424234?keywords=networking%2cerlang%2cmulticast&url=http%3A%2F%2Fenglish.stackexchange.com%2Fquestions%2F28112%2Fwhat-is-a-person-called-who-is-having-difficulty-in-speaking-with-girls">
+    <div id="launched-ad">
+        <div id="launched-ad-inner">What is a person called who is having difficulty in speaking with girls?</div>
+    </div>
+</a>
+</div><script type="text/javascript">window._launchedAdUrl= "http://engine.adzerk.net/redirect/0/3194/3013/8277/9b58b1900fef4eabae4814bc563ccb64/45/1178/3561/634425990538424234?keywords=networking%2cerlang%2cmulticast";</script><script type="text/javascript" src="./networking - Erlang Multicast - Stack Overflow_files/js"></script></div>
+
+    
+    <div>
+        <script type="text/javascript">
+            (function(){var q="http://careers.stackoverflow.com/ad/js",g=location.search=="?golarge",a,d=100,c=location.hash.indexOf("#ninjas")>-1,f="Pretty",h="#adzerk2",b="#adzerk1",i="#herebeninjas";(function(){var b="min-height:220px;margin:15px 0",c=$("<div>").addClass("hireme").attr("style",b),a=$("<div>").html(c);document.write(a.html())})();$(function(){setTimeout(r,2e3);a=setTimeout(e,d)});var e=function(){clearTimeout(a);if(m()&&!k()){a=setTimeout(e,d);return}c=c||n();c&&$(b).css("height",$(b).outerHeight()).attr("id","stop-adzerk");if(l()&&!j()){a=setTimeout(e,d);return}g=g||o();f=g?"Large":f;p()},r=function(){clearTimeout(a);var b=$("div.hireme, "+i);b.each(function(){var a=$(this),d=a.html().replace(/\s+/g,"").length==0;if(d){var c=a,b=a.parents(".everyonelovesstackoverflow").first();if(b.length>0)c=b;c.remove()}})},l=function(){return $(h).length>0},j=function(){var a=$(h);return a.length==0?false:a.html().replace(/\s+/g,"").length>0},o=function(){return $("#careersadsdoublehigh").length>0},m=function(){return $(b).length>0},k=function(){var a=$(b);return a.length==0?false:a.html().replace(/\s+/g,"").length>0},n=function(){return $(i).length>0},p=function(){$.ajax({url:s(),dataType:"script",cache:true})},s=function(){return q+"?style="+f+"&gobanner="+c.toString()}})();
+        </script><div class="hireme" style="min-height:220px;margin:15px 0"> <style type="text/css"> div.hireme { border:1px solid #B5B5B5; color: #333; font-family: Arial, Helvetica, sans-serif; font-size:12px; text-align:left; line-height:130%; padding:0; margin:10px 0; width:218px; } div.hireme > p { display:block; margin:12px; } div.hireme > p > a { cursor:pointer; text-decoration:none; } div.hireme > p > a > span { color:#666; } div.hireme > p > a > span.company { font-weight:bold; } div.hireme > img.impression { display:none; } div.hireme > a > img.careers-hed { width:218px; min-height:50px; border:0; } div.hireme > p.bottom { margin-top:15px; text-align:center; } div.hireme > p.bottom > a { height: 16px; color: #FEF4E9; border: solid 1px #DA7C0C; background: #F78D1D url(http://careers.stackoverflow.com:80/Content/Img/orange-submit-bg.png) repeat-x top left; background: -webkit-gradient(linear, left top, left bottom, from(#FAA51A), to(#F47A20)); background: -moz-linear-gradient(top, #FAA51A, #F47A20); font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-weight: bold; font-size: 13px; color: white; line-height: 16px; text-decoration: none; display: inline-block; -moz-border-radius: 12px; -webkit-border-radius: 12px; border-radius: 12px; padding: 4px 15px; cursor: pointer; -webkit-box-shadow: 0 1px 2px rgba(0, 0, 0, .2); -moz-box-shadow: 0 1px 2px rgba(0, 0, 0, .2); box-shadow: 0 1px 2px rgba(0, 0, 0, .2); text-shadow: 0 1px 1px rgba(0, 0, 0, .3); } </style> <a href="http://careers.stackoverflow.com/?campaign=PrettyHeader" target="_blank"><img src="./networking - Erlang Multicast - Stack Overflow_files/careers2-ad-header-so.png" alt="Careers 2.0" class="careers-hed"></a> <p> <a href="http://careers.stackoverflow.com/jobs/11513/sybase-senior-database-administrator-addison-lee?campaign=PrettyTopspot" target="_blank" title="Sybase - Senior Database Administrator at Addison Lee. Click to learn more."> Sybase - Senior Database Administrator<br> <span class="company">Addison Lee</span><br> <span class="location">London, England</span> </a> </p> <p> <a href="http://careers.stackoverflow.com/jobs/11516/senior-ios-developer-mag10-publishing?campaign=PrettyGeocoded" target="_blank" title="Senior iOS Developer at mag10 publishing. Click to learn more."> Senior iOS Developer<br> <span class="company">mag10 publishing</span><br> <span class="location">Berlin, Germany</span> </a> </p> <p class="bottom"><a href="http://careers.stackoverflow.com/jobs?campaign=PrettyFooter" target="_blank"> view more jobs </a></p> <img src="./networking - Erlang Multicast - Stack Overflow_files/jobimpression" alt="impression" class="impression"> </div>
+    </div>
+
+      
+
+    <div class="module">
+    <h4 id="h-related">Related</h4>
+    <div class="related">
+    <div class="spacer">
+<a href="http://stackoverflow.com/questions/227286/multicast-join-on-linux-and-igmpv3" class="question-hyperlink">Multicast Join on Linux and IGMPv3</a>
+</div>
+<div class="spacer">
+<a href="http://stackoverflow.com/questions/236231/how-do-i-choose-a-multicast-address-for-my-applications-use" class="question-hyperlink">How do I choose a multicast address for my application's use?</a>
+</div>
+<div class="spacer">
+<a href="http://stackoverflow.com/questions/255557/is-1-to-n-multicast-on-the-open-internet-reliable" class="question-hyperlink">Is 1-to-n multicast on the open internet reliable?</a>
+</div>
+<div class="spacer">
+<a href="http://stackoverflow.com/questions/603852/multicast-in-python" class="question-hyperlink">Multicast in Python</a>
+</div>
+<div class="spacer">
+<a href="http://stackoverflow.com/questions/1746257/how-to-send-multicast-messages-and-reuse-a-port-in-erlang" class="question-hyperlink">How to send multicast messages and reuse a port in Erlang?</a>
+</div>
+<div class="spacer">
+<a href="http://stackoverflow.com/questions/1901057/fail-to-open-a-socket-for-multicast" class="question-hyperlink">Fail to open a socket for multicast</a>
+</div>
+<div class="spacer">
+<a href="http://stackoverflow.com/questions/2285152/where-are-possible-locations-of-queueing-buffering-delays-in-linux-multicast" class="question-hyperlink">Where are possible locations of queueing/buffering delays in Linux multicast?</a>
+</div>
+<div class="spacer">
+<a href="http://stackoverflow.com/questions/2656590/how-do-i-make-my-multicast-program-work-between-computers-on-different-networks" class="question-hyperlink">How do I make my multicast program work between computers on different networks?</a>
+</div>
+<div class="spacer">
+<a href="http://stackoverflow.com/questions/3060339/from-a-java-programming-perspective-what-difference-does-multicast-make-to-a-net" class="question-hyperlink">From a Java programming perspective, what difference does multicast make to a networking program?</a>
+</div>
+<div class="spacer">
+<a href="http://stackoverflow.com/questions/3060596/what-possible-uses-would-multicast-support-have-in-a-java-trading-system" class="question-hyperlink">What possible uses would multicast support have in a Java trading system?</a>
+</div>
+<div class="spacer">
+<a href="http://stackoverflow.com/questions/3253818/c-topics-names-for-multicast" class="question-hyperlink">C# topics names for multicast</a>
+</div>
+<div class="spacer">
+<a href="http://stackoverflow.com/questions/3560528/how-to-send-a-multicast-ping-using-net" class="question-hyperlink">How to send a multicast ping using .NET?</a>
+</div>
+<div class="spacer">
+<a href="http://stackoverflow.com/questions/3726302/multicast-listener-efficiency" class="question-hyperlink">multicast listener efficiency</a>
+</div>
+<div class="spacer">
+<a href="http://stackoverflow.com/questions/3900787/connect-to-remote-udp-multicast-service" class="question-hyperlink">Connect to remote UDP multicast service</a>
+</div>
+<div class="spacer">
+<a href="http://stackoverflow.com/questions/4032728/join-leave-multicast-group-using-libpcap" class="question-hyperlink">join/leave multicast group using libpcap</a>
+</div>
+<div class="spacer">
+<a href="http://stackoverflow.com/questions/4771232/erlang-and-c-packet-serialization" class="question-hyperlink">Erlang and C packet serialization</a>
+</div>
+<div class="spacer">
+<a href="http://stackoverflow.com/questions/5072028/multicast-in-java" class="question-hyperlink">Multicast in java</a>
+</div>
+<div class="spacer">
+<a href="http://stackoverflow.com/questions/5111209/problem-in-listening-to-multicast-in-c-with-multiple-nics" class="question-hyperlink">Problem in listening to multicast in C++ with multiple NICs</a>
+</div>
+<div class="spacer">
+<a href="http://stackoverflow.com/questions/5132654/problem-in-listening-to-multicast-in-c-with-multiple-nics" class="question-hyperlink">Problem in listening to multicast in C++ with multiple NICs</a>
+</div>
+<div class="spacer">
+<a href="http://stackoverflow.com/questions/5174057/problem-in-listening-to-multicast-in-multihomed-linux-server" class="question-hyperlink">Problem in listening to multicast in multihomed Linux server</a>
+</div>
+<div class="spacer">
+<a href="http://stackoverflow.com/questions/5324627/problem-with-wifi-and-multicast" class="question-hyperlink">Problem with WIFI and multicast</a>
+</div>
+<div class="spacer">
+<a href="http://stackoverflow.com/questions/5483779/receiving-multicast-on-a-server-with-multiple-interfaces-linux" class="question-hyperlink">receiving multicast on a server with multiple interfaces (linux)</a>
+</div>
+<div class="spacer">
+<a href="http://stackoverflow.com/questions/5600530/selecting-a-multicast-ip-address" class="question-hyperlink">Selecting a Multicast IP Address</a>
+</div>
+<div class="spacer">
+<a href="http://stackoverflow.com/questions/5765369/multicast-on-android-doesnt-want-to-work-when-the-screen-is-off" class="question-hyperlink">Multicast on Android doesn't want to work when the screen is off</a>
+</div>
+<div class="spacer">
+<a href="http://stackoverflow.com/questions/5930686/what-is-the-reliability-of-udp-multicast-on-a-lan" class="question-hyperlink">What is the reliability of UDP multicast on a LAN?</a>
+</div>
+
+    </div>
+    </div>
+</div>
+
+<div id="feed-link">
+    <div id="feed-link-text"><a href="http://stackoverflow.com/feeds/question/78826" title="feed of this question and its answers"><span class="feed-icon"></span>question feed</a></div>
+</div>
+<script type="text/javascript" src="./networking - Erlang Multicast - Stack Overflow_files/70b0"></script>
+<noscript>
+    &lt;div&gt;&lt;img src="/posts/78826/ivc/70b0" class="dno" alt=""&gt;&lt;/div&gt;
+</noscript>
+
+        </div>
+    </div>
+    <div id="footer">
+        <div class="footerwrap">
+            <div id="footer-menu">
+                <a href="http://stackoverflow.com/about">about</a> |
+                <a href="http://stackoverflow.com/faq">faq</a> |
+                <span title="11 hours ago" class="new-blog-post">new</span> <a href="http://blog.stackoverflow.com/">blog</a> |
+                    <a href="http://chat.stackoverflow.com/">chat</a> |
+                <a href="http://data.stackexchange.com/">data</a> |
+                <a href="http://blog.stackoverflow.com/category/podcasts/">podcast</a> |
+                <a href="http://stackexchange.com/legal">legal</a> |
+                <a href="http://engine.adzerk.net/redirect/0/2776/2751/0/4de3c60f719c4dfcb1a57531c7050090/0">advertising info</a> |
+                <b><a href="mailto:team@stackoverflow.com">contact us</a></b>
+                  | <b><a href="http://meta.stackoverflow.com/">feedback always welcome</a></b>
+                <div id="footer-sites">
+                    
+                        <span style="color:#FE7A15;font-size:140%">■</span>&nbsp;<a href="http://stackoverflow.com/">stackoverflow.com</a>&nbsp; 
+                        <span style="color:#FE7A15;font-size:140%">■</span>&nbsp;<a href="http://stackapps.com/">api/apps</a>&nbsp; 
+                        <span style="color:#FE7A15;font-size:140%">■</span>&nbsp;<a href="http://careers.stackoverflow.com/">careers</a>&nbsp; 
+                        <span style="color:#E8272C;font-size:140%">■</span>&nbsp;<a href="http://serverfault.com/">serverfault.com</a>&nbsp; 
+                        <span style="color:#00AFEF;font-size:140%">■</span>&nbsp;<a href="http://superuser.com/">superuser.com</a>&nbsp; 
+                        <span style="color:#969696;font-size:140%">■</span>&nbsp;<a href="http://meta.stackoverflow.com/">meta</a>&nbsp; 
+                        <span style="color:#46937D;font-size:140%">■</span>&nbsp;<a href="http://area51.stackexchange.com/">area&nbsp;51</a>&nbsp; 
+                        <span style="color:#C0D0DC;font-size:140%">■</span>&nbsp;<a href="http://webapps.stackexchange.com/">webapps</a>&nbsp; 
+                        <span style="color:#000000;font-size:140%">■</span>&nbsp;<a href="http://gaming.stackexchange.com/">gaming</a>&nbsp; 
+                        <span style="color:#dd4814;font-size:140%">■</span>&nbsp;<a href="http://askubuntu.com/">ubuntu</a>&nbsp; 
+                        <span style="color:#9ce4fe;font-size:140%">■</span>&nbsp;<a href="http://webmasters.stackexchange.com/">webmasters</a>&nbsp; 
+                        <span style="color:#cf4d3f;font-size:140%">■</span>&nbsp;<a href="http://cooking.stackexchange.com/">cooking</a>&nbsp; 
+                        <span style="color:#f4f28d;font-size:140%">■</span>&nbsp;<a href="http://gamedev.stackexchange.com/">game development</a>&nbsp; 
+                        <span style="color:#0f3559;font-size:140%">■</span>&nbsp;<a href="http://math.stackexchange.com/">math</a>&nbsp; 
+                        <span style="color:#f2f2f2;font-size:140%">■</span>&nbsp;<a href="http://photo.stackexchange.com/">photography</a>&nbsp; 
+                        <span style="color:#037187;font-size:140%">■</span>&nbsp;<a href="http://stats.stackexchange.com/">stats</a>&nbsp; 
+                        <span style="color:#f1e7cc;font-size:140%">■</span>&nbsp;<a href="http://tex.stackexchange.com/">tex</a>&nbsp; 
+                        <span style="color:#e1cdae;font-size:140%">■</span>&nbsp;<a href="http://english.stackexchange.com/">english</a>&nbsp; 
+                        <span style="color:#a2d9f6;font-size:140%">■</span>&nbsp;<a href="http://cstheory.stackexchange.com/">theoretical cs</a>&nbsp; 
+                        <span style="color:#1b3e6c;font-size:140%">■</span>&nbsp;<a href="http://programmers.stackexchange.com/">programmers</a>&nbsp; 
+                        <span style="color:#293a5d;font-size:140%">■</span>&nbsp;<a href="http://unix.stackexchange.com/">unix</a>&nbsp;
+                        <span style="color:#bec0cb;font-size:140%">■</span>&nbsp;<a href="http://apple.stackexchange.com/">apple</a>&nbsp;
+                        <span style="color:#939185;font-size:140%">■</span>&nbsp;<a href="http://wordpress.stackexchange.com/">wordpress</a>&nbsp;
+                        <span style="color:#b5cda4;font-size:140%">■</span>&nbsp;<a href="http://physics.stackexchange.com/">physics</a>&nbsp;
+                        <span style="color:#4176ab;font-size:140%">■</span>&nbsp;<a href="http://diy.stackexchange.com/">home&nbsp;improvement</a>&nbsp;
+                        <span style="color:#d1d8d7;font-size:140%">■</span>&nbsp;<a href="http://gis.stackexchange.com/">gis</a>&nbsp;
+                        <span style="color:#e5e2d3;font-size:140%">■</span>&nbsp;<a href="http://electronics.stackexchange.com/">electronics</a>&nbsp;
+                        <span style="color:#a4c639;font-size:140%">■</span>&nbsp;<a href="http://android.stackexchange.com/">android</a>&nbsp;
+                </div>
+            </div>
+            <div id="footer-flair">
+                <a class="peer1" href="http://www.peer1.com/stackoverflow"></a>  
+	            <a href="http://creativecommons.org/licenses/by-sa/3.0/" class="cc-wiki-link"></a>
+                <div id="svnrev">rev 2011.6.1.2</div>
+            </div>
+            <div id="copyright">
+                site design / logo © 2011 stack exchange inc; 
+                user contributions licensed under <a href="http://creativecommons.org/licenses/by-sa/3.0/" rel="license">cc-wiki</a> with <a href="http://blog.stackoverflow.com/2009/06/attribution-required/" rel="license">attribution required</a>
+            </div>
+        </div>
+    </div>
+    
+    <noscript>
+        &lt;div id="noscript-warning"&gt;Stack Overflow works best with JavaScript enabled&lt;img src="http://pixel.quantserve.com/pixel/p-c1rF4kxgLUzNc.gif" alt="" class="dno"&gt;&lt;/div&gt;
+    </noscript>
+    
+    <script type="text/javascript">var _gaq=_gaq||[];_gaq.push(['_setAccount','UA-5620270-1']);_gaq.push(['_trackPageview']);(function(){var ga=document.createElement('script');ga.type='text/javascript';ga.async=true;ga.src='http://www.google-analytics.com/ga.js';var s=document.getElementsByTagName('script')[0];s.parentNode.insertBefore(ga,s);})();_qoptions={qacct:"p-c1rF4kxgLUzNc"};</script>
+    <script type="text/javascript" src="./networking - Erlang Multicast - Stack Overflow_files/quant.js"></script>
+    
+
+</body></html>

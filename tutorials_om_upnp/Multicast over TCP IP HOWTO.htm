@@ -1,0 +1,1510 @@
+
+<!-- saved from url=(0090)http://www.ibiblio.org/pub/linux/docs/HOWTO/other-formats/html_single/Multicast-HOWTO.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+
+<title>
+Multicast over TCP/IP HOWTO
+</title>
+</head>
+<body bgcolor="white">
+
+<hr>
+<h1>Multicast over TCP/IP HOWTO</h1>
+
+<h2>Juan-Mariano de Goyeneche <code>&lt;jmseyas@dit.upm.es&gt;</code></h2>v1.0, 20 March 1998
+<p></p><hr>
+<em>This HOWTO tries to cover most aspects related to multicast over TCP/IP networks. So, a lot of information within it is not Linux-specific (just in case you don't use GNU/Linux... yet). Multicast is currently an active area of research and, at the time of writing, many of the "standards" are merely drafts. Keep it in mind while reading the lines that follow.</em>
+<hr>
+<p>
+</p><h2><a name="toc1">1.</a> <a href="http://www.ibiblio.org/pub/linux/docs/HOWTO/other-formats/html_single/Multicast-HOWTO.html#s1">Introduction. </a></h2>
+
+<ul>
+<li><a href="http://www.ibiblio.org/pub/linux/docs/HOWTO/other-formats/html_single/Multicast-HOWTO.html#ss1.1">1.1 What is Multicast.</a>
+</li><li><a href="http://www.ibiblio.org/pub/linux/docs/HOWTO/other-formats/html_single/Multicast-HOWTO.html#ss1.2">1.2 The problem with Unicast.</a>
+</li></ul>
+<p>
+</p><h2><a name="toc2">2.</a> <a href="http://www.ibiblio.org/pub/linux/docs/HOWTO/other-formats/html_single/Multicast-HOWTO.html#s2">Multicast Explained.</a></h2>
+
+<ul>
+<li><a href="http://www.ibiblio.org/pub/linux/docs/HOWTO/other-formats/html_single/Multicast-HOWTO.html#ss2.1">2.1 Multicast addresses.</a>
+</li><li><a href="http://www.ibiblio.org/pub/linux/docs/HOWTO/other-formats/html_single/Multicast-HOWTO.html#ss2.2">2.2 Levels of conformance.</a>
+</li><li><a href="http://www.ibiblio.org/pub/linux/docs/HOWTO/other-formats/html_single/Multicast-HOWTO.html#ss2.3">2.3 Sending Multicast Datagrams.</a>
+</li><li><a href="http://www.ibiblio.org/pub/linux/docs/HOWTO/other-formats/html_single/Multicast-HOWTO.html#ss2.4">2.4 Receiving Multicast Datagrams.</a>
+</li></ul>
+<p>
+</p><h2><a name="toc3">3.</a> <a href="http://www.ibiblio.org/pub/linux/docs/HOWTO/other-formats/html_single/Multicast-HOWTO.html#s3">Kernel requirements and configuration.</a></h2>
+
+<p>
+</p><h2><a name="toc4">4.</a> <a href="http://www.ibiblio.org/pub/linux/docs/HOWTO/other-formats/html_single/Multicast-HOWTO.html#s4">The MBone.</a></h2>
+
+<p>
+</p><h2><a name="toc5">5.</a> <a href="http://www.ibiblio.org/pub/linux/docs/HOWTO/other-formats/html_single/Multicast-HOWTO.html#s5">Multicast applications.</a></h2>
+
+<p>
+</p><h2><a name="toc6">6.</a> <a href="http://www.ibiblio.org/pub/linux/docs/HOWTO/other-formats/html_single/Multicast-HOWTO.html#s6">Multicast programming.</a></h2>
+
+<ul>
+<li><a href="http://www.ibiblio.org/pub/linux/docs/HOWTO/other-formats/html_single/Multicast-HOWTO.html#ss6.1">6.1 IP_MULTICAST_LOOP.</a>
+</li><li><a href="http://www.ibiblio.org/pub/linux/docs/HOWTO/other-formats/html_single/Multicast-HOWTO.html#ss6.2">6.2 IP_MULTICAST_TTL.</a>
+</li><li><a href="http://www.ibiblio.org/pub/linux/docs/HOWTO/other-formats/html_single/Multicast-HOWTO.html#ss6.3">6.3 IP_MULTICAST_IF.</a>
+</li><li><a href="http://www.ibiblio.org/pub/linux/docs/HOWTO/other-formats/html_single/Multicast-HOWTO.html#ss6.4">6.4 IP_ADD_MEMBERSHIP.</a>
+</li><li><a href="http://www.ibiblio.org/pub/linux/docs/HOWTO/other-formats/html_single/Multicast-HOWTO.html#ss6.5">6.5 IP_DROP_MEMBERSHIP.</a>
+</li></ul>
+<p>
+</p><h2><a name="toc7">7.</a> <a href="http://www.ibiblio.org/pub/linux/docs/HOWTO/other-formats/html_single/Multicast-HOWTO.html#s7">The internals.</a></h2>
+
+<ul>
+<li><a href="http://www.ibiblio.org/pub/linux/docs/HOWTO/other-formats/html_single/Multicast-HOWTO.html#ss7.1">7.1 IGMP.</a>
+</li><li><a href="http://www.ibiblio.org/pub/linux/docs/HOWTO/other-formats/html_single/Multicast-HOWTO.html#ss7.2">7.2 Kernel corner.</a>
+</li></ul>
+<p>
+</p><h2><a name="toc8">8.</a> <a href="http://www.ibiblio.org/pub/linux/docs/HOWTO/other-formats/html_single/Multicast-HOWTO.html#s8">Routing Policies and Forwarding Techniques.</a></h2>
+
+<p>
+</p><h2><a name="toc9">9.</a> <a href="http://www.ibiblio.org/pub/linux/docs/HOWTO/other-formats/html_single/Multicast-HOWTO.html#s9">Multicast Transport Protocols.</a></h2>
+
+<p>
+</p><h2><a name="toc10">10.</a> <a href="http://www.ibiblio.org/pub/linux/docs/HOWTO/other-formats/html_single/Multicast-HOWTO.html#s10">References.</a></h2>
+
+<ul>
+<li><a href="http://www.ibiblio.org/pub/linux/docs/HOWTO/other-formats/html_single/Multicast-HOWTO.html#ss10.1">10.1 RFCs.</a>
+</li><li><a href="http://www.ibiblio.org/pub/linux/docs/HOWTO/other-formats/html_single/Multicast-HOWTO.html#ss10.2">10.2 Internet Drafts.</a>
+</li><li><a href="http://www.ibiblio.org/pub/linux/docs/HOWTO/other-formats/html_single/Multicast-HOWTO.html#ss10.3">10.3 Web pages.</a>
+</li><li><a href="http://www.ibiblio.org/pub/linux/docs/HOWTO/other-formats/html_single/Multicast-HOWTO.html#ss10.4">10.4 Books.</a>
+</li></ul>
+<p>
+</p><h2><a name="toc11">11.</a> <a href="http://www.ibiblio.org/pub/linux/docs/HOWTO/other-formats/html_single/Multicast-HOWTO.html#s11">Copyright and Disclaimer.</a></h2>
+
+<p>
+</p><h2><a name="toc12">12.</a> <a href="http://www.ibiblio.org/pub/linux/docs/HOWTO/other-formats/html_single/Multicast-HOWTO.html#s12">Acknowledgements.</a></h2>
+
+<hr>
+<h2><a name="s1">1.</a> <a href="http://www.ibiblio.org/pub/linux/docs/HOWTO/other-formats/html_single/Multicast-HOWTO.html#toc1">Introduction. </a></h2>
+
+<p>I'll try to give here the most wide range, up to date and accurate 
+information related to multicasting over TCP/IP networks that I can. Any 
+feedback is very welcome. If you find any
+mistakes in this document, have any comments about its contents or an update or
+addition, please send them to me at the address listed at the top of this howto.
+</p><p>
+</p><p>
+</p><h2><a name="ss1.1">1.1 What is Multicast.</a>
+</h2>
+
+<p>Multicast is... a need. Well, at least in some scenarios. If you
+have information (a <em>lot</em> of information, usually) that should be
+transmitted to various (but usually not <em>all</em>) hosts over an internet, 
+then Multicast is the answer. One common situation in which 
+it is used is when distributing real time audio and video to the 
+set of hosts which have joined a distributed conference.
+</p><p>Multicast is much like radio or TV in the sense that only those who
+have tuned their receivers (by selecting a particular frequency
+they are interested on) receive the information. That is:
+you hear the channel you are interested in, but not the others.
+</p><p>
+</p><p>
+</p><h2><a name="ss1.2">1.2 The problem with Unicast.</a>
+</h2>
+
+<p>Unicast is anything that is not broadcast nor multicast. All right, 
+the definition
+is not very bright... When you send a packet and there is only one
+sender process -yours- and one recipient process (the <em>one</em> you are
+sending the packet to), then this is unicast. TCP is, by its own nature,
+unicast oriented. UDP supports a lot more paradigms, but if you are
+sending UDP packets and there is only one precess supposed to receive
+them, this is unicast too.
+</p><p>For years unicast transmissions proved to be enough for the Internet.
+It was not until 1993 when the first implementation of multicast saw
+the light in the 4.4 BSD release. It seems nobody needed it until
+then. Which were those new problems that multicast addressed? 
+</p><p>Needless to say that the Internet has changed a lot since the "early
+days". Particularly, the appearance of the Web strongly transformed
+the situation: people didn't just want connections to remote hosts,
+mail and FTP. First they wanted to see the pictures people placed in
+their home pages, but later they also wanted to <em>see</em> and <em>hear</em> 
+that people.
+</p><p>With today's technology it is possible to afford the "cost" of making
+a unicast connection with everyone who wants to see your web page.
+However, if you are to send audio and video, which needs a <em>huge</em>
+amount of bandwidth compared with web applications, you have -you <em>had</em>,
+until multicast came into scene- two options: to establish a separate
+unicast connection with <em>each</em> of the recipients, or to use broadcast.
+The first solution is not affordable: if we said that a <em>single</em>
+connection sending audio/video consumes a huge bandwidth, imagine 
+having to establish hundreds or, may be, thousands of those connections.
+Both the sending computer and your network would collapse.
+</p><p>Broadcast seems to be <em>a</em> solution, but it's not certainly <em>the</em> solution. 
+If you want all the hosts in your LAN to attend the conference, you
+may use broadcast. Packets will be sent only once and every host will 
+receive them as they are sent to the broadcast address. The problem
+is that perhaps only a <em>few</em> of the hosts and not <em>all</em> are interested 
+in those packets. Furthermore: perhaps some hosts are really interested 
+in your conference, but they are outside of your LAN, a few routers away. 
+And you know that broadcast works fine inside a LAN, but problems arise 
+when you want broadcast packets to be routed across different LANs.
+</p><p>The best solution seems to be one in which you send packets to a certain
+special address (a certain frequency in radio/TV transmissions). Then,
+all hosts which have decided to join the conference will be aware of
+packets with that destination address, read them when they traverse
+the network, and pass them to the IP layer to be demultiplexed. This is
+similar to broadcasting in that you send only one broadcast packet and
+all the hosts in the network recognize and read it; it differs, however, 
+in that not all multicast packets are read and processed, but only those
+that were previously registered in the kernel as being "of interest".
+</p><p>Those special packets are routed at kernel level like any packet because
+they <em>are</em> IP packets. The only difference might reside in the routing 
+algorithm which tells the kernel where to route or not to route them. 
+</p><p>
+</p><p>
+</p><p>
+</p><hr>
+<h2><a name="s2">2.</a> <a href="http://www.ibiblio.org/pub/linux/docs/HOWTO/other-formats/html_single/Multicast-HOWTO.html#toc2">Multicast Explained.</a></h2>
+
+<h2><a name="ss2.1">2.1 Multicast addresses.</a>
+</h2>
+
+<p>As you probably know, the range of IP addresses is divided into "classes"
+based on the high order bits of a 32 bits IP address:
+</p><p>
+</p><hr>
+<pre>   Bit --&gt;  0                           31            Address Range:
+           +-+----------------------------+
+           |0|       Class A Address      |       0.0.0.0 - 127.255.255.255
+           +-+----------------------------+
+           +-+-+--------------------------+
+           |1 0|     Class B Address      |     128.0.0.0 - 191.255.255.255
+           +-+-+--------------------------+
+           +-+-+-+------------------------+
+           |1 1 0|   Class C Address      |     192.0.0.0 - 223.255.255.255
+           +-+-+-+------------------------+
+           +-+-+-+-+----------------------+
+           |1 1 1 0|  MULTICAST Address   |     224.0.0.0 - 239.255.255.255
+           +-+-+-+-+----------------------+
+           +-+-+-+-+-+--------------------+
+           |1 1 1 1 0|     Reserved       |     240.0.0.0 - 247.255.255.255
+           +-+-+-+-+-+--------------------+
+</pre>
+<hr>
+<p>The one which concerns us is the "Class D Address". Every IP datagram whose
+destination address starts with "1110" is an IP Multicast datagram.
+</p><p>The remaining 28 bits identify the multicast "<em>group</em>" the datagram is sent
+to. Following with the previous analogy, you have to tune your radio
+to hear a program that is transmitted at some specific frequency, in the
+same way you have to "tune" your kernel to receive packets sent to an
+specific multicast group. When you do that, it's said that the host has
+<em>joined</em> that group in the interface you specified. More on this later.
+</p><p>There are some special multicast groups, say "well known multicast
+groups", you should not use in your particular applications due the
+special purpose they are destined to:
+</p><p>
+</p><ul>
+<li> 224.0.0.1 is the <em>all-hosts</em> group. If you ping that group, all
+multicast capable hosts on the network should answer, as every
+multicast capable host <em>must</em> join that group at start-up on all
+it's multicast capable interfaces.
+</li>
+<li> 224.0.0.2 is the <em>all-routers</em> group. All multicast routers must
+join that group on all it's multicast capable interfaces.
+</li>
+<li> 224.0.0.4 is the <em>all DVMRP routers</em>, 224.0.0.5 the <em>all OSPF routers</em>,
+224.0.013 the <em>all PIM routers</em>, etc.</li>
+</ul>
+<p>All this special multicast groups are regularly published in the
+"Assigned Numbers" RFC.
+</p><p>In any case, range 224.0.0.0 through 224.0.0.255 is reserved for local
+purposes (as administrative and maintenance tasks) and datagrams
+destined to them are never forwarded by multicast routers. Similarly,
+the range 239.0.0.0 to 239.255.255.255 has been reserved for
+"administrative scoping" (see section 2.3.1 for information on 
+administrative scoping).
+</p><p>
+</p><p>
+</p><h2><a name="ss2.2">2.2 Levels of conformance.</a>
+</h2>
+
+<p>Hosts can be in three different levels of conformance with the Multicast
+specification, according to the requirements they meet.
+</p><p><b>Level 0</b> is the "no support for IP Multicasting" level. Lots of hosts
+and routers in the Internet are in this state, as multicast support
+is not mandatory in IPv4 (it is, however, in IPv6). Not too much 
+explanation is needed here: hosts in this level can neither send nor receive
+multicast packets. They must ignore the ones sent by other multicast
+capable hosts.
+</p><p><b>Level 1</b> is the "support for sending but not receiving multicast IP 
+datagrams" level. Thus, note that it is not necessary to join a multicast
+group to be able to send datagrams to it. Very few additions are needed
+in the IP module to make a "Level 0" host "Level 1-compliant", as shown in
+section 2.3.
+</p><p><b>Level 2</b> is the "full support for IP multicasting" level. Level 2 hosts must be
+able to both send and receive multicast traffic. They must know the way
+to join and leave multicast groups and to propagate this information to
+multicast routers. Thus, they must include an Internet Group Management
+Protocol (IGMP) implementation in their TCP/IP stack.
+</p><p>
+</p><p>
+</p><h2><a name="ss2.3">2.3 Sending Multicast Datagrams.</a>
+</h2>
+
+<p>By now, it should be obvious that multicast traffic is handled at the
+transport layer with UDP, as TCP provides point-to-point connections,
+not feasibles for multicast traffic. (Heavy research is taking place to
+define and implement new multicast-oriented transport protocols. See
+section 
+<a href="http://www.ibiblio.org/pub/linux/docs/HOWTO/other-formats/html_single/Multicast-HOWTO.html#sect-trans-prots">Multicast Transport Protocols</a>
+for details).
+</p><p>In principle, an application just needs to open a UDP socket and fill
+with a class D multicast address the destination address where it wants 
+to send data to.
+However, there are some operations that a sending process must be able
+to control. 
+</p><p>
+</p><p>
+</p><h3>TTL.</h3>
+
+<p>The TTL (Time To Live) field in the IP header has a double significance
+in multicast. As always, it controls the live time of the datagram to
+avoid it being looped forever due to routing errors. Routers decrement
+the TTL of every datagram as it traverses from one network to another 
+and when its value reaches 0 the packet is dropped.
+</p><p>The TTL in IPv4 multicasting has also the meaning of "threshold". Its
+use becomes evident with an example: suppose you set a long, bandwidth
+consuming, video conference between all the hosts belonging to your 
+department. You want that huge amount of traffic to remain in your 
+LAN. Perhaps your department is big enough to have various LANs. In
+that case you want those hosts belonging to each of <em>your</em> LANs to
+attend the conference, but in any case you want to collapse the entire
+Internet with your multicast traffic. There is a need to limit how "long"
+multicast traffic will expand across routers. That's what the TTL is used
+for. Routers have a TTL threshold assigned to each of its interfaces,
+and only datagrams with a TTL greater than the interface's threshold
+are forwarded. Note that when a datagram traverses a router with a certain
+threshold assigned, the datagram's TTL is <em>not</em> decremented by the value
+of the threshold. Only a comparison is made. (As before, the TTL is 
+decremented by 1 each time a datagram passes across a router).
+</p><p>A list of TTL thresholds and their associated scope follows:
+</p><p>
+</p><hr>
+<pre>TTL     Scope
+----------------------------------------------------------------------
+   0    Restricted to the same host. Won't be output by any interface.
+   1    Restricted to the same subnet. Won't be forwarded by a router.
+ &lt;32         Restricted to the same site, organization or department.
+ &lt;64 Restricted to the same region.
+&lt;128 Restricted to the same continent.
+&lt;255 Unrestricted in scope. Global.
+</pre>
+<hr>
+<p>Nobody knows what "site" or "region" mean exactly. It is up to the 
+administrators to decide what this limits apply to.
+</p><p>The TTL-trick is not always flexible enough for all needs, specially
+when dealing with overlapping regions or trying to establish geographic,
+topologic and bandwidth limits simultaneously. To solve this problems, 
+administratively scoped IPv4 multicast regions were established in 1994.
+(see D. Meyer's "<em>Administratively Scoped IP Multicast</em>" Internet draft). 
+It does scoping based on multicast addresses rather than on
+TTLs. The range 239.0.0.0 to 239.255.255.255 is reserved for this 
+administrative scoping.
+</p><p>
+</p><p>
+</p><h3>Loopback.</h3>
+
+<p>When the sending host is Level 2 conformant and is also a member of
+the group datagrams are being sent to, a copy is looped back by default.  
+This does not mean that the interface card reads its own transmission,
+recognizes it as belonging to a group the interface belongs to, and reads it 
+from the network. On the contrary, is the IP layer which, by default, recognizes
+the to-be-sent datagram and copies and queues it on the IP input queue
+before sending it.
+</p><p>This feature is desirable in some cases, but not in others. So the sending
+process can turn it on and off at wish.
+</p><p>
+</p><p>
+</p><h3>Interface selection.</h3>
+
+<p>Hosts attached to more than one network should provide a way for 
+applications to decide which network interface will be used
+to output the transmissions. If not specified, the kernel chooses a
+default one based on system administrator's configuration.
+</p><p>
+</p><p>
+</p><p>
+</p><h2><a name="ss2.4">2.4 Receiving Multicast Datagrams.</a>
+</h2>
+
+<h3>Joining a Multicast Group.</h3>
+
+<p>Broadcast is (in comparison) easier to implement than multicast. It
+doesn't require processes to give the kernel some rules regarding
+what to do with broadcast packets. The kernel just knows what to do:
+read and deliver <em>all</em> of them to the proper applications.
+</p><p>With multicast, however, it is necessary to advise the kernel which
+multicast groups we are interested in. That is, we have to ask the
+kernel to "join" those multicast groups. Depending on the underlying 
+hardware, multicast datagrams are filtered by the hardware or by the 
+IP layer (and, in some cases, by both). Only those with a destination 
+group previously registered via a join are accepted.
+</p><p>Essentially, when we join a group we are telling the kernel: "OK. I 
+know that, by default, you ignore multicast datagrams, but remember 
+that I am interested in <em>this</em> multicast group. So, do read and deliver 
+(to any process interested in them, not only to me) any datagram that 
+you see in this network interface with this multicast group in its 
+destination field".
+</p><p>Some considerations: first, note that you don't just join a group.
+You join a group <em>on</em> a particular network interface. Of course, it is 
+possible to join the same group on more than one interface. If you don't
+specify a concrete interface, then the kernel will choose it based on its
+routing tables when datagrams are to be sent. It is also possible that
+more than one process joins the same multicast group on the same interface.
+They will all receive the datagrams sent to that group via that interface.
+</p><p>As said before, any multicast-capable hosts join the <em>all-hosts</em> group
+at start-up , so "pinging" 224.0.0.1 returns all hosts in the network that 
+have multicast enabled.
+</p><p>Finally, consider that for a process to receive multicast datagrams
+it has to ask the kernel to join the group <em>and</em> bind the port those 
+datagrams were being sent to. The UDP
+layer uses both the destination address and port to demultiplex the
+packets and decide which socket(s) deliver them to.
+</p><p>
+</p><p>
+</p><h3>Leaving a Multicast Group.</h3>
+
+<p>When a process is no longer interested in a multicast group, it informs
+the kernel that <em>it</em> wants to leave that group. It is important to understand
+that this doesn't mean that the kernel will no longer accept multicast
+datagrams destined to that multicast group. It will still do so if there are
+more precesses who issued a "multicast join" petition for that group and
+are still interested. In that case <em>the host</em> remains member of the group,
+until all the processes decide to leave the group.
+</p><p>Even more: if you leave the group, but remain bound to the port you were
+receiving the multicast traffic on, and there are more processes that
+joined the group, you will still receive the multicast transmissions.
+</p><p>The idea is that joining a multicast group only tells the IP and data
+link layer (which in some cases explicitly tells the hardware) to accept 
+multicast datagrams destined to that group. It is not a per-process
+membership, but a per-host membership.
+</p><p>
+</p><p>
+</p><h3>Mapping of IP Multicast Addresses to Ethernet/FDDI addresses.</h3>
+
+<p>Both Ethernet and FDDI frames have a 48 bit destination address field.
+In order to avoid a kind of multicast ARP to map multicast IP addresses 
+to ethernet/FDDI ones, the IANA reserved a range of addresses for multicast:
+every ethernet/FDDI frame with its destination in the range 01-00-5e-00-00-00
+to 01-00-5e-ff-ff-ff (hex) contains data for a multicast group. The prefix
+01-00-5e identifies the frame as multicast, the next bit is always 0 and
+so only 23 bits are left to the multicast address. As IP multicast groups
+are 28 bits long, the mapping can not be one-to-one. Only the 23 least
+significant bits of the IP multicast group are placed in the frame.
+The remaining 5 high-order bits are ignored, resulting in 32 different
+multicast groups being mapped to the same ethernet/FDDI address. This means
+that the ethernet layer acts as an imperfect filter, and the IP layer will
+have to decide whether to accept the datagrams the data-link layer passed
+to it. The IP layer acts as a definitive perfect filter.
+</p><p>Full details on IP Multicasting over FDDI are given in RFC 1390: "<em>Transmission 
+of IP and ARP over FDDI Networks</em>". For more information on mapping IP Multicast 
+addresses to ethernet ones, you may consult <code>draft-ietf-mboned-intro-multicast-03.txt</code>: 
+"<em>Introduction to IP Multicast Routing</em>".
+</p><p>If you are interested in IP Multicasting over Token-Ring Local Area Networks,
+see RFC 1469 for details.
+</p><p>
+</p><p>
+</p><p>
+</p><hr>
+<h2><a name="s3">3.</a> <a href="http://www.ibiblio.org/pub/linux/docs/HOWTO/other-formats/html_single/Multicast-HOWTO.html#toc3">Kernel requirements and configuration.</a></h2>
+
+<p>Linux is, of course (you doubted it?), full Level-2 Multicast-Compliant.
+It meets all requirements to send, receive and act as a router (mrouter)
+for multicast datagrams.
+</p><p>If you want just to send and receive, you must say yes to "<em>IP: multicasting</em>"
+when configuring your kernel. If you also want your Linux box to act as a
+multicast router (mrouter) you also need to enable multicast routing in the 
+kernel by selecting "<em>IP: forwarding/gatewaying</em>", "<em>IP: multicast routing</em>" 
+and "<em>IP: tunneling</em>", the latter because new versions of <code>mrouted</code> 
+relay on IP tunneling to send multicast datagrams encapsulated into unicast 
+ones. This is necessary when establishing tunnels 
+between multicast hosts separated by unicast-only networks and routers.
+(The <code>mrouted</code> is a daemon that implements the multicast routing algorithm
+-the routing policy- and instructs the kernel on how to route multicast 
+datagrams).
+</p><p>Some kernel versions label multicast routing as "<em>EXPERIMENTAL</em>", so you 
+should enable "<em>Prompt for development and/or incomplete code/drivers</em>" 
+in the "<em>Code maturity level options</em>" section.
+</p><p>If, when running the <code>mrouted</code>, traffic generated in the same network your
+Linux box is connected to is correctly forwarded to the other network, but
+you can't see the other's network traffic on your local network, check
+whether you are receiving ICMP protocol error messages. Almost sure
+you forgot to turn on IP tunneling in your Linux router. It's a kind of
+stupid error when you know it but, believe me, its quite time-consuming
+when you don't, and there is no apparent reason that explains what is going
+wrong. A sniffer proves to be quite useful in these situations!
+</p><p>(You can see more on multicast routing on section 
+<a href="http://www.ibiblio.org/pub/linux/docs/HOWTO/other-formats/html_single/Multicast-HOWTO.html#sect-routing">Routing Policies and Forwarding Techniques</a>; <code>mrouted</code> and 
+tunnels are also explained in sections 
+<a href="http://www.ibiblio.org/pub/linux/docs/HOWTO/other-formats/html_single/Multicast-HOWTO.html#sect-mbone">The MBone</a> and 
+<a href="http://www.ibiblio.org/pub/linux/docs/HOWTO/other-formats/html_single/Multicast-HOWTO.html#sect-applications">Multicast applications</a>).
+</p><p>Once you have compiled and installed your new kernel, you should provide
+a default route for multicast traffic. The goal is to add a route to the
+network 224.0.0.0. 
+</p><p>The problem most people seem to face in this stage of the configuration
+is with the value of the mask to supply. If you have read Terry Dawson's
+excellent NET-3-HOWTO, it should not be difficult to guess the correct
+value, though. As explained there, the netmask is a 32 bit number
+filled with all-1s in the network part of your IP address, and with
+all-0s in the host part. Recall from section 2.1 that a class D multicast
+address has no netwok/host sections. Instead it has a 28-bit group 
+identifier and a 4-bit class D identifier. Well, this 4 bits are the
+network part and the remaining 28 the host part. So the netmask needed
+is 11110000000000000000000000000000 or, easier to read: 240.0.0.0.
+Then, the full command should be:
+</p><blockquote><code>
+<pre>route add 224.0.0.0 netmask 240.0.0.0 dev eth0
+</pre>
+</code></blockquote>
+<p>Depending on how old your <code>route</code> program is, you might need to add
+the <code>-net</code> flag after the <code>add</code>.
+</p><p>Here we supposed that <code>eth0</code> was multicast-capable and that, when not
+otherwise specified, we wanted multicast traffic to be output there.
+If this is not your case, change the <code>dev</code> parameter as appropriate.
+</p><p>The <code>/proc</code> filesystem proves here to be useful once again: you 
+can check <code>/proc/net/igmp</code> to see the groups your host is 
+currently subscribed to.
+</p><p>
+</p><p>
+</p><p>
+</p><hr>
+<h2><a name="sect-mbone"></a> <a name="s4">4.</a> <a href="http://www.ibiblio.org/pub/linux/docs/HOWTO/other-formats/html_single/Multicast-HOWTO.html#toc4">The MBone.</a></h2>
+
+<p>Using a new technology usually carries some advantages and disadvantages.
+The advantages of multicast are -I think- clear. The main disadvantage is 
+that hundreds of hosts and, specially, routers don't support it yet. As a
+consequence, people who started working on multicast, bought new equipment,
+modified their operating systems, and built <em>multicast islands</em> in 
+their local places. Then they discovered that it was difficult to
+communicate with people doing similar things because if only one of the
+routers between them didn't support multicast there was nothing to do...
+</p><p>The solution was clear: they decided to build a <em>virtual multicast network</em>
+in the top of the Internet. That is: sites with multicast routers between
+them could communicate directly. But sites joined across unicast routers would send
+their island's multicast traffic encapsulated in unicast packets to other
+multicast islands. Routers in the middle would not have problems, as they would
+be dealing with unicast traffic. Finally, in the receiving site, traffic would be
+de-encapsulated, and sent to the island in the original multicast way. 
+Two ends converting from multicast to unicast, and then again to multicast
+define what is called a multicast <em>tunnel</em>.
+</p><p>The <em>MBone</em> or <em>Multicast Backbone</em> is that virtual multicast network
+based on multicast islands connected by multicast tunnels.
+</p><p>Several activities take place in the MBone daily, but it deserves to be
+remarked the profusion of tele-conferences with real time audio and video
+taking place across the whole Internet. As an example, it was recently 
+transmitted (live) the talk Linus Torvalds gave to the Silicon Valley Linux 
+Users Group.
+</p><p>For more information on the MBone, see:
+</p><p>
+<a href="http://www.mediadesign.co.at/newmedia/more/mbone-faq.html">http://www.mediadesign.co.at/newmedia/more/mbone-faq.html</a></p><p>
+</p><p>
+</p><hr>
+<h2><a name="sect-applications"></a> <a name="s5">5.</a> <a href="http://www.ibiblio.org/pub/linux/docs/HOWTO/other-formats/html_single/Multicast-HOWTO.html#toc5">Multicast applications.</a></h2>
+
+<p>Most people dealing with multicast, sooner or later decide to connect
+to the MBone, and then they usually need an <code>mrouted</code>. You'll also need 
+it if you don't have a multicast-capable router and you want multicast
+traffic generated in one of your subnets to be "heard" on another.
+<code>mrouted</code> does circunvect the problem of sending multicast traffic
+across unicast routers -it encapsulates multicast datagrams into unicast
+ones (IP into IP)- but this is not the only feature it provides. Most
+important, it instructs the kernel on how to route (or not-to-route) multicast
+datagrams based on their source and destination. So, even having a
+multicast capable router, <code>mrouted</code> can be used to tell it <em>what</em>
+to do with the datagrams (note I said <em>what</em>, and not <em>how</em>;
+<code>mrouted</code> says "forward this to the network connected to that interface",
+but actual forwarding is performed by the kernel). This distinction between
+actual-forwarding and the algorithm that decides who and how to forward is
+very useful as it allows to write forwarding code only once and place it
+into the kernel. Forwarding algorithms and policies are then implemented
+in user space daemons, so it is very easy to change from one policy to
+another without the need of kernel re-compilation.
+</p><p>You can get a version of <em>mrouted</em> ported to Linux from:
+</p><p>
+<a href="ftp://www.video.ja.net/mice/mrouted/Linux/">ftp://www.video.ja.net/mice/mrouted/Linux/</a>. This site is
+mirrored all across the world. Be sure to read the 
+<a href="ftp://www.video.ja.net/mice/README.mirrors">ftp://www.video.ja.net/mice/README.mirrors</a> file to choose the one 
+nearest you.
+</p><p>Next, we'll focus specially on multicast applications written to connect to
+the MBone, which have been ported to Linux. The list is picked up from 
+Michael Esler's "Linux Multicast Information" page 
+<a href="http://www.cs.virginia.edu/~mke2e/multicast/">http://www.cs.virginia.edu/~mke2e/multicast/</a>. I recommend you that page
+for lots of information and resources on multicast and Linux.
+</p><p>
+</p><p><b>Audio Conferencing</b>
+</p><ul>
+<li>NeVoT - Network Voice Terminal
+<a href="http://www.fokus.gmd.de/step/nevot">http://www.fokus.gmd.de/step/nevot</a>
+</li>
+<li>RAT - UCL Robust-Audio Tool
+<a href="http://www-mice.cs.ucl.ac.uk/mice/rat">http://www-mice.cs.ucl.ac.uk/mice/rat</a>
+</li>
+<li>vat - LBL visual audio tool
+<a href="http://www-nrg.ee.lbl.gov/vat/">http://www-nrg.ee.lbl.gov/vat/</a></li>
+</ul>
+<p><b>Video Conferencing</b>
+</p><ul>
+<li>ivs - Inria video conferencing system
+<a href="http://www.inria.fr/rodeo/ivs.html">http://www.inria.fr/rodeo/ivs.html</a>
+</li>
+<li>nv - Network video tool
+<a href="ftp://ftp.parc.xerox.com/pub/net-research/">ftp://ftp.parc.xerox.com/pub/net-research/</a>
+</li>
+<li>nv w/ Meteor - Release of nv w/ support for the Matrox Meteor (UVa)
+<a href="ftp://ftp.cs.virginia.edu/pub/gwtts/Linux/nv-meteor.tar.gz">ftp://ftp.cs.virginia.edu/pub/gwtts/Linux/nv-meteor.tar.gz</a>
+</li>
+<li>vic - LBL video conferencing tool
+<a href="http://www-nrg.ee.lbl.gov/vic/">http://www-nrg.ee.lbl.gov/vic/</a>
+</li>
+<li>vic w/ Meteor - Release of vic w/ support for the Matrox Meteor (UVa)
+<a href="ftp://ftp.cs.virginia.edu/pub/gwtts/Linux/vic2.7a38-meteor.tar.gz">ftp://ftp.cs.virginia.edu/pub/gwtts/Linux/vic2.7a38-meteor.tar.gz</a></li>
+</ul>
+<p><b>Other Utilities</b>
+</p><ul>
+<li>mmphone Multimedia phone service
+<a href="http://www.eit.com/software/mmphone/phoneform.html">http://www.eit.com/software/mmphone/phoneform.html</a>
+</li>
+<li>wb - LBL shared white board
+<a href="http://www-nrg.ee.lbl.gov/wb/">http://www-nrg.ee.lbl.gov/wb/</a>
+</li>
+<li>webcast - Reliable multicast application for linking Mosaic browsers
+<a href="http://www.ncsa.uiuc.edu/SDG/Software/XMosaic/CCI/webcast.html">http://www.ncsa.uiuc.edu/SDG/Software/XMosaic/CCI/webcast.html</a></li>
+</ul>
+<p><b>Session Tools</b>
+</p><p>I placed session tools later because I think they deserve some explanation.
+When a conference takes places, several multicast groups and ports are
+assigned to each service you want for your conference (audio, video, shared
+white-boards, etc...) Announces of the conferences that will take place,
+along with information on multicast groups, ports and programs that will
+be used (vic, vat, ...) are periodically multicasted to the MBone. Session
+tools "hear" this information and present you in an easy way which conferences 
+are taking (or will take) place, so you can decide which interest you. Also,
+they facilitate the task of joining a session. Instead of launching
+each program that will be used and telling which multicast group/port to
+join, you usually just need to click and the session tool launches the
+proper programs suppling them all information needed to join the conference.
+Session tools usually let you announce your own conferences on the MBone.
+</p><p>
+</p><ul>
+<li>gwTTS - University of Virginia tele-tutoring system
+<a href="http://www.cs.virginia.edu/~gwtts">http://www.cs.Virginia.EDU/~gwtts</a>
+</li>
+<li>isc - Integrated session controller
+<a href="http://www.fokus.gmd.de/step/isc">http://www.fokus.gmd.de/step/isc</a>
+</li>
+<li>mmcc - Multimedia conference control
+<a href="ftp://ftp.isi.edu/confctrl/mmcc">ftp://ftp.isi.edu/confctrl/mmcc</a>
+</li>
+<li>sd - LBL session directory tool
+<a href="ftp://ftp.ee.lbl.gov/conferencing/sd">ftp://ftp.ee.lbl.gov/conferencing/sd</a>
+</li>
+<li>sd-snoop - Tenet Group session directory snoop utility
+<a href="ftp://tenet.berkeley.edu/pub/software">ftp://tenet.berkeley.edu/pub/software</a>
+</li>
+<li>sdr - UCL's next generation session directory
+<a href="ftp://cs.ucl.ac.uk/mice/sdr">ftp://cs.ucl.ac.uk/mice/sdr</a></li>
+</ul>
+<p>
+</p><p>
+</p><p>
+</p><hr>
+<h2><a name="s6">6.</a> <a href="http://www.ibiblio.org/pub/linux/docs/HOWTO/other-formats/html_single/Multicast-HOWTO.html#toc6">Multicast programming.</a></h2>
+
+<p>Multicast programming... or writing your own multicast applications.
+</p><p>Several extensions to the programming API are needed in order to support
+multicast. All of them are handled via two system calls: <code>setsockopt()</code>
+(used to pass information to the kernel) and <code>getsockopt()</code> (to retrieve 
+information regarded multicast behavior). This does <em>not</em> mean that
+2 new system calls were added to support multicast. The pair 
+<code>setsockopt()</code>/<code>getsockopt()</code> has been there for years. Since 4.2 BSD 
+at least. The addition consists on a new set of options (multicast options)
+that are passed to these system calls, that the kernel must understand.
+</p><p>The following are the <code>setsockopt()</code>/<code>getsockopt()</code> function prototypes:
+</p><blockquote><code>
+<pre>int getsockopt(int s, int level, int optname, void* optval, int* optlen);
+
+int setsockopt(int s, int level, int optname, const void* optval, int optlen);
+</pre>
+</code></blockquote>
+<p>The first parameter, <code>s</code>, is the socket the system call applies to.
+For multicasting, it must be a socket of the family <code>AF_INET</code> and its 
+type may be either <code>SOCK_DGRAM</code> or <code>SOCK_RAW</code>. The most common use 
+is with <code>SOCK_DGRAM</code> sockets, but if you plan to write a routing daemon or 
+modify some existing one, you will probably need to use <code>SOCK_RAW</code> ones.
+</p><p>The second one, <code>level</code>, identifies the layer that is to handle the
+option, message or query, whatever you want to call it. So, <code>SOL_SOCKET</code>
+is for the socket layer, <code>IPPROTO_IP</code> for the IP layer, etc...
+For multicast programming, <code>level</code> will always be <code>IPPROTO_IP</code>.
+</p><p><code>optname</code> identifies the option we are setting/getting. Its value
+(either supplied by the program or returned by the kernel) is
+<code>optval</code>. The optnames involved in multicast programming are the
+following:
+</p><p>
+</p><hr>
+<pre>                        setsockopt()            getsockopt()
+IP_MULTICAST_LOOP           yes                     yes
+IP_MULTICAST_TTL            yes                     yes
+IP_MULTICAST_IF             yes                     yes
+IP_ADD_MEMBERSHIP           yes                      no
+IP_DROP_MEMBERSHIP          yes                      no
+</pre>
+<hr>
+<p><code>optlen</code> carries the size of the data structure <code>optval</code> points to.
+Note that in <code>getsockopt()</code> it is a value-result rather than a value:
+the kernel writes the value of <code>optname</code> in the buffer pointed by
+<code>optval</code> and informs us of that value's size via <code>optlen</code>.
+</p><p>Both <code>setsockopt()</code> and <code>getsockopt()</code> return 0 on success and -1 on
+error.
+</p><p>
+</p><p>
+</p><h2><a name="ss6.1">6.1 IP_MULTICAST_LOOP.</a>
+</h2>
+
+<p>You have to decide, as the application writer, whether you want the
+data you send to be looped back to your host or not. If you plan to
+have more than one process or user "listening", loopback must be
+enabled. On the other hand, if you are sending the images your video
+camera is producing, you probably don't want loopback, even if you
+want to see yourself on the screen. In that latter case, your application
+will probably receive the images from a device attached to the computer
+and send them to the socket. As the application already "has" that data,
+it is improbable it wants to receive it again on the socket.  Loopback 
+is by default enabled.
+</p><p>Regard that <code>optval</code> is a pointer. You can't write: 
+</p><blockquote><code>
+<pre>setsockopt(socket, IPPROTO_IP, IP_MULTICAST_LOOP, 0, 1);
+</pre>
+</code></blockquote>
+
+to disable loopback. Instead write:
+<blockquote><code>
+<pre>u_char loop;
+setsockopt(socket, IPPROTO_IP, IP_MULTICAST_LOOP, &amp;loop, sizeof(loop));
+</pre>
+</code></blockquote>
+
+and set <code>loop</code> to 1 to enable loopback or 0 to disable it.
+<p>To know whether a socket is currently looping-back or not use something like:
+</p><blockquote><code>
+<pre>u_char loop;
+int size;
+
+getsockopt(socket, IPPROTO_IP, IP_MULTICAST_LOOP, &amp;loop, &amp;size)
+</pre>
+</code></blockquote>
+<p>
+</p><p>
+</p><h2><a name="ss6.2">6.2 IP_MULTICAST_TTL.</a>
+</h2>
+
+<p>If not otherwise specified, multicast datagrams are sent with a default 
+value of 1, to prevent them to be forwarded beyond the local network.
+To change the TTL to the value you desire (from 0 to 255), put that value
+into a variable (here I name it "ttl") and write somewhere in your program:
+</p><blockquote><code>
+<pre>u_char ttl;
+setsockopt(socket, IPPROTO_IP, IP_MULTICAST_TTL, &amp;ttl, sizeof(ttl));
+</pre>
+</code></blockquote>
+<p>The behavior with <code>getsockopt()</code> is similar to the one seen on IP_MULTICAST_LOOP.
+</p><p>
+</p><p>
+</p><h2><a name="ss6.3">6.3 IP_MULTICAST_IF.</a>
+</h2>
+
+<p>Usually, the system administrator specifies the default interface multicast
+datagrams should be sent from. The programmer can override this and choose
+a concrete outgoing interface for a given socket with this option.
+</p><blockquote><code>
+<pre>struct in_addr interface_addr;
+setsockopt (socket, IPPROTO_IP, IP_MULTICAST_IF, &amp;interface_addr, sizeof(interface_addr));
+</pre>
+</code></blockquote>
+<p>&gt;From now on, all multicast traffic generated in this socket will be output
+from the interface chosen. To revert to the original behavior and let the
+kernel choose the outgoing interface based on the system administrator's
+configuration, it is enough to call <code>setsockopt()</code> with this same option
+and <code>INADDR_ANY</code> in the interface field.
+</p><p>In determining or selecting outgoing interfaces, the following <code>ioctl</code>s 
+might be useful: <code>SIOCGIFADDR</code> (to get an interface's address), 
+<code>SIOCGIFCONF</code> (to get the list of all the interfaces) and  <code>SIOCGIFFLAGS</code>
+(to get an interface's flags and, thus, determine whether the interface is 
+multicast capable or not -the <code>IFF_MULTICAST</code> flag-).
+</p><p>If the host has more than one interface and the IP_MULTICAST_IF option is
+not set, multicast transmissions are sent from the default interface, 
+although the remainding interfaces might be used
+for multicast <em>forwarding</em> if the host is acting as a multicast router.
+</p><p>
+</p><p>
+</p><h2><a name="sect-ADD-MEMBERSHIP"></a> <a name="ss6.4">6.4 IP_ADD_MEMBERSHIP.</a>
+</h2>
+
+<p>Recall that you need to tell the kernel which multicast groups you are interested
+in. If no process is interested in a group, packets destined to it that arrive
+to the host are discarded. In order to inform the kernel of your interests and,
+thus, become a member of that group, you should first fill a <code>ip_mreq</code> 
+structure which is passed later to the kernel in the <code>optval</code> field of the 
+<code>setsockopt()</code> system call.
+</p><p>The ip_mreq structure (taken from <code>/usr/include/linux/in.h</code>) has the 
+following members:
+</p><blockquote><code>
+<pre>struct ip_mreq
+{
+        struct in_addr imr_multiaddr;   /* IP multicast address of group */
+        struct in_addr imr_interface;   /* local IP address of interface */
+};
+</pre>
+</code></blockquote>
+<p>(Note: the "physical" definition of the structure is in the file above 
+specified.  Nonetheless, you should not include <code>&lt;linux/in.h&gt;</code> if 
+you want your code to be portable. Instead, include <code>&lt;netinet/in.h&gt;</code> 
+which, in turn, includes <code>&lt;linux/in.h&gt;</code> itself).
+</p><p>The first member, <code>imr_multiaddr</code>, holds the group address you want to join.
+Remember that memberships are also associated with interfaces, not
+just groups. This is the reason you have to provide a value for the second
+member: <code>imr_interface</code>. This way, if you are in a multihomed host, you can 
+join the same group in several interfaces. You can always fill this last
+member with the wildcard address (<code>INADDR_ANY</code>) and then the kernel will deal
+with the task of choosing the interface.
+</p><p>With this structure filled (say you defined it as: <code>struct ip_mreq mreq;</code>)
+you just have to call <code>setsockopt()</code> this way:
+</p><blockquote><code>
+<pre>setsockopt (socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, &amp;mreq, sizeof(mreq));
+</pre>
+</code></blockquote>
+<p>Notice that you can join several groups to the same socket, not just one. The 
+limit to this is <code>IP_MAX_MEMBERSHIPS</code> and, as of version 2.0.33, it has the value 
+of 20.
+</p><p>
+</p><p>
+</p><h2><a name="ss6.5">6.5 IP_DROP_MEMBERSHIP.</a>
+</h2>
+
+<p>The process is quite similar to joining a group:
+</p><blockquote><code>
+<pre>struct ip_mreq mreq;
+setsockopt (socket, IPPROTO_IP, IP_DROP_MEMBERSHIP, &amp;mreq, sizeof(mreq));
+</pre>
+</code></blockquote>
+<p>where <code>mreq</code> is the same structure with the same data used when joining the
+group. If the <code>imr_interface</code> member is filled with <code>INADDR_ANY</code>, the 
+first matching group is dropped.
+</p><p>If you have joined a lot of groups to the same socket, you don't need to
+drop memberships in all of them in order to terminate. When you close a
+socket, all memberships associated with it are dropped by the kernel. The
+same occurs if the process that opened the socket is killed.
+</p><p>Finally, keep in mind that a process dropping membership for a group does
+not imply that the host will stop receiving datagrams for that group. If
+another socket joined that group in that same interface previously to this
+<code>IP_DROP_MEMBERSHIP</code>, <em>the host</em> will keep being a member of that group. 
+</p><p>Both ADD_MEMBERSHIP and DROP_MEMBERSHIP are nonblocking operations. They
+should return immediately indicating either success or failure.
+</p><p>
+</p><p>
+</p><p>
+</p><hr>
+<h2><a name="s7">7.</a> <a href="http://www.ibiblio.org/pub/linux/docs/HOWTO/other-formats/html_single/Multicast-HOWTO.html#toc7">The internals.</a></h2>
+
+<p>This section's aim is to provide some information, not needed to reach
+a basic understanding on how multicast works nor to be able to write
+multicast programs, but which is very interesting, gives some insight on
+the underlying multicast protocols and implementations, and may be useful to
+avoid common errors and misunderstandings.
+</p><p>
+</p><p>
+</p><h2><a name="ss7.1">7.1 IGMP.</a>
+</h2>
+
+<p>When talking about <code>IP_ADD_MEMBERSHIP</code> and <code>IP_DROP_MEMBERSHIP</code>,
+we said that the information provided by this "commands" was used by the
+kernel to choose which multicast datagrams accept or discard. This is true,
+but it is not all the truth. Such a simplification would imply that
+multicast datagrams for <em>all</em> multicast groups around the world
+would be received by our host, and then it would check the memberships
+issued by processes running on it to decide whether to pass the traffic to
+them or to throw it out. As you can imagine, this is a complete bandwidth
+waste.
+</p><p>What actually happens is that hosts instruct their routers telling them
+which multicast groups they are interested in; then, those routers
+tell their up-stream routers they want to receive that traffic, and so 
+on. Algorithms employed for making the decision of <em>when</em> to
+ask for a group's traffic or saying that it is not desired anymore,
+vary a lot. There's something, however, that never changes: <em>how</em>
+this information is transmitted. <b>IGMP</b> is used for that. It stands for
+Internet Group Management Protocol. It is a new protocol, similar in many
+aspects to ICMP, with a protocol number of 2, whose messages are carried in
+IP datagrams, and which all level 2-compliant host are required to implement. 
+</p><p>As said before, it is used both by hosts giving membership information to
+its routers, and by routers to communicate between themselves. In the
+following I'll cover only the hosts-routers relationships, mainly because
+I was unable to find information describing router to router communication
+other than the mrouted source code (rfc 1075 describing the Distance Vector
+Multicast Routing Protocol is now obsoleted, and <code>mrouted</code> implements
+a modified DVMRP not yet documented).
+</p><p>IGMP version 0 is specified in RFC-988 which is now obsoleted. Almost no one
+uses version 0 now.
+</p><p>IGMP version 1 is described in RFC-1112 and, although it is updated by RFC-2236
+(IGMP version 2) it is in wide use still. The Linux kernel implements the full
+IGMP version 1 and parts of version 2 requirements, but not all.
+</p><p>Now I'll try to give an informal description of the protocol. You can check
+RFC-2236 for an in-proof formal description, with lots of state diagrams
+and time-out boundaries.
+</p><p>All IGMP messages have the following structure:
+</p><hr>
+<pre>    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |      Type     | Max Resp Time |           Checksum            |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                         Group Address                         |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</pre>
+<hr>
+<p>IGMP version 1 (hereinafter IGMPv1) labels the "Max Resp Time" as "Unused",
+zeroes it when sent, and ignores it when received. Also, it brakes 
+the "Type" field in two 4-bits wide fields: "Version" and "Type". As IGMPv1
+identifies a "Membership Query" message as 0x11 (version 1, type 1) and
+IGMPv2 as 0x11 too, the 8 bits have the same effective interpretation.
+</p><p>I think it is more instructive to give first the IGMPv1 description and next
+point out the IGMPv2 additions, as they are mainly that, additions.
+</p><p>For the following discussions it is important to remember that multicast
+routers receive <em>all</em> IP multicast datagrams.
+</p><p>
+</p><p>
+</p><h3><a name="sect-IGMPv1"></a> IGMP version 1.</h3>
+
+<p>Routers periodically send <em>IGMP Host Membership Queries</em> to the all-hosts
+group (224.0.0.1) with a TTL of 1 (once every minute or two). All 
+multicast-capable hosts hear them, 
+but don't answer immediately to avoid an IGMP Host Membership Report storm. 
+Instead, they start a random delay timer for each group they belong to 
+<em>on the interface</em> they received the query. 
+</p><p>Sooner or later, the timer expires in one of the hosts, and it sends an
+IGMP <em>Host Membership Report</em> (also with TTL 1) to the multicast address of the 
+group being reported. As it is sent to the group, all hosts that joined 
+the group -and which are currently waiting for their own timer to expire-
+receive it, too. Then, they stop their timers and don't generate any other
+report. Just one is generated -by the host that chose the smaller timeout-,
+and that is enough for the router. It only needs to know that there are
+members for that group in the subnet, not how many nor which.
+</p><p>When no reports are received for a given group after a certain number
+of queries, the router assumes that no members are left, and thus it
+doesn't have to forward traffic for that group on that subnet. Note that
+in IGMPv1 there are no "Leave Group messages".
+</p><p>When a host joins a <em>new</em> group, the kernel sends a report for that
+group, so that the respective process needs not to wait a minute or two
+until a new membership query is received. As you can see this IGMP packet
+is generated by the kernel as a response to the <code>IP_ADD_MEMBERSHIP</code>
+command, seen in section 
+<a href="http://www.ibiblio.org/pub/linux/docs/HOWTO/other-formats/html_single/Multicast-HOWTO.html#sect-ADD-MEMBERSHIP">IP_ADD_MEMBERSHIP</a>. 
+Note the emphasis in the adjective "new": if a process issues an 
+<code>IP_ADD_MEMBERSHIP</code> command for a group the host is already a member of,
+no IGMP packets are sent as we must already be receiving traffic for that
+group; instead, a counter for that group's use is incremented.
+<code>IP_DROP_MEMBERSHIP</code> generates no datagrams in IGMPv1.
+</p><p>Host Membership Queries are identified by Type 0x11, and Host Membership 
+Reports by Type 0x12.
+</p><p>No reports are sent for the all-hosts group. Membership in this group is
+permanent.
+</p><p>
+</p><p>
+</p><h3>IGMP version 2.</h3>
+
+<p>One important addition to the above is the inclusion of a <em>Leave
+Group</em> message (Type 0x17). The reason is to reduce the bandwidth
+waste between the time the last host in the subnet drops membership and
+the time the router times-out for its queries and decides there are no more 
+members present for that group (leave latency). Leave Group messages should 
+be addressed to
+the all-routers group (224.0.0.2) rather than to the group being left, as that
+information is of no use for other members (kernel versions up to 2.0.33
+send them to the group; although it does no harm to the hosts, it's a waste
+of time as they have to process them, but don't gain useful information). 
+There are certain subtle details regarding when and when-not to send Leave 
+Messages; if interested, see the RFC. 
+</p><p>When an IGMPv2 router receives a Leave Message for a group, it sends
+<em>Group-Specific Queries</em> to the group being left. This is another
+addition. IGMPv1 has no group-specific queries. All queries are sent to the
+all-hosts group. The Type in the IGMP header does not change (0x11, as
+before), but the  "Group Address" is filled with the address of the
+multicast group being left.
+</p><p>The "Max Resp Time" field, which was set to 0 in transmission and ignored 
+on reception in IGMPv1, is meaningful only
+in "Membership Query" messages. It gives the maximum time allowed before
+sending a report in units of 1/10 second. It is used as a tune mechanism.
+</p><p>IGMPv2 adds another message type: 0x16. It is a "Version 2 Membership
+Report" sent by IGMPv2 hosts if they detect an IGMPv2 router is present
+(an IGMPv2 host knows an IGMPv1 router is present when it receives a query
+with the "Max Response" field set to 0). 
+</p><p>When more than one router claims to act as querier, IGMPv2 
+provides a mechanism to avoid "discussions": the router with the lowest IP
+address is designed to be querier. The other routers keep timeouts. If the router
+with lower IP address crashes or is shutdown, the decision of who will be
+the querier is taken again after the timers expire.
+</p><p>
+</p><p>
+</p><p>
+</p><h2><a name="ss7.2">7.2 Kernel corner.</a>
+</h2>
+
+<p>This sub-section gives some start-points to study the multicast implementation
+of the Linux kernel. It does not explain that implementation. It just says
+where to find things.
+</p><p>The study was carried over version 2.0.32, so it could be a bit outdated by
+the time you read it (network code seems to have changed <em>A LOT</em> in
+2.1.x releases, for instance).
+</p><p>Multicast code in the Linux kernel is always surrounded by 
+<code>#ifdef CONFIG_IP_MULTICAST</code> / <code>#endif</code> pairs, so that you can include/
+exclude it from your kernel based on your needs (this inclusion/exclusion
+is done at compile time, as you probably know if reading that section...
+<code>#ifdef</code>s are handled by the preprocessor.  The decision is made based in 
+what you selected when doing either a <code>make config</code>, <code>make menuconfig</code> or 
+<code>make xconfig</code>).
+</p><p>You might want multicast features, but if your Linux box is not going to
+act as a multicast router you will probably not want multicast router features
+included in your new kernel. For this you have the multicast routing code 
+surrounded by <code>#ifdef CONFIG_IP_MROUTE</code> / <code>#endif</code> pairs.
+</p><p>Kernel sources are usually placed in /usr/src/linux. However, the place
+may change so, both for accuracy and brevity, I will refer to the
+root directory of the kernel sources as just LINUX. Then, something like
+<code>LINUX/net/ipv4/udp.c</code> should be the same as 
+<code>/usr/src/linux/net/ipv4/udp.c</code> if you unpacked the kernel 
+sources in the <code>/usr/src/linux</code> directory.
+</p><p>All multicast interfaces with user programs shown in the section devoted
+to multicast programming were driven across the <code>setsockopt()</code>/
+<code>getsockopt()</code>
+system calls. Both of them are implemented by means of functions that
+make some tests to verify the parameters passed to them and which, in turn,
+call another function that makes some additional tests, demultiplexes the
+call based on the <code>level</code> parameter to either system call, and then calls
+another function which... (if interested in all this jumps, you can follow
+them in <code>LINUX/net/socket.c</code> (functions <code>sys_socketcall()</code> and 
+<code>sys_setsockopt()</code>,
+<code>LINUX/net/ipv4/af_inet.c</code> (function <code>inet_setsockopt()</code>) and 
+<code>LINUX/net/ipv4/ip_sockglue.c</code> (function <code>ip_setsockopt()</code>) ).
+</p><p>The one which interests us is <code>LINUX/net/ipv4/ip_sockglue.c</code>. Here we find
+<code>ip_setsockopt()</code> and <code>ip_getsockopt()</code> which are mainly a 
+<code>switch</code> (after some error checking) verifying each possible value for 
+<code>optname</code>. Along with 
+unicast options, all multicast ones seen here are handled: 
+<code>IP_MULTICAST_TTL</code>, <code>IP_MULTICAST_LOOP</code>, <code>IP_MULTICAST_IF</code>, 
+<code>IP_ADD_MEMBERSHIP</code> and <code>IP_DROP_MEMBERSHIP</code>. Previously to the 
+<code>switch</code>, a test is made to determine
+whether the options are multicast router specific, and if so, they are
+routed to the <code>ip_mroute_setsockopt()</code> and <code>ip_mroute_getsockopt()</code> 
+functions (file <code>LINUX/net/ipv4/ipmr.c</code>).
+</p><p>In <code>LINUX/net/ipv4/af_inet.c</code> we can see the default values we talked about 
+in previous sections (loopback enabled, TTL=1) provided when the socket is 
+created (taken from function <code>inet_create()</code> in this file):
+</p><hr>
+<pre> 
+#ifdef CONFIG_IP_MULTICAST
+        sk-&gt;ip_mc_loop=1;
+        sk-&gt;ip_mc_ttl=1;
+        *sk-&gt;ip_mc_name=0;
+        sk-&gt;ip_mc_list=NULL;
+#endif
+</pre>
+<hr>
+<p>Also, the assertion of "closing a socket makes the kernel drop all memberships
+this socket had" is corroborated by:
+</p><hr>
+<pre>#ifdef CONFIG_IP_MULTICAST
+                /* Applications forget to leave groups before exiting */
+                ip_mc_drop_socket(sk);
+#endif
+</pre>
+<hr>
+
+taken from <code>inet_release()</code>, on the same file as before.
+<p>Device independent operations for the Link Layer are kept in 
+<code>LINUX/net/core/dev_mcast.c</code>.
+</p><p>Two important functions are still missing: the processing of input and
+output multicast datagrams. As any other datagrams, incoming datagrams are
+passed from the device drivers to the <code>ip_rcv()</code> function 
+(<code>LINUX/net/ipv4/ip_input.c</code>).
+In this function is where the perfect filtering is applied to multicast
+packets that crossed the devices layer (recall that lower layers only perform
+best-effort filtering and is IP who 100% knows whether we are interested in
+that multicast group or not). If the host is acting as a multicast router, this
+function decides too whether the datagram should be forwarded and calls
+<code>ipmr_forward()</code> appropriately. (<code>ipmr_forward()</code> is implemented in
+<code>LINUX/net/ipv4/ipmr.c</code>).
+</p><p>Code in charge of out-putting packets is kept in 
+<code>LINUX/net/ipv4/ip_output.c</code>.
+Here is where the <code>IP_MULTICAST_LOOP</code> option takes effect, as it is checked
+to see whether to loop back the packets or not (function <code>ip_queue_xmit()</code>). 
+Also the TTL of the outgoing
+packet is selected based on whether it is a multicast or unicast one. In the
+former case, the argument passed to the <code>IP_MULTICAST_TTL</code> option is used
+(function (<code>ip_build_xmit()</code>).
+</p><p>While working with <code>mrouted</code> (a program which gives the kernel information 
+about how to route multicast datagrams), we detected that
+all multicast packets originated on the local network were properly 
+routed..., except the ones from the Linux box that was acting as the multicast
+router!! ip_input.c was working OK, but it seemed ip_output.c wasn't. 
+Reading the source code for the output functions, we found that
+outgoing datagrams were not being passed to <code>ipmr_forward()</code>, the function
+that had to decide whether they should be routed or not. The packets were
+outputed to the local network but, as network cards are usually unable to
+read their own transmissions, those datagrams were never routed. 
+We added the necessary code to the <code>ip_build_xmit()</code> function and 
+everything was OK again.  (Having
+the sources for your kernel is not a luxury or pedantry; it's a need!)
+</p><p><code>ipmr_forward()</code> has been mentioned a couple of times. It is an important
+function as it solves one important misunderstanding that appears to be
+widely expanded. When routing multicast traffic, it is <em>not</em> <code>mrouted</code>
+who makes the copies and sends them to the proper recipients. <code>mrouted</code>
+receives all multicast traffic and, based on that information, computes
+the multicast routing tables and <em>tells the kernel</em> how to route: 
+"datagrams for this group coming from that interface should be forwarded
+to those interfaces". This information is passed to the kernel by calls
+to <code>setsockopt()</code> on a raw socket opened by the <code>mrouted</code> daemon (the
+protocol specified when the raw socket was created <em>must</em> be 
+<code>IPPROTO_IGMP</code>). This
+options are handled in the <code>ip_mroute_setsockopt()</code> function from
+<code>LINUX/net/ipv4/ipmr.c</code>. The first option (would be better to call them
+commands rather than options) issued on that socket must be <code>MRT_INIT</code>. 
+All other commands are
+ignored (returning <code>-EACCES</code>) if <code>MRT_INIT</code> is not issued first. Only one
+instance of <code>mrouted</code> can be running at the same time in the same host.
+To keep track of this, when the first <code>MRT_INIT</code> is received, an important
+variable, <code>struct sock* mroute_socket</code>, is pointed to the socket <code>MRT_INIT</code> 
+was received on. If <code>mroute_socket</code> is not null when attending an
+<code>MRT_INIT</code> this means another mrouted is already running and <code>-EADDRINUSE</code>
+is returned. All resting commands (<code>MRT_DONE</code>, <code>MRT_ADD_VIF</code>, 
+<code>MRT_DEL_VIF</code>, <code>MRT_ADD_MFC</code>, <code>MRT_DEL_MFC</code> and <code>MRT_ASSERT</code>) 
+return <code>-EACCES</code> if they come from a socket different than 
+<code>mroute_socket</code>.
+</p><p>As routed multicast datagrams can be received/sent across either physical 
+interfaces or tunnels, a common abstraction for both was devised: VIFs,
+Virtual InterFaces. <code>mrouted</code> passes vif structures to the kernel, 
+indicating physical
+or tunnel interfaces to add to its routing tables, and multicast forwarding
+entries saying where to forward datagrams.
+</p><p>VIFs are added with <code>MRT_ADD_VIF</code> and deleted with <code>MRT_DEL_VIF</code>. Both
+pass a <code>struct vifctl</code> to the kernel (defined in 
+<code>/usr/include/linux/mroute.h</code>) with the following information:
+</p><hr>
+<pre>struct vifctl {
+        vifi_t  vifc_vifi;              /* Index of VIF */
+        unsigned char vifc_flags;       /* VIFF_ flags */
+        unsigned char vifc_threshold;   /* ttl limit */
+        unsigned int vifc_rate_limit;   /* Rate limiter values (NI) */
+        struct in_addr vifc_lcl_addr;   /* Our address */
+        struct in_addr vifc_rmt_addr;   /* IPIP tunnel addr */
+};
+</pre>
+<hr>
+<p>With this information a <code>vif_device</code> structure is built:
+</p><hr>
+<pre>struct vif_device
+{
+        struct device   *dev;                   /* Device we are using */
+        struct route    *rt_cache;              /* Tunnel route cache */
+        unsigned long   bytes_in,bytes_out;
+        unsigned long   pkt_in,pkt_out;         /* Statistics */
+        unsigned long   rate_limit;             /* Traffic shaping (NI) */
+        unsigned char   threshold;              /* TTL threshold */
+        unsigned short  flags;                  /* Control flags */
+        unsigned long   local,remote;           /* Addresses(remote for tunnels)*/
+};
+</pre>
+<hr>
+<p>Note the <code>dev</code> entry in the structure. The <code>device</code> structure is 
+defined in <code>/usr/include/linux/netdevice.h</code> file. It is a big structure,
+but the field that interests us is:
+</p><hr>
+<pre>  struct ip_mc_list*    ip_mc_list;   /* IP multicast filter chain    */
+</pre>
+<hr>
+<p>The <code>ip_mc_list</code> structure -defined in <code>/usr/include/linux/igmp.h</code>-
+is as follows:
+</p><hr>
+<pre>struct ip_mc_list
+{
+        struct device *interface;
+        unsigned long multiaddr;
+        struct ip_mc_list *next;
+        struct timer_list timer;
+        short tm_running;
+        short reporter;
+        int users;
+};
+</pre>
+<hr>
+<p>So, the <code>ip_mc_list</code> member from the <code>dev</code> structure is a pointer to a linked
+list of <code>ip_mc_list</code> structures, each containing an entry for each multicast
+group the network interface is a member of. Here again we see membership is
+associated to interfaces. <code>LINUX/net/ipv4/ip_input.c</code> traverses this
+linked list to decide whether the received datagram is destined to any group 
+the interface that received the datagram belongs to:
+</p><hr>
+<pre>#ifdef CONFIG_IP_MULTICAST
+                if(!(dev-&gt;flags&amp;IFF_ALLMULTI) &amp;&amp; brd==IS_MULTICAST 
+                   &amp;&amp; iph-&gt;daddr!=IGMP_ALL_HOSTS 
+                   &amp;&amp; !(dev-&gt;flags&amp;IFF_LOOPBACK))
+                {
+                        /*
+                         *      Check it is for one of our groups
+                         */
+                        struct ip_mc_list *ip_mc=dev-&gt;ip_mc_list;
+                        do
+                        {
+                                if(ip_mc==NULL)
+                                {
+                                        kfree_skb(skb, FREE_WRITE);
+                                        return 0;
+                                }
+                                if(ip_mc-&gt;multiaddr==iph-&gt;daddr)
+                                        break;
+                                ip_mc=ip_mc-&gt;next;
+                        }
+                        while(1);
+                }
+#endif
+</pre>
+<hr>
+<p>The <code>users</code> field in the <code>ip_mc_list</code> structure is used to implement
+what was said in section 
+<a href="http://www.ibiblio.org/pub/linux/docs/HOWTO/other-formats/html_single/Multicast-HOWTO.html#sect-IGMPv1">IGMP version 1</a>: if a 
+process joins a group and the
+interface is already a member of that group (ie, another process joined
+that same group in that same interface before) only the count of members 
+(<code>users</code>)
+is incremented. No IGMP messages are sent, as you can see in the following
+code (taken from <code>ip_mc_inc_group()</code>, called
+by <code>ip_mc_join_group()</code>, both in <code>LINUX/net/ipv4/igmp.c</code>):
+</p><hr>
+<pre>        for(i=dev-&gt;ip_mc_list;i!=NULL;i=i-&gt;next)
+        {
+                if(i-&gt;multiaddr==addr)
+                {
+                        i-&gt;users++;
+                        return;
+                }
+        }
+</pre>
+<hr>
+<p>When dropping memberships, the counter is decremented and additional operations
+are performed only when the count reaches 0 (<code>ip_mc_dec_group()</code>).
+</p><p><code>MRT_ADD_MFC</code> and <code>MRT_DEL_MFC</code> set or delete forwarding entries in the
+multicast routing tables. Both pass a <code>struct mfcctl</code> to the kernel
+(also defined in <code>/usr/include/linux/mroute.h</code>) with this information:
+</p><hr>
+<pre>struct mfcctl
+{
+        struct in_addr mfcc_origin;             /* Origin of mcast      */
+        struct in_addr mfcc_mcastgrp;           /* Group in question    */
+        vifi_t  mfcc_parent;                    /* Where it arrived     */
+        unsigned char mfcc_ttls[MAXVIFS];       /* Where it is going    */
+};
+</pre>
+<hr>
+<p>With all this information in hand, <code>ipmr_forward()</code> "walks" across the VIFs,
+and if a matching is found <em>it</em> duplicates the datagram and calls
+<code>ipmr_queue_xmit()</code> which, in turn, uses the output device specified by
+the routing table and the proper destination address if the packet is
+to be sent across a tunnel (ie, the unicast destination address of the 
+other end of the tunnel).
+</p><p>Function <code>ip_rt_event()</code> (not directly related to output, but which is
+in ip_output.c too) receives events related to a network device, like the device
+going up. This function assures that then the device joins the ALL-HOSTS
+multicast group.
+</p><p>IGMP functions are implemented in <code>LINUX/net/ipv4/igmp.c</code>. Important 
+information for that functions appears in <code>/usr/include/linux/igmp.h</code> and
+<code>/usr/include/linux/mroute.h</code>. The IGMP entry in the <code>/proc/net</code> 
+directory is created with <code>ip_init()</code> in <code>LINUX/net/ipv4/ip_output.c</code>.
+</p><p>
+</p><p>
+</p><p>
+</p><hr>
+<h2><a name="sect-routing"></a> <a name="s8">8.</a> <a href="http://www.ibiblio.org/pub/linux/docs/HOWTO/other-formats/html_single/Multicast-HOWTO.html#toc8">Routing Policies and Forwarding Techniques.</a></h2>
+
+<p>One trivial algorithm to make worldwide multicast traffic available
+everywhere could be to send it... everywhere, despite someone wants it
+or not. As this does not seem quite optimized, several routing algorithms
+and forwarding techniques have been implemented.
+</p><p><b>DVMRP</b> (Distance Vector Multicast Routing Protocol) is, perhaps, the one
+most multicast routers use now. It is a <em>dense mode</em> routing protocol,
+that is, it performs well in environments with high bandwidth and densely
+distributed members. However, in <em>sparse mode</em> scenarios, it suffers
+from scalability problems.
+</p><p>Together with DVMRP we can find other dense mode routing protocols, such
+as <b>MOSPF</b> (Multicast Extensions to OSPF -Open Shortest Path First-)
+and PIM-DM (Protocol-Independent Multicast Dense Mode).
+</p><p>To perform routing in sparse mode environments, we have <b>PIM-SM</b> 
+(Protocol Independent Multicast Sparse Mode) and <b>CBT</b> (Core Based
+Trees).
+</p><p>OSPF version 2 is explained in RFC 1583, and MOSPF in RFC 1584.
+PIM-SM and CBT specifications can be found in RFC 2117 and 2201,
+respectively. 
+</p><p>All this routing protocols use some type of multicast forwarding, such
+as <em>flooding</em>, <em>Reverse Path Broadcasting</em> (RPB), <em>Truncated
+Reverse Path Broadcasting</em> (TRPB), <em>Reverse Path Multicasting</em> (RPM)
+or <em>Shared Trees</em>.
+</p><p>It would be too long to explain them here and, as short descriptions
+for them are publicly available, I'll just recommend reading the
+<code>draft-ietf-mboned-in.txt</code> text. You can find it in the 
+same places RFCs are available, and it explains in some detail all 
+the above techniques and policies.
+</p><p>
+</p><p>
+</p><hr>
+<h2><a name="sect-trans-prots"></a> <a name="s9">9.</a> <a href="http://www.ibiblio.org/pub/linux/docs/HOWTO/other-formats/html_single/Multicast-HOWTO.html#toc9">Multicast Transport Protocols.</a></h2>
+
+<p>So far we have been talking about multicast transmissions using UDP. This
+is the usual practice, as it is impossible to do it with TCP. However,
+intense research is taking place since a couple of years in order to develop
+some new multicast transport protocols. 
+</p><p>Several of these protocols have been implemented and are being tested. A good
+lesson from them is that it seems no multicast transport protocol is general
+and good enough for all types of multicast applications.
+</p><p>If transport protocols are complex and difficult to tune,
+imagine dealing with delays (in multimedia conferences), data loss, ordering,
+retransmissions, flow and congestion control, group management, etc, when
+the receiver is not one, but perhaps hundreds or thousands of sparse hosts.
+Here scalability is an issue, and new techniches are implemented, such as
+not giving acknowledges for every packet received but, instead, send <em>negative
+acknowledges</em> (NACKs) for data not received. RFC 1458 gives the proposed
+requirements for multicast protocols.
+</p><p>Giving descriptions of those multicast protocols is out of the scope of this
+section. Instead, I'll give you the names of some of them and point you to
+some sources of information: Real-Time Transport Protocol (RTP) is concerned
+with multi-partite multimedia conferences, <b>Scalable Reliable Multicast</b> (SRM) is
+used by the <code>wb</code> (the distributed White-Board tool, see section 
+<a href="http://www.ibiblio.org/pub/linux/docs/HOWTO/other-formats/html_single/Multicast-HOWTO.html#sect-applications">Multicast applications</a>),
+<b>Uniform Reliable Group Communication Protocol</b> (URGC) enforces reliable and
+ordered transactions based in a centralized control, <b>Muse</b> was developed as an
+application specific protocol: to multicast news articles over the MBone, the
+<b>Multicast File Transfer Protocol</b> (MFTP) is quite descriptive by itself
+and people "join" to file transmission (previously announced) much in the same 
+way they would join a conference, <b>Log-Based Receiver-reliable Multicast</b> 
+(LBRM) is a curious protocol that keeps track of all packets sent in a logging 
+server that tells the sender whether it has to retransmit the data or can
+drop it safely as all receivers got it. One protocol with a funny name 
+-especially for a multicast protocol- is STORM (<b>STructure-Oriented 
+Resilient Multicast</b>). Lots and lots of multicast protocols can be found
+searching the Web, along with some interesting papers proposing new
+activities for multicast (for instance, www page distribution using multicast).
+</p><p>A good page providing comparisons between reliable multicast protocols is
+</p><p>
+<a href="http://www.tascnets.com/mist/doc/mcpCompare.html">http://www.tascnets.com/mist/doc/mcpCompare.html</a>. 
+</p><p>A very good and up-to-date site, with lots of interesting links (Internet 
+drafts, RFCs, papers, links to other sites) is:
+</p><p>
+<a href="http://research.ivv.nasa.gov/RMP/links.html">http://research.ivv.nasa.gov/RMP/links.html</a>.
+</p><p>
+<a href="http://hill.lut.ac.uk/DS-Archive/MTP.html">http://hill.lut.ac.uk/DS-Archive/MTP.html</a> is also a good source
+of information on the subject.
+</p><p>Katia Obraczka's "<em>Multicast Transport Protocols: A Survey and Taxonomy</em>" 
+article gives short descriptions for each protocol and tries to classify them 
+according to different features. You can read it in the IEEE Communications 
+magazine, January 1998, vol. 36, No. 1.
+</p><p>
+</p><p>
+</p><hr>
+<h2><a name="s10">10.</a> <a href="http://www.ibiblio.org/pub/linux/docs/HOWTO/other-formats/html_single/Multicast-HOWTO.html#toc10">References.</a></h2>
+
+<h2><a name="ss10.1">10.1 RFCs.</a>
+</h2>
+
+<p>
+</p><ul>
+<li>RFC 1112 "Host Extensions for IP Multicasting". Steve Deering. August 1989.
+</li>
+<li>RFC 2236 "Internet Group Management Protocol, version 2". W. Fenner.
+November 1997.
+</li>
+<li>RFC 1458 "Requirements for Multicast Protocols". Braudes, R and Zabele, S. 
+May 1993.
+</li>
+<li>RFC 1469 "IP Multicast over Token-Ring Local Area Networks". T. Pusateri.
+June 1993.
+</li>
+<li>RFC 1390 "Transmission of IP and ARP over FDDI Networks". D. Katz. 
+January 1993.
+</li>
+<li>RFC 1583 "OSPF Version 2". John Moy. March 1994.
+</li>
+<li>RFC 1584 "Multicast Extensions to OSPF". John Moy. March 1994.
+</li>
+<li>RFC 1585 "MOSPF: Analysis and Experience". John Moy. March 1994.
+</li>
+<li>RFC 1812 "Requirements for IP version 4 Routers". Fred Baker,
+Editor. June 1995
+</li>
+<li>RFC 2117 "Protocol Independent Multicast-Sparse Mode (PIM-SM):
+Protocol Specification". D. Estrin, D. Farinacci, A. Helmy,
+D. Thaler; S. Deering, M. Handley, V. Jacobson, C. Liu,
+P. Sharma, and L. Wei. July 1997.
+</li>
+<li>RFC 2189 "Core Based Trees (CBT version 2) Multicast Routing".
+A. Ballardie. September 1997.
+</li>
+<li>RFC 2201 "Core Based Trees (CBT) Multicast Routing Architecture".
+A. Ballardie. September 1997.</li>
+</ul>
+ 
+<p>
+</p><p>
+</p><h2><a name="ss10.2">10.2 Internet Drafts.</a>
+</h2>
+
+<p>
+</p><ul>
+<li>"Introduction to IP Multicast Routing". <code>draft-ietf-mboned-intro-
+multicast- 03.txt</code>. T. Maufer, C. Semeria. July 1997.
+</li>
+<li>"Administratively Scoped IP Multicast". <code>draft-ietf-mboned-admin-ip-
+space-03.txt</code>. D. Meyer. June 10, 1997.</li>
+</ul>
+<p>
+</p><p>
+</p><h2><a name="ss10.3">10.3 Web pages.</a>
+</h2>
+
+<p>
+</p><ul>
+<li>Linux Multicast Homepage. 
+<a href="http://www.cs.virginia.edu/~mke2e/multicast.html">http://www.cs.virginia.edu/~mke2e/multicast.html</a>
+</li>
+<li>Linux Multicast FAQ. 
+<a href="http://andrew.triumf.ca/pub/linux/multicast-FAQ">http://andrew.triumf.ca/pub/linux/multicast-FAQ</a>
+</li>
+<li>Multicast and MBONE on Linux. 
+<a href="http://www.teksouth.com/linux/multicast/">http://www.teksouth.com/linux/multicast/</a>
+</li>
+<li>Christian Daudt's MBONE-Linux Page. 
+<a href="http://www.microplex.com/~csd/linux/mbone.html">http://www.microplex.com/~csd/linux/mbone.html</a>
+</li>
+<li>Reliable Multicast Links 
+<a href="http://research.ivv.nasa.gov/RMP/links.html">http://research.ivv.nasa.gov/RMP/links.html</a>
+</li>
+<li>Multicast Transport Protocols 
+<a href="http://hill.lut.ac.uk/DS-Archive/MTP.html">http://hill.lut.ac.uk/DS-Archive/MTP.html</a></li>
+</ul>
+ 
+<p>
+</p><p>
+</p><h2><a name="ss10.4">10.4 Books.</a>
+</h2>
+
+<p>
+</p><ul>
+<li>"TCP/IP Illustrated: Volume 1 The Protocols". Stevens, W. Richard. 
+Addison Wesley Publishing Company, Reading MA, 1994
+</li>
+<li>"TCP/IP Illustrated: Volume 2, The Implementation". Wright, Gary and 
+W. Richard Stevens. Addison Wesley Publishing Company, Reading MA, 1995
+</li>
+<li>"UNIX Network Programming Volume 1. Networking APIs: Sockets and
+XTI". Stevens, W. Richard. Second Edition, Prentice Hall, Inc. 1998.
+</li>
+<li> "Internetworking with TCP/IP Volume 1 Principles, Protocols, and 
+Architecture". Comer, Douglas E. Second Edition, Prentice Hall, Inc.
+Englewood Cliffs, New Jersey, 1991</li>
+</ul>
+<p>
+</p><p>
+</p><hr>
+<h2><a name="s11">11.</a> <a href="http://www.ibiblio.org/pub/linux/docs/HOWTO/other-formats/html_single/Multicast-HOWTO.html#toc11">Copyright and Disclaimer.</a></h2>
+
+<p>Copyright 1998 Juan-Mariano de Goyeneche.
+</p><p>This HOWTO is free documentation; you can redistribute it and/or
+modify it under the terms of the GNU General Public License as
+published by the Free Software Foundation; either version 2 of the
+License, or (at your option) any later version.
+</p><p>This document is distributed in the hope that it will be useful, but
+without any warranty; without even the implied warranty of
+merchantability or fitness for a particular purpose.  See the GNU
+General Public License for more details.
+</p><p>You can obtain a copy of the GNU General Public License by writing to
+the Free Software Foundation, 59 Temple Place - Suite 330, Boston, 
+MA 02111-1307, USA.
+</p><p>If you publish this document on a CD-ROM or in hardcopy form, a
+complimentary copy would be appreciated; mail me for my postal
+address. Also consider making a donation to the Linux Documentation
+Project or the Free Software Foundation to help support free documentation
+for GNU/Linux. Contact the Linux HOWTO coordinator, Tim Bynum
+<a href="mailto:linux-howto@sunsite.unc.edu">linux-howto@sunsite.unc.edu</a>,
+for more information.
+</p><p>
+</p><p>
+</p><hr>
+<h2><a name="s12">12.</a> <a href="http://www.ibiblio.org/pub/linux/docs/HOWTO/other-formats/html_single/Multicast-HOWTO.html#toc12">Acknowledgements.</a></h2>
+
+<p>This is the best opportunity I've ever had to thank so <em>many</em> people
+I feel grateful to. So, I'm afraid this is going to be a large section... It
+is, in any case, the most important one of this paper (for me, at least...).
+</p><p>First, I want to thank Elena Apolinario Fernández de Sousa (yes, Elena is
+the first name; the REST is THE surname ;-) ). I tried to reflect
+in this Howto all the knowledge I collected while working with her in connecting
+our Department to the MBone and debugging problems with locally generated
+CSCW software across multicast tunnels. She was of invaluable help in
+finding and correcting network problems, discovering and fixing kernel bugs
+that puzzled us for days, ... and keeping the sense of humor alive while
+problems appeared and appeared, but solutions didn't. She also read and
+corrected the drafts for this document and provided important ideas and
+suggestions. If this howto is here and is usefull for somebody, it will be,
+in many aspects, thanks to her. Thanks, Elena!
+</p><p>There is something I have been lucky enough to find all my (still-not-too-long) 
+live, but, despite being repetitive, has never stopped amazing me.
+I'm talking about people that altruistically employ part of their time 
+and/or resources to help other people learn new things; and, what is better,
+they enjoy doing it. This is not only (but also, too) explain things they
+already know, but lend their books, provide access to their sources and
+facilitate you the way to learn all things they know; sometimes, even
+more... I know quite a few of that people, and I'd like to thank them for 
+all their help.
+</p><p>Pablo Basterrechea was my "first source of documentation" while I was in
+my pre-Internet stage. I learned assembly and advanced structured programming
+entirely from his books (well, the latter also from his programs...). 
+Thanks for all, Pablo.
+</p><p>In my first course at the University that "primary source of documentation"
+moved to Pepe Mañas. He was teaching then Computer Programming there, and
+soon I became addict to his bookshelf. He lent me his books lots of times
+without asking for a minimum sign that could assure that I was going
+to return them back to him, not even my name! My first approach to TCP/IP
+was also by his hand: he lent me Comer's "Internetworking with TCP/IP,
+Volume 1" for the whole summer. He did not even know my name by then,
+but he lent me the book...
+That book influenced me a lot, and TCP/IP has become one of my primary 
+fields of interest since that summer.
+</p><p>If there are two persons I must thank most, these are (in alphabetic
+order ;-) ), José Manuel and Paco Moya. Nobody I asked more things more
+times (C, C++, Linux, security, Web, OSs, signals &amp; systems, 
+electronics, ... anything!) and, despite my persistence, I always got throughly 
+and friendly responses and help. If I'm using GNU/Linux now, this is, again,
+thanks to them. I feel particularly lucky with friends like them. THANKS.
+</p><p>Iñigo Mascaraque also helped (from him I got my first System Administration
+book) and encouraged me in my beginnings, but never stopped reminding me
+that, although this was a fascinating world and an important part of my
+career, I should not forget the other, less-interesting, parts. (I don't
+forget, I$!).
+</p><p>As I am on the topic, I'd like to thank my parents, too. They always
+tried to make the best opportunities available for me. Many thanks for
+all.
+</p><p>I also feel grateful to Joaquín Seoane, the first who trusted me enough
+to give me a root password in the time I was learning system administration
+by myself, and Santiago Pavón, the one who gave me my first opportunity
+here at DIT.
+</p><p>W. Richard Stevens' books have been a real revelation for me (it's a pity
+they are so expensive...). If he ever reads this paper, I'd like to thank
+him for them, and encourage him to keep on writing. Anything that comes 
+out of his hands will -undoubtedly- be good for all of us.
+</p><p>Finally I'd like to thank Richard Stallman, Linus Torvalds, Alan Cox and
+all contributors to the Linux kernel and the free software in general,
+for giving us such a great OS.
+</p><p>I'm sure I'm forgetting someone here... Sorry. I'm certain they know I'm 
+grateful to them too, so if they tell me, everybody will know it... :-)
+</p><p>
+</p><hr>
+
+
+</body></html>
